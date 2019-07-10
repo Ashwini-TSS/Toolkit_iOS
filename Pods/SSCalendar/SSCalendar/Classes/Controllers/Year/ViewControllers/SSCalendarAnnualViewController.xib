@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Raleway-Bold.ttf">
+            <string>Raleway-Bold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="SSCalendarAnnualViewController">
+            <connections>
+                <outlet property="searchBar" destination="umd-gb-7xv" id="rXH-bW-rJf"/>
+                <outlet property="searchDisplayController" destination="g6V-No-3Dj" id="D31-t5-hwb"/>
+                <outlet property="view" destination="NHo-Cm-Kcj" id="tdJ-mP-gFc"/>
+                <outlet property="yearView" destination="6th-ae-4nw" id="U3Z-Wg-pzK"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="NHo-Cm-Kcj">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <collectionView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" indicatorStyle="white" minimumZoomScale="0.0" maximumZoomScale="0.0" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="6th-ae-4nw">
+                    <rect key="frame" x="0.0" y="1" width="375" height="618"/>
+                    <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="9" id="BPb-nb-GrB">
+                        <size key="itemSize" width="94" height="100"/>
+                        <size key="headerReferenceSize" width="0.0" height="16"/>
+                        <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                        <inset key="sectionInset" minX="10" minY="0.0" maxX="10" maxY="0.0"/>
+                    </collectionViewFlowLayout>
+                    <cells/>
+                </collectionView>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="D0K-qa-jd6">
+                    <rect key="frame" x="308" y="628" width="51" height="32"/>
+                    <fontDescription key="fontDescription" name="Raleway-Bold" family="Raleway" pointSize="17"/>
+                    <state key="normal" title="Filters">
+                        <color key="titleColor" red="0.0" green="0.32156862749999998" blue="0.60784313729999995" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    </state>
+                    <connections>
+                        <action selector="tappedFilter:" destination="-1" eventType="touchUpInside" id="U4g-AY-uqb"/>
+                    </connections>
+                </button>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="80k-ea-MWb">
+                    <rect key="frame" x="16" y="628" width="49" height="32"/>
+                    <fontDescription key="fontDescription" name="Raleway-Bold" family="Raleway" pointSize="17"/>
+                    <state key="normal" title="Today">
+                        <color key="titleColor" red="0.0" green="0.32156862749999998" blue="0.60784313729999995" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    </state>
+                    <connections>
+                        <action selector="tappedToday:" destination="-1" eventType="touchUpInside" id="dL1-LM-fCU"/>
+                    </connections>
+                </button>
+                <searchBar contentMode="redraw" translatesAutoresizingMaskIntoConstraints="NO" id="umd-gb-7xv">
+                    <rect key="frame" x="0.0" y="0.0" width="375" height="56"/>
+                    <textInputTraits key="textInputTraits"/>
+                    <connections>
+                        <outlet property="delegate" destination="-1" id="Tbv-Mp-5Pq"/>
+                    </connections>
+                </searchBar>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DFt-BG-VaZ">
+                    <rect key="frame" x="0.0" y="619" width="375" height="1"/>
+                    <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="1" id="wqU-h0-w1A"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cQE-X0-te2">
+                    <rect key="frame" x="0.0" y="0.0" width="375" height="1"/>
+                    <color key="backgroundColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="1" id="m9X-cY-IRf"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="80k-ea-MWb" firstAttribute="leading" secondItem="NHo-Cm-Kcj" secondAttribute="leading" constant="16" id="1gw-Be-Uq8"/>
+                <constraint firstAttribute="bottom" secondItem="80k-ea-MWb" secondAttribute="bottom" constant="7" id="5nh-gv-4gf"/>
+                <constraint firstItem="umd-gb-7xv" firstAttribute="leading" secondItem="NHo-Cm-Kcj" secondAttribute="leading" id="BNK-k5-j2N"/>
+                <constraint firstAttribute="trailing" secondItem="cQE-X0-te2" secondAttribute="trailing" id="MFJ-W4-iJD"/>
+                <constraint firstAttribute="trailing" secondItem="D0K-qa-jd6" secondAttribute="trailing" constant="16" id="SHz-pJ-niN"/>
+                <constraint firstAttribute="trailing" secondItem="6th-ae-4nw" secondAttribute="trailing" id="T48-Rv-BKQ"/>
+                <constraint firstItem="cQE-X0-te2" firstAttribute="leading" secondItem="NHo-Cm-Kcj" secondAttribute="leading" id="Ttw-an-Omc"/>
+                <constraint firstItem="6th-ae-4nw" firstAttribute="top" secondItem="NHo-Cm-Kcj" secondAttribute="top" constant="1" id="U6L-dZ-boc"/>
+                <constraint firstItem="6th-ae-4nw" firstAttribute="leading" secondItem="NHo-Cm-Kcj" secondAttribute="leading" id="XIp-cY-d1v"/>
+                <constraint firstItem="DFt-BG-VaZ" firstAttribute="top" secondItem="6th-ae-4nw" secondAttribute="bottom" id="Zqm-bG-WDz"/>
+                <constraint firstAttribute="bottom" secondItem="D0K-qa-jd6" secondAttribute="bottom" constant="7" id="aXH-80-cpl"/>
+                <constraint firstItem="umd-gb-7xv" firstAttribute="top" secondItem="NHo-Cm-Kcj" secondAttribute="top" id="eAd-HD-aDP"/>
+                <constraint firstItem="6th-ae-4nw" firstAttribute="top" secondItem="cQE-X0-te2" secondAttribute="bottom" id="i2j-Xg-0n1"/>
+                <constraint firstAttribute="trailing" secondItem="umd-gb-7xv" secondAttribute="trailing" id="jVO-iN-S0C"/>
+                <constraint firstItem="DFt-BG-VaZ" firstAttribute="leading" secondItem="NHo-Cm-Kcj" secondAttribute="leading" id="q8x-3o-Kg2"/>
+                <constraint firstItem="D0K-qa-jd6" firstAttribute="top" secondItem="6th-ae-4nw" secondAttribute="bottom" constant="9" id="wPH-b1-9if"/>
+                <constraint firstAttribute="trailing" secondItem="DFt-BG-VaZ" secondAttribute="trailing" id="yE7-fY-05m"/>
+            </constraints>
+            <point key="canvasLocation" x="38.5" y="45.5"/>
+        </view>
+        <searchDisplayController id="g6V-No-3Dj">
+            <connections>
+                <outlet property="delegate" destination="-1" id="kIa-Yd-hLR"/>
+                <outlet property="searchBar" destination="umd-gb-7xv" id="DKT-rX-l1F"/>
+                <outlet property="searchContentsController" destination="-1" id="PEa-4L-2vf"/>
+                <outlet property="searchResultsDataSource" destination="-1" id="vIA-wr-Fkr"/>
+                <outlet property="searchResultsDelegate" destination="-1" id="zGn-HK-8uE"/>
+            </connections>
+        </searchDisplayController>
+    </objects>
+</document>

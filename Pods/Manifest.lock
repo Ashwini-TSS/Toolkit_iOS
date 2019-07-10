@@ -1,0 +1,32 @@
+PODS:
+  - AnyFormatKit (0.1.2)
+  - IQKeyboardManagerSwift (6.0.2)
+  - SSCalendar (0.0.3)
+  - Stripe (13.1.0)
+  - ThinCreditCard (0.1.3)
+
+DEPENDENCIES:
+  - AnyFormatKit
+  - IQKeyboardManagerSwift
+  - SSCalendar
+  - Stripe
+  - ThinCreditCard
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - AnyFormatKit
+    - IQKeyboardManagerSwift
+    - SSCalendar
+    - Stripe
+    - ThinCreditCard
+
+SPEC CHECKSUMS:
+  AnyFormatKit: b31739f6047c94c204e0640b281c80eda23be235
+  IQKeyboardManagerSwift: 59d4b0e140bc546c3c76ae5bb35b3dafd10b8172
+  SSCalendar: 65498d7ec6ff38b4aead38d3cf8bb317666a2fe4
+  Stripe: 4f043bb840721b1f30492fa77790bbf9e3508ab0
+  ThinCreditCard: 178bbea9151d31b834c807a1f2d4aae76de3caca
+
+PODFILE CHECKSUM: f6c4cfa48a4020ca6db90ad6fd2e5c805f749da2
+
+COCOAPODS: 1.5.3
