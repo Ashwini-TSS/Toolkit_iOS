@@ -38,7 +38,7 @@ class MenuController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return 8
+        return 9
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -59,8 +59,7 @@ class MenuController: UITableViewController {
             self.slideMenuController()?.changeMainViewController(nvc, close: true)
         }
         else if indexPath.row == 2 {
-            
-            setupNavigation()
+         setupNavigation()
             let vc = self.storyboard?.instantiateViewController(withIdentifier: "TaskListViewController") as! TaskListViewController
             let nvc: UINavigationController = UINavigationController(rootViewController: vc)
             self.slideMenuController()?.changeMainViewController(nvc, close: true)
@@ -73,7 +72,6 @@ class MenuController: UITableViewController {
             self.slideMenuController()?.changeMainViewController(nvc, close: true)
         }else if indexPath.row == 4 {
             setupNavigation()
-            
             let vc = self.storyboard?.instantiateViewController(withIdentifier: "AllContactsCoontroller") as! AllContactsCoontroller
             vc.fromAccounts = true
             let nvc: UINavigationController = UINavigationController(rootViewController: vc)
@@ -96,6 +94,13 @@ class MenuController: UITableViewController {
             setupNavigation()
             
             let vc = self.storyboard?.instantiateViewController(withIdentifier: "SettingsContoller") as! SettingsContoller
+            let nvc: UINavigationController = UINavigationController(rootViewController: vc)
+            self.slideMenuController()?.changeMainViewController(nvc, close: true)
+        }
+        else if indexPath.row == 8 {
+            setupNavigation()
+            
+            let vc = self.storyboard?.instantiateViewController(withIdentifier: "TeammembersystemVC") as! TeammembersystemVC
             let nvc: UINavigationController = UINavigationController(rootViewController: vc)
             self.slideMenuController()?.changeMainViewController(nvc, close: true)
         }

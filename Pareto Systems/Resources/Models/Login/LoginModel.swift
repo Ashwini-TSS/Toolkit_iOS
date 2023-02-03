@@ -6,19 +6,22 @@ import Foundation
 
 class LoginModel{
 
-	var passKey : String!
-	var responseMessage : String!
-	var valid : Bool!
+        var passKey : String!
+        var responseMessage : String!
+        var valid : Bool!
+        var TwoFARequired :Bool!
 
 
-	/**
-	 * Instantiate the instance using the passed dictionary values to set the properties values
-	 */
-	init(fromDictionary dictionary: NSDictionary){
-        
-		passKey = dictionary["PassKey"] as? String ?? ""
-		responseMessage = dictionary["ResponseMessage"] as? String ?? ""
-		valid = dictionary["Valid"] as? Bool
-	}
+        /**
+         * Instantiate the instance using the passed dictionary values to set the properties values
+         */
+        init(fromDictionary dictionary: NSDictionary){
+            
+            passKey = dictionary["PassKey"] as? String ?? ""
+            responseMessage = dictionary["ResponseMessage"] as? String ?? ""
+            valid = dictionary["Valid"] as? Bool
+            TwoFARequired = dictionary["TwoFARequired"] as? Bool
+        }
+
 
 }

@@ -77,7 +77,8 @@ extension ToolkitPackagesController:UITableViewDelegate,UITableViewDataSource {
     cell.lblDescription.setHtmlText(self.purchaseLists.verticalPackages[indexPath.row].descriptionField)
         
         let url = URL(string: imageLoadURL + self.purchaseLists.verticalPackages[indexPath.row].largeImageUri)
-        cell.productImage.kf.setImage(with: url)
+//        Sankar Update
+//        cell.productImage.kf.setImage(with: url)
         
         cell.lblPlan.text = self.purchaseLists.verticalPackages[indexPath.row].tagLine
         

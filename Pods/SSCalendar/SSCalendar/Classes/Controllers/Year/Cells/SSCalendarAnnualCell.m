@@ -38,12 +38,12 @@
     CGContextSaveGState(context);
     
     CGContextSetFillColorWithColor(context, [UIColor colorWithHexString:COLOR_SECONDARY].CGColor);
-
+    
     CGFloat headerHeight = 17.0f;
     CGFloat dayWidth = self.frame.size.width / 7;
-
+    
     [self drawTitle];
-
+    
     for (SSDayNode *day in _month.dayNodes) {
         CGFloat x = day.weekday % 7 * dayWidth + 1.0f;
         CGFloat y = headerHeight + (day.value + _month.weekdayOfFirstDay - 1) / 7 * (dayWidth + 2.0f);
@@ -52,19 +52,21 @@
         if ([day isEqualToDateComponents:today]) {
             [self drawTodayCircleWithContext:context inRect:rect];
         } else {
-//            CGFloat sumX = dayWidth - 2.0f;
-//            CGFloat assumeX = dayWidth/2 - 5;
-//            CGFloat assumeY = y + sumX;
-//            assumeY = assumeY - 5;
-//            CGFloat assuemWidth = 5;
-//            CGFloat assumeHeight = 5;
-//            rect = CGRectMake(assumeX, assumeY, assuemWidth, assumeHeight);
-//
-//            [self drawDayCircle:day withContext:context inRect:rect];
+            [self drawDayCircle:day withContext:context inRect:rect]; //modified by me
+
+            //            CGFloat sumX = dayWidth - 2.0f;
+            //            CGFloat assumeX = dayWidth/2 - 5;
+            //            CGFloat assumeY = y + sumX;
+            //            assumeY = assumeY - 5;
+            //            CGFloat assuemWidth = 5;
+            //            CGFloat assumeHeight = 5;
+            //            rect = CGRectMake(assumeX, assumeY, assuemWidth, assumeHeight);
+            //
+            //            [self drawDayCircle:day withContext:context inRect:rect];
         }
         
         rect.origin.y++;
-
+        
         [self drawTextForDay:day withRadius:dayWidth inRect:rect];
     }
     
@@ -85,7 +87,7 @@
     CGContextSetFillColorWithColor(context, [UIColor colorWithHexString:COLOR_SECONDARY].CGColor);
     CGContextFillPath(context);
     CGContextSetStrokeColorWithColor(context, [UIColor whiteColor].CGColor);
-
+    
     CGContextSetFillColorWithColor(context, [UIColor cyanColor].CGColor);
 }
 
@@ -106,19 +108,19 @@
 {
     UIFont *font = [SSStyles fontOfSize:[SSCalendarAnnualCell fontSizeForRadius:radius]];
     NSString *dayText = [NSString stringWithFormat:@"%li", (long)day.value];
-
+    
     NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
     [paragraphStyle setAlignment:NSTextAlignmentCenter];
-
+    
     
     if ([day isEqualToDate:[NSDate date]])
     {
         [dayText drawInRect:rect withAttributes:@{ NSFontAttributeName: font, NSParagraphStyleAttributeName: paragraphStyle, NSForegroundColorAttributeName: [UIColor whiteColor] }];
         //  [dayText drawInRect:rect withAttributes:@{ NSFontAttributeName: font, NSParagraphStyleAttributeName: paragraphStyle, NSForegroundColorAttributeName: [UIColor redColor] }];
     }else{
-          [dayText drawInRect:rect withAttributes:@{ NSFontAttributeName: font, NSParagraphStyleAttributeName: paragraphStyle, NSForegroundColorAttributeName: [UIColor blackColor] }];
+        [dayText drawInRect:rect withAttributes:@{ NSFontAttributeName: font, NSParagraphStyleAttributeName: paragraphStyle, NSForegroundColorAttributeName: [UIColor blackColor] }];
     }
-//    @{ NSFontAttributeName: [SSStyles lightFontOfSize:14.0f], NSForegroundColorAttributeName: [UIColor whiteColor] }
+    //    @{ NSFontAttributeName: [SSStyles lightFontOfSize:14.0f], NSForegroundColorAttributeName: [UIColor whiteColor] }
     
 }
 

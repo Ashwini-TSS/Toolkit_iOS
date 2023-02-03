@@ -497,7 +497,7 @@ class CreateContactController: UITableViewController {
             alert.addAction(UIAlertAction(title: "Appointment", style: .default , handler:{ (UIAlertAction)in
                 print("User click Approve button")
                 OperationQueue.main.addOperation {
-                    let controller:NewAppointmentsController = (self.storyboard?.instantiateViewController(withIdentifier: "NewAppointmentsController") as? NewAppointmentsController)!
+                    let controller:UpdatenewappointmentVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewappointmentVC") as? UpdatenewappointmentVC)!
                     controller.linkParentID = self.contactInfoDetail.id!
                     self.navigationController?.pushViewController(controller, animated: true)
                 }
@@ -506,7 +506,7 @@ class CreateContactController: UITableViewController {
             alert.addAction(UIAlertAction(title: "task", style: .default , handler:{ (UIAlertAction)in
                 print("User click Edit button")
                 OperationQueue.main.addOperation {
-                    let controller:NewTaskController = (self.storyboard?.instantiateViewController(withIdentifier: "NewTaskController") as? NewTaskController)!
+                    let controller:UpdatenewtaskVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewtaskVC") as? UpdatenewtaskVC)!
                     controller.linkParentID = self.contactInfoDetail.id!
                     self.navigationController?.pushViewController(controller, animated: true)
                 }
@@ -937,7 +937,7 @@ class CreateContactController: UITableViewController {
             return
         }
         let json: [String: Any] = ["PageOffset": 1,
-                                   "ResultsPerPage": 500,
+                                   "ResultsPerPage": 5000,
                                    "IncludeAppointments": true,
                                    "IncludeTasks": true,
                                    "Invert": false,
@@ -956,7 +956,7 @@ class CreateContactController: UITableViewController {
             return
         }
         let json: [String: Any] = ["PageOffset": 1,
-                                   "ResultsPerPage": 500,
+                                   "ResultsPerPage": 5000,
                                    "IncludeAppointments": true,
                                    "IncludeTasks": true,
                                    "Invert": true,

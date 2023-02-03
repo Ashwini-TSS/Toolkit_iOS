@@ -16,22 +16,11 @@
     IBOutlet UIView *separatorView;
     IBOutlet NSLayoutConstraint *separatorViewHeightConstraint;
     IBOutlet UIBarButtonItem *todayBarButtonItem;
-    BOOL hideView;
-    CGRect defaultFrame;
-    BOOL isListView;
-    NSArray *searchResults;
-    UIButton* leftButton;
-    
 }
-@property BOOL isFromMonthView;
-
-@property NSString * todayvalue;
 
 @property (nonatomic, strong) SSDayNode *day;
 @property (nonatomic, copy) NSArray *years;
 @property (nonatomic, strong) NSIndexPath *startingIndexPath;
-@property NSArray *addEvents;
-@property NSDictionary *listAppointments;
 
 @property (nonatomic, strong) IBOutlet UICollectionView *weekView;
 @property (nonatomic, strong) SSCalendarWeekViewController *weekViewController;

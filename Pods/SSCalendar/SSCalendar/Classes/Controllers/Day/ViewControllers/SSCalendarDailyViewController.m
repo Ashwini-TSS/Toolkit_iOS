@@ -15,12 +15,8 @@
 #import "SSDayNode.h"
 #import "SSConstants.h"
 #import "SSDataController.h"
-#import "SSEvent.h"
-#import "GetOwnCalendarActivity.h"
 
-@interface SSCalendarDailyViewController()<UISearchDisplayDelegate,UISearchBarDelegate,UIScrollViewDelegate>
-@property (weak, nonatomic) IBOutlet UISearchBar *searchBar;
-@property NSArray *calActivity;
+@interface SSCalendarDailyViewController()
 
 @property (nonatomic, strong) SSDataController *dataController;
 
@@ -32,7 +28,6 @@
 @end
 
 @implementation SSCalendarDailyViewController
-@synthesize isFromMonthView;
 
 #pragma mark - Lifecycle Methods
 
@@ -62,170 +57,30 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
-//    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-//    [[NSUserDefaults standardUserDefaults] setObject:_listAppointments forKey:@"APPOINTMENTS"];
-//    [[NSUserDefaults standardUserDefaults] synchronize];
-
-//    [defs registerDefaults:_listAppointments];
-//
-//    [defs synchronize];
-    
-    
-    // then we add the button to the navigation bar
-    //    self.navigationItem.rightBarButtonItem = myButton;
-}
--(void) doTheBackThing {
-    
-    [[NSUserDefaults standardUserDefaults]setBool:true forKey:@"showingDayView"];
-    [[NSUserDefaults standardUserDefaults]synchronize];
-
-    [self.navigationController popViewControllerAnimated:true];
-}
-// method called via selector
-- (void) doTheThing {
-    if(isListView){
-        
-        isListView = NO;
-        [separatorView setHidden:NO];
-        [_weekView setHidden:NO];
-        [headerView setHidden:NO];
-    }else{
-        isListView = YES;
-        [_weekView setHidden:YES];
-        [separatorView setHidden:YES];
-        [headerView setHidden:YES];
-
-    }
-}
-
-- (void) serachTapped {
-    [_searchBar setHidden:NO];
-    [_searchBar becomeFirstResponder];
-    [_weekView setHidden:YES];
-    
-    self.searchDisplayController.active = YES;
-    self.searchDisplayController.searchBar.text = @"";
-    [self.searchDisplayController.searchBar becomeFirstResponder];
-}
-- (void) showTestNotification:(NSNotification *) notification
-{
-    [_dayView reloadData];
-    [_weekView reloadData];
-//    _dayView.frame = defaultFrame;
-//    [separatorView setHidden:NO];
-}
-- (void) receiveTestNotification:(NSNotification *) notification
-{
-//    _dayView.frame = CGRectMake(0.0, -100, self.view.frame.size.width, self.view.frame.size.height + 100);
-//    [separatorView setHidden:YES];
-    
-}
-- (void)viewWillAppear:(BOOL)animated
-{
-    [super viewWillAppear:animated];
-    
-    [_searchBar setHidden:YES];
-    
-    if([ _todayvalue isEqual: @"todayy"]){
-        [self today];
-    }
-    
     self.navigationItem.rightBarButtonItem = nil;
     
-    todayBarButtonItem.title = @"Tday";
-    //    headerView.backgroundColor = [UIColor colorWithHexString:COLOR_BACKGROUND_OFF_WHITE];
+    todayBarButtonItem.title = @"Today";
     
-    headerView.backgroundColor = [UIColor whiteColor];
+    headerView.backgroundColor = [UIColor colorWithHexString:COLOR_BACKGROUND_OFF_WHITE];
     separatorView.backgroundColor = [UIColor colorWithHexString:COLOR_SEPARATOR];
     separatorViewHeightConstraint.constant = [SSDimensions onePixel];
-    
+
     self.weekViewController = [[SSCalendarWeekViewController alloc] initWithView:_weekView];
     _weekView.dataSource = _weekViewController;
     _weekView.delegate = self;
     
-    
-    self.dayViewController = [[SSCalendarDayViewController alloc] initWithView:_dayView andDict:_listAppointments];
-    //    self.listAppointments =
+    self.dayViewController = [[SSCalendarDayViewController alloc] initWithView:_dayView];
     _dayView.dataSource = _dayViewController;
     _dayView.delegate = self;
     
     _weekViewController.years = _years;
     _dayViewController.days = _weekViewController.days;
-    
-    defaultFrame = _dayView.frame;
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(showTestNotification:)
-                                                 name:@"showList"
-                                               object:nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(receiveTestNotification:)
-                                                 name:@"hideList"
-                                               object:nil];
-    // first we create a button and set it's properties
-    UIBarButtonItem *myButton = [[UIBarButtonItem alloc]init];
-    myButton.action = @selector(serachTapped);
-    myButton.title = @"";
-    myButton.image = [UIImage imageNamed:@"ic_search"];
-    myButton.target = self;
-    
-    // first we create a button and set it's properties
-    UIBarButtonItem *listBtn = [[UIBarButtonItem alloc]init];
-    listBtn.action = @selector(doTheThing);
-    listBtn.title = @"";
-    listBtn.image = [UIImage imageNamed:@"ic_list_view"];
-    listBtn.target = self;
-    
-    // self.navigationItem.rightBarButtonItems = @[listBtn];
-    
-    
-    if(isFromMonthView == YES) {
-        [self todayPressed:self];
-    }
-    
-    UINavigationBar *bar = [self.navigationController navigationBar];
-    [bar setTintColor:[UIColor whiteColor]];
-    
-    
-    self.navigationController.navigationBar.titleTextAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[UIColor colorWithHexString:COLOR_SECONDARY], NSForegroundColorAttributeName, [UIFont systemFontOfSize:17.0], NSFontAttributeName, nil];
-    
-    self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
-    self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:COLOR_SECONDARY];
-    
-    UIView* leftButtonView = [[UIView alloc]initWithFrame:CGRectMake(-20, 0, 140, 50)];
-    
-    leftButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    leftButton.backgroundColor = [UIColor clearColor];
-    leftButton.frame = leftButtonView.frame;
-    [leftButton setImage:[UIImage imageNamed:@"ic_back_arrow"] forState:UIControlStateNormal];
-    //    [leftButton setTitle:_selectedYear forState:UIControlStateNormal];
-    leftButton.tintColor = [UIColor colorWithHexString:COLOR_SECONDARY]; //Your desired color.
-    leftButton.autoresizesSubviews = YES;
-    leftButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin;
-    [leftButton addTarget:self action:@selector(doTheBackThing) forControlEvents:UIControlEventTouchUpInside];
-    [leftButtonView addSubview:leftButton];
-    
-    UIBarButtonItem* leftBarButton = [[UIBarButtonItem alloc]initWithCustomView:leftButtonView];
-    self.navigationItem.leftBarButtonItem = leftBarButton;
-    
-    self.navigationController.navigationBar.titleTextAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[UIColor colorWithHexString:COLOR_SECONDARY], NSForegroundColorAttributeName, [UIFont systemFontOfSize:17.0], NSFontAttributeName, nil];
-    
-    self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
-    self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:COLOR_SECONDARY];
-    
-    [_dayView setUserInteractionEnabled:TRUE];
-    
-    [[NSUserDefaults standardUserDefaults]setBool:true forKey:@"showingDayView"];
-    [[NSUserDefaults standardUserDefaults]synchronize];
-    
-    [[NSNotificationCenter defaultCenter] removeObserver:@"showedDailyView"];
-    
-    [[NSNotificationCenter defaultCenter]
-     postNotificationName:@"showedDailyView"
-     object:self];
-    
+}
+
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
     [SSStyles hideShadowOnNavigationBar:self.navigationController.navigationBar];
 }
 
@@ -233,15 +88,6 @@
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-    [[NSNotificationCenter defaultCenter] removeObserver:@"showList"];
-    [[NSNotificationCenter defaultCenter] removeObserver:@"hideList"];
-
-    [[NSNotificationCenter defaultCenter] removeObserver:@"hidedDailyView"];
-    
-    [[NSNotificationCenter defaultCenter]
-     postNotificationName:@"hidedDailyView"
-     object:self];
-    
     [SSStyles showShadowOnNavigationBar:self.navigationController.navigationBar];
 }
 
@@ -288,48 +134,8 @@
 
 #pragma mark - UI Action Methods
 
-- (IBAction)tappedToday:(id)sender {
-    NSDateComponents *components = [[SSCalendarUtils calendar] components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay fromDate:[NSDate date]];
-    
-    for (SSDayNode *day in _weekViewController.days)
-    {
-        if ([day isEqualToDateComponents:components])
-        {
-            self.day = day;
-            [self scrollWeekViewToDay];
-            [self scrollDayViewToDay];
-            [self selectDayInWeekView];
-            [self reloadDayLabel];
-            break;
-        }
-    }
-}
-- (IBAction)tappedFilter:(id)sender {
-    [[NSNotificationCenter defaultCenter] removeObserver:@"tappedFilter"];
-    
-    [[NSNotificationCenter defaultCenter]
-     postNotificationName:@"tappedFilter"
-     object:self];
-}
 - (IBAction)todayPressed:(id)sender
 {
-    NSDateComponents *components = [[SSCalendarUtils calendar] components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay fromDate:[NSDate date]];
-    
-    for (SSDayNode *day in _weekViewController.days)
-    {
-        if ([day isEqualToDateComponents:components])
-        {
-            self.day = day;
-            [self scrollWeekViewToDay];
-            [self scrollDayViewToDay];
-            [self selectDayInWeekView];
-            [self reloadDayLabel];
-            break;
-        }
-    }
-}
-
--(void)today {
     NSDateComponents *components = [[SSCalendarUtils calendar] components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay fromDate:[NSDate date]];
     
     for (SSDayNode *day in _weekViewController.days)
@@ -383,12 +189,7 @@
 {
     //TODO: Constant
     NSDate *date = [_day date];
-    
-    [[NSNotificationCenter defaultCenter]
-     postNotificationName:@"yearPicked"
-     object:[NSString stringWithFormat:@"%@",[StellarConversionUtils stringFromDate:date withFormat:@"MMM d, yyyy"]]];
-    [leftButton setTitle:[NSString stringWithFormat:@"%@",[StellarConversionUtils stringFromDate:date withFormat:@"MMM d, yyyy"]] forState:UIControlStateNormal];
-//    _dateLabel.text = [StellarConversionUtils stringFromDate:date withFormat:@"EEEE MMMM d, yyyy"];
+    _dateLabel.text = [StellarConversionUtils stringFromDate:date withFormat:@"EEEE MMMM d, yyyy"];
 }
 
 
@@ -400,7 +201,7 @@
     {
         SSCalendarDayCell *cell = (SSCalendarDayCell *) [collectionView cellForItemAtIndexPath:indexPath];
         self.day = cell.day;
-
+        
         [self scrollDayViewToDay];
         [self reloadDayLabel];
     }
@@ -460,99 +261,5 @@
         return layout.itemSize;
     }
 }
--(BOOL)searchBarShouldEndEditing:(UISearchBar *)searchBar {
-    if(searchBar.text.length == 0){
-        [_searchBar setHidden:YES];
-        [_weekView setHidden:NO];
-    }
-    return YES;
-}
 
-- (void)filterContentForSearchText:(NSString*)searchText scope:(NSString*)scope
-{
-    NSString *preStr = [NSString stringWithFormat:@"(name BEGINSWITH[cd] '%@')", searchText];
-    NSPredicate *sPredicate = [NSPredicate predicateWithFormat:preStr];
-    searchResults = [_addEvents filteredArrayUsingPredicate:sPredicate];
-}
-
--(void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
-    [_searchBar setHidden:YES];
-    [_weekView setHidden:NO];
-    
-}
--(BOOL)searchDisplayController:(UISearchDisplayController *)controller shouldReloadTableForSearchString:(NSString *)searchString
-{
-    [self filterContentForSearchText:searchString
-                               scope:[[self.searchDisplayController.searchBar scopeButtonTitles]
-                                      objectAtIndex:[self.searchDisplayController.searchBar
-                                                     selectedScopeButtonIndex]]];
-    
-    return YES;
-}
--(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [searchResults count];
-}
--(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    static NSString *simpleTableIdentifier = @"SimpleTableItem";
-    
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:simpleTableIdentifier];
-    
-    if (cell == nil) {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:simpleTableIdentifier];
-    }
-    
-    SSEvent *event = searchResults[indexPath.row];
-    cell.textLabel.text = event.name;
-    
-    NSString *getStr = event.startTime;
-    
-    NSArray *sep = [getStr componentsSeparatedByString:@"!@#"];
-    
-    NSString *startTime = @"";
-    NSString *endTime = @"";
-    
-    if (sep.count > 0 ){
-        startTime = sep[0];
-        if (sep.count > 1 ){
-            startTime = [NSString stringWithFormat:@"%@",sep[0]];
-            endTime = [NSString stringWithFormat:@"%@",sep[1]];
-        }
-        if (sep.count > 2) {
-            //            nameLabel.backgroundColor = [UIColor colorWithHexString:[NSString stringWithFormat:@"#%@",sep[2]]];
-        }
-    }else{
-        startTime = event.startTime;
-    }
-    cell.textLabel.text = [NSString stringWithFormat:@"%@    %@",startTime,event.name];
-    cell.detailTextLabel.text = [NSString stringWithFormat:@"%@       %@",endTime,event.desc];
-    return cell;
-}
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    
-    GetOwnCalendarModel *model = [[ GetOwnCalendarModel alloc]initWithDictionary:_listAppointments];
-    _calActivity = model.activities;
-    
-    SSEvent *event = searchResults[indexPath.row];
-    NSLog(@"AppointmentTypeID : %@",event.contact);
-    [[NSUserDefaults standardUserDefaults]setObject:event.contact forKey:@"appointmentTypeID"];
-     [[NSUserDefaults standardUserDefaults]synchronize];
-
-    for (int k=0; k<_calActivity.count; k++) {
-        GetOwnCalendarActivity *model = _calActivity[k];
-        NSString *strType = [NSString stringWithFormat:@"%@",model.type];
-        if (model.activity.idField == event.location) {
-            
-            if ([strType isEqualToString:@"Task"]) {
-                [[NSNotificationCenter defaultCenter]
-                 postNotificationName:@"pushToActivity"
-                 object:model.toDictionary];
-            }else{
-                [[NSNotificationCenter defaultCenter]
-                 postNotificationName:@"pushToActivity1"
-                 object:model.toDictionary];
-            }
-        }
-    }
-
-}
 @end

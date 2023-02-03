@@ -1,182 +1,179 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Bucket
+   uuid = "EC44F074-81C5-4CA7-8B19-3C3D53B63972"
    type = "0"
    version = "2.0">
    <Breakpoints>
       <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         BreakpointExtensionID = "Xcode.Breakpoint.ExceptionBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Pareto Systems/Leftmenu/Contacts/ContactssController.swift"
-            timestampString = "565369042.968491"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2947"
-            endingLineNumber = "2947"
-            landmarkName = "doneButtonAction()"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Pareto Systems/Leftmenu/Contacts/ContactssController.swift"
-            timestampString = "565369042.970044"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2951"
-            endingLineNumber = "2951"
-            landmarkName = "UITextView"
-            landmarkType = "21">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
+            uuid = "448BD9EE-7677-49CE-B201-CE8CD7B82E2A"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Pareto Systems/Leftmenu/Contacts/ContactssController.swift"
-            timestampString = "565369042.970453"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1461"
-            endingLineNumber = "1461"
-            landmarkName = "saveContact()"
-            landmarkType = "7">
+            breakpointStackSelectionBehavior = "1"
+            scope = "1"
+            stopOnStyle = "0">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
+            uuid = "8600C47D-4A2C-400E-8F8A-E9FB255E9907"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Pareto Systems/Leftmenu/Contacts/ContactssController.swift"
-            timestampString = "565369042.970858"
+            filePath = "Pareto Systems/Leftmenu/UpdatenewtaskVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "510"
-            endingLineNumber = "510"
-            landmarkName = "tableView(_:cellForRowAt:)"
+            startingLineNumber = "2917"
+            endingLineNumber = "2917"
+            landmarkName = "modifyJsonApi(type:)"
             landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "8600C47D-4A2C-400E-8F8A-E9FB255E9907 - a2280ecbbb1899f3"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Blue_square.UpdatenewtaskVC.modifyJsonApi(type: Swift.String) -&gt; ()"
+                  moduleName = "Blue Square"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/mac/Downloads/Toolkit-ios-sep15/Pareto%20Systems/Leftmenu/UpdatenewtaskVC.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "2917"
+                  endingLineNumber = "2917"
+                  offsetFromSymbolStart = "7472">
+               </Location>
+               <Location
+                  uuid = "8600C47D-4A2C-400E-8F8A-E9FB255E9907 - 5051bccbf9ee463e"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 () -&gt; () in Blue_square.UpdatenewtaskVC.modifyJsonApi(type: Swift.String) -&gt; ()"
+                  moduleName = "Blue Square"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/mac/Downloads/Toolkit-ios-sep15/Pareto%20Systems/Leftmenu/UpdatenewtaskVC.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "2918"
+                  endingLineNumber = "2918"
+                  offsetFromSymbolStart = "16">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
+            uuid = "74A96522-5F81-408E-86F3-6A74E9AEA29E"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Pareto Systems/Leftmenu/Contacts/ContactssController.swift"
-            timestampString = "565369042.971287"
+            filePath = "Pareto Systems/Leftmenu/UpdatenewtaskVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "514"
-            endingLineNumber = "514"
-            landmarkName = "tableView(_:cellForRowAt:)"
+            startingLineNumber = "3566"
+            endingLineNumber = "3566"
+            landmarkName = "deleteSingleApi()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
+            uuid = "278478B2-1FB8-4685-B283-D9FA2E4825CB"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Pareto Systems/Leftmenu/Contacts/ContactssController.swift"
-            timestampString = "565369042.971635"
+            filePath = "Pareto Systems/Leftmenu/UpdatenewtaskVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "519"
-            endingLineNumber = "519"
-            landmarkName = "tableView(_:cellForRowAt:)"
+            startingLineNumber = "3563"
+            endingLineNumber = "3563"
+            landmarkName = "deleteSingleApi()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
+            uuid = "C7D2556F-A30C-41C7-9D71-D104853A237F"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Pareto Systems/Leftmenu/Contacts/ContactssController.swift"
-            timestampString = "565369042.971931"
+            filePath = "Pareto Systems/Leftmenu/UpdatenewtaskVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "522"
-            endingLineNumber = "522"
-            landmarkName = "tableView(_:cellForRowAt:)"
+            startingLineNumber = "3514"
+            endingLineNumber = "3514"
+            landmarkName = "deleteInCompleteSeriesAPI()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
+            uuid = "99739F53-C12D-4B2A-89A6-518427916413"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Pareto Systems/Leftmenu/Contacts/ContactssController.swift"
-            timestampString = "565369042.9722331"
+            filePath = "Pareto Systems/Leftmenu/UpdatenewtaskVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "507"
-            endingLineNumber = "507"
-            landmarkName = "tableView(_:cellForRowAt:)"
+            startingLineNumber = "3510"
+            endingLineNumber = "3510"
+            landmarkName = "deleteInCompleteSeriesAPI()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "No"
+            uuid = "7B4A77B8-1355-4817-9863-D7E5F0A1483A"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Pareto Systems/Leftmenu/Processes/ProcessesController.swift"
-            timestampString = "565369042.972531"
+            filePath = "Pareto Systems/Leftmenu/UpdatenewtaskVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "203"
-            endingLineNumber = "203"
-            landmarkName = "tableView(_:heightForRowAt:)"
+            startingLineNumber = "3482"
+            endingLineNumber = "3482"
+            landmarkName = "deleteAllUnmodifiedSeriesAPI()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "No"
+            uuid = "4F1E7C3A-AC8B-43ED-9385-404BEC4064CC"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Pareto Systems/Leftmenu/Processes/ProcessesController.swift"
-            timestampString = "565369042.972609"
+            filePath = "Pareto Systems/Leftmenu/UpdatenewappointmentVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "215"
-            endingLineNumber = "215"
-            landmarkName = "tableView(_:heightForRowAt:)"
-            landmarkType = "7">
+            startingLineNumber = "1068"
+            endingLineNumber = "1068"
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "No"
+            uuid = "3AAB5EB4-D94F-4DBC-BB5A-C7A781C8A6CE"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Pareto Systems/Leftmenu/Processes/ProcessesController.swift"
-            timestampString = "565369042.972693"
+            filePath = "Pareto Systems/Leftmenu/UpdatenewappointmentVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "197"
-            endingLineNumber = "197"
-            landmarkName = "tableView(_:heightForRowAt:)"
-            landmarkType = "7">
+            startingLineNumber = "1066"
+            endingLineNumber = "1066"
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

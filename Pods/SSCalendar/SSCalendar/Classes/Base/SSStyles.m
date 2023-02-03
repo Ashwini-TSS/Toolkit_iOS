@@ -20,8 +20,8 @@
 
 + (void)applyNavigationBarStyles
 {
-    [UINavigationBar appearance].barTintColor = [UIColor colorWithHexString:COLOR_SECONDARY];
-    [UINavigationBar appearance].tintColor = [UIColor whiteColor];
+    [UINavigationBar appearance].barTintColor = [UIColor colorWithHexString:COLOR_BACKGROUND_OFF_WHITE];
+    [UINavigationBar appearance].tintColor = [UIColor colorWithHexString:COLOR_SECONDARY];
     
     //UIBarButtonItems
     NSDictionary *attributes = @{ NSFontAttributeName:[SSStyles lightFontOfSize:17.0f],

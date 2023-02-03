@@ -41,6 +41,7 @@ class FilterController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let controller:FilterListController = self.storyboard?.instantiateViewController(withIdentifier: "FilterListController") as! FilterListController
         controller.status = indexPath.row
+        controller.isFirstTime = true
         self.navigationController?.pushViewController(controller, animated: true)
     }
     

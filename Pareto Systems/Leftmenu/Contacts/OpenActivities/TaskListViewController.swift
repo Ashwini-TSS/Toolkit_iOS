@@ -31,6 +31,7 @@ class TaskListViewController: UIViewController{
     var taskpickerobj : ResultModel?
     var SelectorTaskArray : NSMutableArray = []
     var UserTaskArray : NSMutableArray!
+    var UserString : String!
     
     
     var StatusCondition : String!
@@ -64,26 +65,32 @@ class TaskListViewController: UIViewController{
     override func viewDidLoad() {
         super.viewDidLoad()
         setNavigationBarItem()
-        SetUIComponents()
+        if(UserString != "filterr"){
         UserDefaults.standard.set("Due Today", forKey: "typetask")
+        }
         // Do any additional setup after loading the view.
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
+        UserTaskArray = []
+        SetUIComponents()
         Selectorlbl.text = "Due Today"
         SelectedIndex = "Due Today"
         PickerView.isHidden = true
         StatusCondition = "Due Today"
         Condition = "close"
         SelectorTaskArray = ["Due Today","Due & Upcoming", "All Open","All Completed","All"]
-        let tasks : String = UserDefaults.standard.object(forKey: "FilterTask") as! String
+        let tasks : String = UserDefaults.standard.object(forKey: "FilterTask") as? String ?? ""
         if(tasks == "filter"){
             let placesData = UserDefaults.standard.object(forKey: "UserFilter") as? NSData
             if let placesData = placesData {
                 UserTaskArray = NSKeyedUnarchiver.unarchiveObject(with: placesData as Data) as? NSMutableArray
                 print(UserTaskArray)
             }
+            let name = UserDefaults.standard.string(forKey: "typetask")
+            Selectorlbl.text = name
+            SelectedIndex = name
             ServiceResponseUserFilter()
         }
        else {
@@ -147,7 +154,7 @@ class TaskListViewController: UIViewController{
         ]
         UserDefaults.standard.set(true, forKey: "tasklist")
         print(json)
-        let url:String = "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getIncompleteActivities.json"
+        let url:String = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getIncompleteActivities.json"
         APIManager.sharedInstance.postRequestCall(postURL: url, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(json)
@@ -267,7 +274,7 @@ class TaskListViewController: UIViewController{
     @IBAction func TappedAddTask(_ sender: Any) {
         let alertController = UIAlertController(title: "Choose Option", message: "", preferredStyle: .alert)
         let OKAction = UIAlertAction(title: "Task", style: .default) { (action:UIAlertAction!) in
-            let controller = self.storyboard?.instantiateViewController(withIdentifier: "NewTaskController") as! NewTaskController
+            let controller = self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewtaskVC") as! UpdatenewtaskVC
             self.navigationController?.pushViewController(controller, animated: true)
         }
         alertController.addAction(OKAction)
@@ -276,6 +283,10 @@ class TaskListViewController: UIViewController{
             self.navigationController?.pushViewController(controller1, animated: true)
         }
         alertController.addAction(cancelAction)
+        let doneAction = UIAlertAction(title: "Cancel", style: .destructive) { (action:UIAlertAction!) in
+            
+        }
+        alertController.addAction(doneAction)
         self.present(alertController, animated: true, completion:nil)
     }
     
@@ -283,9 +294,9 @@ class TaskListViewController: UIViewController{
     func ServiceResponseUserFilter(){
         print(UserTaskArray)
         let json: [String: Any] = ["ForUsers":UserTaskArray,
-                                   "ResultsPerPage":1000,
+                                   "ResultsPerPage":5000,
                                    "IncludeAppointments":false,
-                                   "IncludeAttendees": false,
+                                   "IncludeAttendees": true,
                                    "IncludeTasks":true,
                                    "Invert":false,
                                    "OrganizationId":currentOrgID,
@@ -295,7 +306,7 @@ class TaskListViewController: UIViewController{
                                    ]
         UserDefaults.standard.set(true, forKey: "pickerdata")
         print(json)
-        let url:String = "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getIncompleteActivities.json"
+        let url:String = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getIncompleteActivities.json"
         APIManager.sharedInstance.postRequestCall(postURL: url, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(json)
@@ -330,16 +341,6 @@ class TaskListViewController: UIViewController{
                     let response = json["ResponseMessage"].stringValue
                     
                     if(valid){
-                        let alert = UIAlertController(title: "Alert", message: response, preferredStyle: UIAlertController.Style.alert)
-                        let ok = UIAlertAction(title: "OK", style: .default, handler: { action in
-                            return
-                        })
-                        alert.addAction(ok)
-                        DispatchQueue.main.async(execute: {
-                            self.present(alert, animated: true)
-                        })
-                    }
-                    else {
                     let ActivityArrayres = json["Activities"]
                     print(ActivityArrayres)
                     for act in ActivityArrayres
@@ -349,6 +350,28 @@ class TaskListViewController: UIViewController{
                         {
                             if(key == "Activity")
                             {
+                                
+                                let formatter = DateFormatter()
+                                formatter.dateFormat = "yyyy-MM-dd"
+                                formatter.locale = Locale(identifier: "en_US_POSIX")
+                                let today = formatter.string(from: Date()) // string purpose I add here
+                                
+                                
+                                let due = value["DueTime"].stringValue
+                                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                                formatter.locale = Locale(identifier: "en_US_POSIX")
+                                let yourDate = formatter.date(from: due)
+                                let formatter1 = DateFormatter()
+                                formatter1.dateFormat = "yyyy-MM-dd"
+                                formatter1.locale = Locale(identifier: "en_US_POSIX")
+                                let finaldate = formatter1.string(from: yourDate!)
+                                print(finaldate)
+                                
+                                if(self.SelectedIndex == "Due Today"){
+                                if(finaldate > today){
+                                    //                                    print("fsdhkdjs")
+                                }
+                                else {
                                 self.ArraySubject.add(value["Subject"].string as Any)
                                 self.ArrayDueToday.add(value["DueTime"].string as Any)
                                 self.Arraypriority.add(value["Priority"].string as Any)
@@ -372,6 +395,33 @@ class TaskListViewController: UIViewController{
                                 
                                 self.ArrayCreatedBy.add(value["CreatedBy"].string as Any)
                                 self.ArrayRecurrenceIndex.add(value["RecurrenceIndex"].string as Any)
+                                }
+                                }
+                                else{
+                                    self.ArraySubject.add(value["Subject"].string as Any)
+                                    self.ArrayDueToday.add(value["DueTime"].string as Any)
+                                    self.Arraypriority.add(value["Priority"].string as Any)
+                                    self.ArrayStatus.add(value["Status"].string as Any)
+                                    
+                                    self.ArrayRecurringActivityId.add(value["RecurringActivityId"].string as Any)
+                                    self.ArrayCreatedOn.add(value["CreatedOn"].string as Any)
+                                    self.ArrayModifiedBy.add(value["ModifiedBy"].string as Any)
+                                    self.ArrayModifiedOn.add(value["ModifiedOn"].string as Any)
+                                    
+                                    self.ArrayAdvocateProcessIndex.add(value["AdvocateProcessIndex"].string as Any)
+                                    self.ArrayAppliedAdvocateProcessId.add(value["AppliedAdvocateProcessId"].string as Any)
+                                    self.ArrayPercentComplete.add("\(value["PercentComplete"].number ?? 0)")
+                                    self.ArrayDescription.add(value["Description"].string as Any)
+                                    
+                                    
+                                    self.ArrayStartTime.add(value["StartTime"].string as Any)
+                                    self.ArrayId.add(value["Id"].string as Any)
+                                    self.ArrayRollOver.add(value["RollOver"].string as Any)
+                                    self.ArrayLocation.add(value["Location"].string as Any)
+                                    
+                                    self.ArrayCreatedBy.add(value["CreatedBy"].string as Any)
+                                    self.ArrayRecurrenceIndex.add(value["RecurrenceIndex"].string as Any)
+                                }
                             }
                         }
                         
@@ -470,7 +520,7 @@ extension TaskListViewController : UITableViewDelegate,UITableViewDataSource{
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        let controller = self.storyboard?.instantiateViewController(withIdentifier: "NewTaskController") as! NewTaskController
+        let controller = self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewtaskVC") as! UpdatenewtaskVC
         
         controller.Editvalue = "edit"
         
@@ -584,7 +634,6 @@ extension TaskListViewController : UIPickerViewDelegate,UIPickerViewDataSource{
     
     func changeValuesByPickerSelectionOpen()
     {
-        
         let json: [String: Any] = [
             "ResultsPerPage":1000,
             "IncludeAppointments":false,
@@ -594,13 +643,12 @@ extension TaskListViewController : UIPickerViewDelegate,UIPickerViewDataSource{
             "OrganizationId":currentOrgID,
             "PageOffset":1,
             "ReturnTotal":true,
-            "ForUsers":[
-            ],
+            "ForUsers":UserTaskArray,
             "PassKey":passKey,
             ]
         UserDefaults.standard.set(true, forKey: "pickerdata")
         print(json)
-        let url:String = "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getIncompleteActivities.json"
+        let url:String = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getIncompleteActivities.json"
         APIManager.sharedInstance.postRequestCall(postURL: url, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 let picdata = UserDefaults.standard.value(forKey: "pickervalue") as? Data
@@ -721,13 +769,12 @@ extension TaskListViewController : UIPickerViewDelegate,UIPickerViewDataSource{
             "OrganizationId":currentOrgID,
             "PageOffset":1,
             "ReturnTotal":true,
-            "ForUsers":[
-            ],
+            "ForUsers":UserTaskArray,
             "PassKey":passKey,
             ]
         UserDefaults.standard.set(true, forKey: "pickerdata")
         print(json)
-        let url:String = "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getIncompleteActivities.json"
+        let url:String = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getIncompleteActivities.json"
         APIManager.sharedInstance.postRequestCall(postURL: url, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(jsonResponse)
@@ -844,13 +891,12 @@ extension TaskListViewController : UIPickerViewDelegate,UIPickerViewDataSource{
             "OrganizationId":currentOrgID,
             "PageOffset":1,
             "ReturnTotal":true,
-            "ForUsers":[
-            ],
+            "ForUsers":UserTaskArray,
             "PassKey":passKey,
             ]
         UserDefaults.standard.set(true, forKey: "pickerdata")
         print(json)
-        let url:String = "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getIncompleteActivities.json"
+        let url:String = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getIncompleteActivities.json"
         APIManager.sharedInstance.postRequestCall(postURL: url, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(json)
@@ -941,13 +987,12 @@ extension TaskListViewController : UIPickerViewDelegate,UIPickerViewDataSource{
             "OrganizationId":currentOrgID,
             "PageOffset":1,
             "ReturnTotal":false,
-            "ForUsers":[
-            ],
+            "ForUsers":UserTaskArray,
             "PassKey":passKey,
             ]
         UserDefaults.standard.set(true, forKey: "pickerdata")
         print(json)
-        let url:String = "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getIncompleteActivities.json"
+        let url:String = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getIncompleteActivities.json"
         APIManager.sharedInstance.postRequestCall(postURL: url, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 let picdata = UserDefaults.standard.value(forKey: "pickervalue") as? Data

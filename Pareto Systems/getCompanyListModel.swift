@@ -15,10 +15,6 @@ class getCompanyListModel : NSObject, NSCoding{
 	var totalResults : Int!
 	var valid : Bool!
 
-
-	/**
-	 * Instantiate the instance using the passed dictionary values to set the properties values
-	 */
 	init(fromDictionary dictionary: NSDictionary){
 		responseMessage = dictionary["ResponseMessage"] as? String ?? ""
 		results = [getCompanyListResult]()

@@ -68,7 +68,7 @@ class AccountsController: UIViewController {
         let parameters = [
             "OrderBy": "",
             "ParentId": "",
-            "ResultsPerPage": 500,
+            "ResultsPerPage": 3000,
             "OrganizationId": orgID,
             "PassKey": passKey,
             "ParentObjectName": "",
@@ -76,7 +76,7 @@ class AccountsController: UIViewController {
             "ObjectName": "company"
             ] as [String : Any]
         
-        let request = NSMutableURLRequest(url: NSURL(string: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json")! as URL,
+        let request = NSMutableURLRequest(url: NSURL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json")! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
                                           timeoutInterval: 10.0)
         request.httpMethod = "POST"

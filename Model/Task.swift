@@ -9,82 +9,63 @@
 import Foundation
 
 struct Taskmodel: Codable {
-    let valid: Bool
-    let totalResults: Int
-    let activities: [ActivityElement]
-    let responseMessage: String
-    
-    enum CodingKeys: String, CodingKey {
-        case valid = "Valid"
-        case totalResults = "TotalResults"
-        case activities = "Activities"
-        case responseMessage = "ResponseMessage"
-    }
+       let results: [TaskResult]
+       let valid: Bool?
+       let totalResults: Int?
+       let stackMessage: JSONNull?
+       let responseMessage: String?
+
+       enum CodingKeys: String, CodingKey {
+           case results = "Results"
+           case valid = "Valid"
+           case totalResults = "TotalResults"
+           case stackMessage = "StackMessage"
+           case responseMessage = "ResponseMessage"
+       }
 }
 
-struct ActivityElement: Codable {
-    let attendees: JSONNull?
-    let type: TypeEnum
-    let activity: ActivityClass
-    
-    enum CodingKeys: String, CodingKey {
-        case attendees = "Attendees"
-        case type = "Type"
-        case activity = "Activity"
-    }
-}
-
-struct ActivityClass: Codable {
+// MARK: - Result
+struct TaskResult: Codable {
+    let status: String?
+    let resultDescription: String?
+    let createdBy, dueTime, modifiedOn: String?
+    let advocateProcessIndex: Int?
+    let priority: String?
+    let rollOver: Bool?
+    let startTime: String?
     let appliedAdvocateProcessID: String?
-    let subject: String
-    let priority: ActivityPriority
-    let rollOver: Bool
-    let advocateProcessIndex: Int
-    let startTime, modifiedBy, createdBy: String
-    let percentComplete: Int
-    let location: String?
-    let status: ActiviytStatus
-    let id, modifiedOn: String
-    let description: String?
-    let dueTime, createdOn: String
-    let recurrenceIndex: Int
+    let modifiedBy: String?
+    let subject: String?
+    let recurrenceIndex, percentComplete: Int?
+    let id, createdOn: String?
+    let customProps: JSONNull?
     let recurringActivityID: String?
-    
+    let location: String?
+
     enum CodingKeys: String, CodingKey {
-        case appliedAdvocateProcessID = "AppliedAdvocateProcessId"
-        case subject = "Subject"
+        case status = "Status"
+        case resultDescription = "Description"
+        case createdBy = "CreatedBy"
+        case dueTime = "DueTime"
+        case modifiedOn = "ModifiedOn"
+        case advocateProcessIndex = "AdvocateProcessIndex"
         case priority = "Priority"
         case rollOver = "RollOver"
-        case advocateProcessIndex = "AdvocateProcessIndex"
         case startTime = "StartTime"
+        case appliedAdvocateProcessID = "AppliedAdvocateProcessId"
         case modifiedBy = "ModifiedBy"
-        case createdBy = "CreatedBy"
-        case percentComplete = "PercentComplete"
-        case location = "Location"
-        case status = "Status"
-        case id = "Id"
-        case modifiedOn = "ModifiedOn"
-        case description = "Description"
-        case dueTime = "DueTime"
-        case createdOn = "CreatedOn"
+        case subject = "Subject"
         case recurrenceIndex = "RecurrenceIndex"
+        case percentComplete = "PercentComplete"
+        case id = "Id"
+        case createdOn = "CreatedOn"
+        case customProps = "CustomProps"
         case recurringActivityID = "RecurringActivityId"
+        case location = "Location"
     }
 }
 
-enum ActivityPriority: String, Codable {
-    case low = "Low"
-    case normal = "Normal"
-}
 
-enum ActiviytStatus: String, Codable {
-    case inProgress = "InProgress"
-    case notStarted = "NotStarted"
-}
-
-enum TypeEnum: String, Codable {
-    case task = "Task"
-}
 // MARK: Encode/decode helpers
 
 class JSONNull: Codable, Hashable {

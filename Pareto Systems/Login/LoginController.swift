@@ -1,3 +1,4 @@
+
 //
 //  LoginController.swift
 //  Pareto Systems
@@ -8,14 +9,22 @@
 
 import UIKit
 import CoreData
-
+import iOSDropDown
 class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,UITableViewDataSource,UIGestureRecognizerDelegate {
     
+    @IBOutlet weak var twofactorheightconstraint: NSLayoutConstraint!
+    @IBOutlet weak var factorauthCodeBtn: ACFloatingTextfield!
+    @IBOutlet weak var countryimage: UIImageView!
+    @IBOutlet weak var countrydropdown: DropDown!
     @IBOutlet weak var listTableViewHeightConstraint: NSLayoutConstraint!
     @IBOutlet weak var listTableView: UITableView!
     @IBOutlet weak var passwordField: ACFloatingTextfield!
     @IBOutlet weak var emailField: UITextField!
     @IBOutlet weak var imgLogo: UIImageView!
+    @IBOutlet weak var countryimg: UIImageView!
+
+    var pppasskey : String = ""
+    var isAlreadyLogin : Bool = false
     var isFromDirectLogin:Bool = false
     var whiteBG = UIView()
     var organizationIndex : Int!
@@ -26,36 +35,12 @@ class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,
     var ArrayOrganisationName : [String] = []
     var savedEmailArray : [String]  = []
     var changeTextEmailArray : [String] = []
+    var globalFlag : String = "us"
+    var globalTwoFARequired : Bool = false
     override func viewDidLoad() {
         super.viewDidLoad()
-        #if DEBUG
-        //            emailField.text = "Tmurray"
-        //            passwordField.text = "Gavin1130"
-        
-        //        emailField.text = "jimmy@tecnovaters.com"
-        //        passwordField.text = "jimmy123@"
-        emailField.text = "tecnovators-ios"
-        passwordField.text = "Pareto8020"
-        
-        organizationIndex = 0
+       organizationIndex = 0
         First = "no"
-        
-        //        emailField.text = "ashok@tecnovaters.com"
-        //        passwordField.text = "Vivid@123"
-        
-        //               emailField.text = "gnanaprakash@tecnovaters.com"
-        //               passwordField.text = "Pareto8020"
-        
-        //         emailField.text = "sathish@tecnovaters.com"
-        //         passwordField.text = "Pareto8020"
-        
-        #endif
-        let status = UserDefaults.standard.bool(forKey: "coredatastatus")
-        if(status)
-        {
-            self.retriveRecordsFromCoreData()
-        }
-        
         self.emailField.delegate = self
         self.emailField.addTarget(self, action: #selector(textFieldDidChange(textField:)), for: UIControlEvents.editingChanged)
         self.listTableView.isHidden = true
@@ -64,11 +49,210 @@ class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,
         tap.cancelsTouchesInView = false
         tap.delegate = self
         self.view.addGestureRecognizer(tap)
+        countrydropdown.optionArray = ["us","canada"]
+        countrydropdown.optionImageArray = ["us","canada"]
+        countrydropdown.optionIds = [1,2]
         
+
+        countrydropdown.didSelect{(selectedText , index ,id) in
+            print(selectedText)
+            print(index)
+            print(id)
+            if(selectedText == "us")
+            {
+//                self.emailField.text = "ios-review"
+//                self.passwordField.text = "ios-review"
+                self.globalFlag = "us"
+                self.emailField.text = ""
+                self.passwordField.text = ""
+                self.countryimg.image = UIImage(named: "us")
+                UserDefaults.standard.set("https://toolkit.bluesquareapps.com", forKey: "logg")
+                globalURL  = UserDefaults.standard.string(forKey: "logg")
+                UserDefaults.standard.setValue("us", forKey: "flagg")
+                self.changeAllURL()
+            }else
+            {
+//                self.emailField.text = "sathish@tecnovaters.com"
+//                self.passwordField.text = "tecnovators"
+                self.globalFlag = "canada"
+                self.emailField.text = ""
+                self.passwordField.text = ""
+                self.countryimg.image = UIImage(named: "canada")
+                UserDefaults.standard.set("https://toolkit.bluesquareapps.ca", forKey: "logg")
+                globalURL  = UserDefaults.standard.string(forKey: "logg")
+                UserDefaults.standard.setValue("canada", forKey: "flagg")
+                self.changeAllURL()
+            }
+        }
+     guard let flgs = UserDefaults.standard.string(forKey: "flagg") else
+        {
+            self.countryimg.image = UIImage(named: "us")
+             UserDefaults.standard.set("https://toolkit.bluesquareapps.com", forKey: "logg")
+             globalURL  = UserDefaults.standard.string(forKey: "logg")
+             globalFlag = "us"
+             self.changeAllURL()
+            let status = UserDefaults.standard.bool(forKey: "coredatastatus")
+            if(status)
+            {
+                self.retriveRecordsFromCoreData(selectflag: self.globalFlag)
+            }
+            return
+        }
+        if(flgs == "us")
+        {
+            countryimg.image = UIImage(named: "us")
+            self.globalFlag = "us"
+            countrydropdown.selectedIndex = 0
+            UserDefaults.standard.set("https://toolkit.bluesquareapps.com", forKey: "logg")
+            globalURL  = UserDefaults.standard.string(forKey: "logg")
+            globalFlag = "us"
+            self.changeAllURL()
+
+        }else
+        {
+            countryimg.image = UIImage(named: "canada")
+            self.globalFlag = "canada"
+            countrydropdown.selectedIndex = 1
+            UserDefaults.standard.set("https://toolkit.bluesquareapps.ca", forKey: "logg")
+            globalURL  = UserDefaults.standard.string(forKey: "logg")
+            globalFlag = "canada"
+            self.changeAllURL()
+        }
+        let status = UserDefaults.standard.bool(forKey: "coredatastatus")
+        if(status)
+        {
+            self.retriveRecordsFromCoreData(selectflag: self.globalFlag)
+        }
+
     }
-    
+    func changeAllURL()
+    {
+        endpintURL = globalURL + "/endpoints/ajax/"
+       
+       //let imageLoadURL:String = "https://toolkit.bluesquareapps.com"
+        imageLoadURL = globalURL
+
+        dataEndPointURL = "com.platform.vc.endpoints.data.VCDataEndpoint/"
+
+        orgEndPointURL = "com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/"
+
+        calenderEndPointURL = "com.platform.vc.endpoints.calendar.VCCalendarEndpoint/"
+
+        syncEndPointURL = "com.platform.vc.endpoints.sync.VCSyncEndpoint/"
+
+        APIBaseURL = endpintURL + dataEndPointURL
+
+        orgBaseURL = endpintURL + orgEndPointURL
+
+        calenderBaseURL = endpintURL + calenderEndPointURL
+
+        syncBaseURL = endpintURL + syncEndPointURL
+         loginURL = APIBaseURL + "login.json"
+        
+         getHistoryURL = syncBaseURL + "getHistory.json"
+
+
+         signupURL = APIBaseURL + "signup.json"
+
+         forgotURL = APIBaseURL + "forgotPassword.json"
+
+         listByOrgURL = APIBaseURL + "listUserOrganizations.json"
+
+         organizationStatusURL = orgBaseURL + "organizationStatus.json"
+
+         listDefaultTrialPeriods = APIBaseURL + "listDefaultTrialPeriods.json"
+
+         packagesURL = APIBaseURL + "listSaleableVerticalPackages.json"
+
+         userListByOrgURL = APIBaseURL + "listUsersInOrganization.json"
+
+         paymentListURL = APIBaseURL + "listPaymentCards.json"
+
+         inviteUserURL = APIBaseURL + "createEmailInvite.json"
+
+         deleteEmailInviteURL = APIBaseURL + "deleteEmailInvite.json"
+
+         listEmailInviteURL = APIBaseURL + "listEmailInvites.json"
+
+         createPaymentURL = APIBaseURL + "createPaymentCard.json"
+
+         changePasswordURL = APIBaseURL + "setPassword.json"
+
+         getDefaultPaymentCardURL = APIBaseURL + "getDefaultPaymentCard.json"
+
+         deletePaymentCardURL = APIBaseURL + "deletePaymentCard.json"
+
+         setDefaultCardURL = APIBaseURL + "setDefaultPaymentCard.json"
+
+         getUserURL = APIBaseURL + "whoAmI.json"
+
+         modifyUserURL = APIBaseURL + "modifyUser.json"
+
+         getUserMetaURL = APIBaseURL + "getUserMeta.json"
+
+         getContactListURL = APIBaseURL + "list.json"
+
+         getOrgListURL = orgBaseURL + "list.json"
+
+         deleteContactListURL = orgBaseURL + "delete.json"
+
+         createContact = orgBaseURL + "create.json"
+
+         searchURL = orgBaseURL + "search.json"
+
+         linkedURL = orgBaseURL + "listLinked.json"
+
+         linkURL = orgBaseURL + "link.json"
+
+         removeLinkURL = orgBaseURL + "removeLink.json"
+
+         ListNotes = orgBaseURL + "listNotes.json"
+
+         modifyURL = orgBaseURL + "modify.json"
+
+         getIncompleteActivitiesURL = calenderBaseURL + "getIncompleteActivities.json"
+
+         orgListURL = orgBaseURL + "list.json"
+
+         getURL = orgBaseURL + "get.json"
+
+         getActivities = calenderBaseURL + "getActivities.json"
+
+         getOrganizationStatusInfo = APIBaseURL + "getOrganizationStatus.json"
+
+         purchasePackageURL = APIBaseURL + "linkVerticalPackageToOrganization.json"
+    }
+    func checkCountry()
+    {
+        guard let flgs = UserDefaults.standard.string(forKey: "flagg") else
+        {
+            self.countryimg.image = UIImage(named: "us")
+             UserDefaults.standard.set("https://toolkit.bluesquareapps.com", forKey: "logg")
+             globalURL  = UserDefaults.standard.string(forKey: "logg")
+             globalFlag = "us"
+             self.changeAllURL()
+            return
+        }
+        if(flgs == "us")
+        {
+            self.countryimg.image = UIImage(named: "us")
+             UserDefaults.standard.set("https://toolkit.bluesquareapps.com", forKey: "logg")
+             globalURL  = UserDefaults.standard.string(forKey: "logg")
+             globalFlag = "us"
+             self.changeAllURL()
+        }
+        else{
+            self.countryimg.image = UIImage(named: "canada")
+             UserDefaults.standard.set("https://toolkit.bluesquareapps.ca", forKey: "logg")
+             globalURL  = UserDefaults.standard.string(forKey: "logg")
+             globalFlag = "canada"
+             self.changeAllURL()
+        }
+    }
     override func viewWillAppear(_ animated: Bool) {
         self.navigationController?.isNavigationBarHidden = true
+        self.twofactorheightconstraint.constant = 0
+        self.factorauthCodeBtn.isHidden = true
         let logout = UserDefaults.standard.value(forKey: "Logout") as? Bool
         if(logout == nil || !logout!){
             if let data = UserDefaults.standard.object(forKey: "userEmail") as? String{
@@ -80,9 +264,20 @@ class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,
                     whiteBG.frame = self.view.frame
                     whiteBG.backgroundColor = UIColor.white
                     self.view.addSubview(whiteBG)
-                    loginUser(userEmail: data , userPassword:data1)
+                    DispatchQueue.main.async {
+                        let passky = self.retriveemailpasskeyFromCoreData(email: data)
+                        self.isAlreadyLogin = true
+                        self.loginUser(userEmail: data , userPassword:data1, twoFactorCode: "", passkey: passky)
+                    }
                 }
             }
+            else{
+                self.checkCountry()
+            }
+        }
+        else
+        {
+            self.checkCountry()
         }
     }
     
@@ -115,9 +310,9 @@ class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,
         {
             self.listTableView.isHidden = true
         }
-        
     }
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+        self.retriveRecordsFromCoreData(selectflag: self.globalFlag)
         if(textField == self.emailField)
         {
             if(savedEmailArray.count > 0)
@@ -134,22 +329,57 @@ class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,
         }
         return true
     }
+    @IBAction func dropDownAction(_ sender: UIButton) {
+        self.countrydropdown.showList()
+    }
     
     @IBAction func tappedSignIn(_ sender: Any) {
-        if let data = UserDefaults.standard.object(forKey: "userEmail") as? String{
-            First = "yesss"
-            let dataaa = emailField.text
-            if(data == dataaa){
+        if(emailField.text != "" && passwordField.text != ""){
+            if(!self.globalTwoFARequired)
+            {
+                if let data = UserDefaults.standard.object(forKey: "userEmail") as? String{
+                    First = "yesss"
+                    let dataaa = emailField.text
+                    if(data == dataaa){
+                    }
+                    else{
+                        UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
+                        UserDefaults.standard.synchronize()
+                    }
+                }
+                UserDefaults.standard.set("filterss", forKey: "FilterTask")
+                UserDefaults.standard.set([], forKey: "UserFilter")
+                isFromDirectLogin = false
+                    self.isAlreadyLogin = false
+                    loginUser(userEmail: emailField.text!, userPassword: passwordField.text!, twoFactorCode: self.factorauthCodeBtn.text!, passkey: "")
+            }
+            else if(factorauthCodeBtn.text != "")
+            {
+                
+            if let data = UserDefaults.standard.object(forKey: "userEmail") as? String{
+                First = "yesss"
+                let dataaa = emailField.text
+                if(data == dataaa){
+                }
+                else{
+                    UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
+                    UserDefaults.standard.synchronize()
+                }
+            }
+            UserDefaults.standard.set("filterss", forKey: "FilterTask")
+            UserDefaults.standard.set([], forKey: "UserFilter")
+            isFromDirectLogin = false
+                self.isAlreadyLogin = false
+                loginUser(userEmail: emailField.text!, userPassword: passwordField.text!, twoFactorCode: self.factorauthCodeBtn.text!, passkey: "")
             }
             else{
-                UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
-                UserDefaults.standard.synchronize()
+                NavigationHelper.showSimpleAlert(message: "Please enter Two Factor Auth Code")
             }
+
         }
-        UserDefaults.standard.set("filterss", forKey: "FilterTask")
-        UserDefaults.standard.set([], forKey: "UserFilter")
-        isFromDirectLogin = false
-        loginUser(userEmail: emailField.text!, userPassword: passwordField.text!)
+        else{
+            NavigationHelper.showSimpleAlert(message: "Please enter your email and password")
+        }
     }
     
     @IBAction func tapForgetPassword(_ sender: UIButton) {
@@ -175,7 +405,7 @@ class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,
         }
         return true
     }
-    func toStoreValuesCoreData(email : String, password: String)
+    func toStoreValuesCoreData(email : String, password: String, storepasskey : String)
     {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else
         {
@@ -194,6 +424,9 @@ class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,
                     let user = NSManagedObject(entity: userEntity!, insertInto: managedobj)
                     user.setValue(email, forKey: "email")
                     user.setValue(password, forKey: "password")
+                    user.setValue(self.globalFlag, forKey: "flag")
+                    user.setValue(storepasskey, forKey: "passkey")
+
                     do
                     {
                         try managedobj.save()
@@ -210,6 +443,8 @@ class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,
             let user = NSManagedObject(entity: userEntity!, insertInto: managedobj)
             user.setValue(email, forKey: "email")
             user.setValue(password, forKey: "password")
+            user.setValue(self.globalFlag, forKey: "flag")
+            user.setValue(storepasskey, forKey: "passkey")
             do
             {
                 try managedobj.save()
@@ -228,7 +463,7 @@ class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,
         return true
     }
     
-    func retriveRecordsFromCoreData()
+    func retriveRecordsFromCoreData(selectflag : String)
     {
         self.savedEmailArray.removeAll()
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else
@@ -237,17 +472,42 @@ class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,
         }
         let managedobj = appDelegate.persistentContainer.viewContext
         let fetchrequest = NSFetchRequest<NSFetchRequestResult>(entityName: "MailAccounts")
+        fetchrequest.predicate = NSPredicate(format: "flag=%@", selectflag)
         do{
             let result = try managedobj.fetch(fetchrequest)
             for data in (result as? [NSManagedObject])!
             {
                 print(data.value(forKey: "email") as! String)
-                self.savedEmailArray.append(data.value(forKey: "email") as! String)
+               let emailval = data.value(forKey: "email") as? String
+                if(emailval != "" && emailval != nil){
+                    self.savedEmailArray.append(data.value(forKey: "email") as! String)}
             }
             self.changeTextEmailArray = self.savedEmailArray
         }catch{
             print("Error while fetching data")
         }
+    }
+    func retriveemailpasskeyFromCoreData(email : String) -> String
+    {
+        var passkey : String = ""
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else
+        {
+            return ""
+        }
+        let managedobj = appDelegate.persistentContainer.viewContext
+        let fetchrequest = NSFetchRequest<NSFetchRequestResult>(entityName: "MailAccounts")
+        fetchrequest.returnsObjectsAsFaults = false
+        fetchrequest.predicate = NSPredicate(format: "email=%@", email)
+        do{
+            let result = try managedobj.fetch(fetchrequest)
+            let data = result.last as? NSManagedObject
+            passkey = (data?.value(forKey: "passkey") as? String)!
+            return passkey
+        }
+        catch{
+            print("Error while fetching data")
+        }
+        return passkey
     }
     func retriveSelectedRecordsFromCoreData(email : String) -> String
     {
@@ -270,18 +530,44 @@ class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,
         }
         return password
     }
-    func loginUser(userEmail:String,userPassword:String){
-        let json: [String: Any] = ["UserName": userEmail,
-                                   "Password": userPassword]
+    
+    func loginUser(userEmail:String,userPassword:String, twoFactorCode : String, passkey : String){
+        var json: [String: Any] = [:]
+        if(globalTwoFARequired)
+        {
+            json = ["UserName": userEmail,
+                                       "Password": userPassword,
+                                       "TwoFACode" : twoFactorCode]
+        }
+        else if(self.isAlreadyLogin)
+        {
+            json = ["PassKey" : passkey]
+        }
+        else
+        {
+            json = ["UserName": userEmail,
+                                       "Password": userPassword]
+        }
+        
         print(json)
         APIManager.sharedInstance.postRequestCall(postURL: loginURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
+                print(jsonResponse)
+                print(json)
                 let logModel:LoginModel = LoginModel.init(fromDictionary: jsonResponse)
-                
                 if logModel.valid {
                     UserDefaults.standard.set(true, forKey: "coredatastatus")
-                    self.toStoreValuesCoreData(email: self.emailField.text!, password: self.passwordField.text!)
                     passKey = logModel.passKey
+                    
+                    self.toStoreValuesCoreData(email: self.emailField.text!, password: self.passwordField.text!, storepasskey: logModel.passKey)
+                    
+                    self.globalTwoFARequired = logModel.TwoFARequired
+                    if(self.globalTwoFARequired && !self.isAlreadyLogin)
+                    {
+                        self.factorauthCodeBtn.isHidden = false
+                        self.twofactorheightconstraint.constant = 30
+                        return
+                    }
                     if UserDefaults.standard.object(forKey: "userEmail") != nil{
                         if UserDefaults.standard.object(forKey: "userPassword") != nil{
                             isFromLogin = true
@@ -294,23 +580,39 @@ class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,
                         isFromLogin = true
                         self.listByOrganization()
                     }
+                   
+                    if(self.emailField.text != ""){
+                        UserDefaults.standard.setValue(self.globalFlag, forKey: "flagg")
+                    UserDefaults.standard.setValue(globalURL, forKey: "logg")
                     UserDefaults.standard.set(self.emailField.text!, forKey: "userEmail")
                     UserDefaults.standard.set(self.passwordField.text!, forKey: "userPassword")
                     UserDefaults.standard.set(false, forKey: "Logout")
+                    }
                 }else{
+                    
                     if self.isFromDirectLogin {
                         self.whiteBG.removeFromSuperview()
                         self.isFromDirectLogin = false
+                        if(logModel.passKey == "")
+                        {
+                            UserDefaults.standard.set(true, forKey: "Logout")
+                            NavigationHelper().setRootViewController()
+                        }
                         return
                     }
                     NavigationHelper.showSimpleAlert(message:logModel.responseMessage)
+
                 }
             }
         },  onFailure: { error in
             print(error.localizedDescription)
             NavigationHelper.showSimpleAlert(message:error.localizedDescription)
+            
         })
     }
+    
+    
+    
     
     func listByOrganization() {
         
@@ -356,6 +658,7 @@ class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,
                     OperationQueue.main.addOperation {
                         self.whoUser = logModel.user
                         UserDefaults.standard.set(self.whoUser.id!, forKey: "masterUserID")
+                        UserDefaults.standard.set(self.whoUser.id!, forKey: "BCCID")
                         currentMasterID = self.whoUser.id!
                     }
                 }else {
@@ -377,13 +680,15 @@ class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,
                     "PassKey": passKey
                 ]
                 print(json)
-                APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/organizationStatus.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+                APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/organizationStatus.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                     DispatchQueue.main.async {
                         print(json)
                         print(json["Status"]["ToolKitEnabled"])
                         if(json["Status"]["ToolKitEnabled"]).boolValue{
                             self.ArrayOrganisationID.append(self.organizationList[self.organizationIndex].id!)
                             self.ArrayOrganisationName.append(self.organizationList[self.organizationIndex].name!)
+                            UserDefaults.standard.set(self.organizationList[self.organizationIndex].id!, forKey: "userOrganizationID")
+                            UserDefaults.standard.set(self.organizationList[self.organizationIndex].name!, forKey: "loggedUserName")
                         }
                         if let data:String = UserDefaults.standard.object(forKey: "userOrganizationID") as? String {
                             print(data)
@@ -391,8 +696,8 @@ class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,
                             self.GetToolkitEnabled()
                         }
                         else{
-                            UserDefaults.standard.set(self.organizationList[self.organizationIndex].id!, forKey: "userOrganizationID")
-                            UserDefaults.standard.set(self.organizationList[self.organizationIndex].name!, forKey: "loggedUserName")
+//                            UserDefaults.standard.set(self.organizationList[self.organizationIndex].id!, forKey: "userOrganizationID")
+//                            UserDefaults.standard.set(self.organizationList[self.organizationIndex].name!, forKey: "loggedUserName")
                             self.organizationIndex = self.organizationIndex + 1
                             self.GetToolkitEnabled()
                         }
@@ -434,7 +739,6 @@ class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,
         self.listTableView.isHidden = true
     }
     func forgotPasswordAPI(userName: String){
-        
         let json: [String: Any] = ["UserName": userName]
         APIManager.sharedInstance.postRequestCall(postURL: forgotURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {

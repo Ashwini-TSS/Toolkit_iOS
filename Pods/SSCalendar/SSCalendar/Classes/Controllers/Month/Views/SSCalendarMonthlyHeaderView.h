@@ -8,7 +8,6 @@
 
 @interface SSCalendarMonthlyHeaderView : UICollectionReusableView
 
-
 @property (nonatomic, strong) IBOutlet UILabel *label;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *leadingConstraint;
 

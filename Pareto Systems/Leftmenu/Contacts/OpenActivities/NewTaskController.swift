@@ -173,43 +173,43 @@ class NewTaskController: UITableViewController {
              self.fieldPriority.text = "Low"
             self.fieldStatus.text = "Not Started"
             
-            if((UserDefaults.standard.object(forKey: "showingDayView")) != nil) {
-                if let eventStartDAte = UserDefaults.standard.object(forKey: "eventStartDate") as? Date {
-                    let formatter = DateFormatter()
-                    formatter.dateFormat = "yyyy-MM-dd"
-                    let getStartTime:String = formatter.string(from: eventStartDAte)
-                    fieldStartTime.text = getStartTime
-                    
-                    let formatter1 = DateFormatter()
-                    formatter1.dateFormat = "hh:mm a"
-                    let gtStartTime:String = formatter1.string(from: eventStartDAte)
-                    StartTimetask.text = gtStartTime
-                    
-                    formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-                    self.startTime = formatter.string(from: eventStartDAte)
-                    
-                    
-                    let calendar = Calendar.current
-                    let date = calendar.date(byAdding: .hour, value: 1, to: eventStartDAte)
-                    formatter.dateFormat = "yyyy-MM-dd"
-                    formatter1.dateFormat = "hh:mm a"
-                    let getEndTime:String = formatter.string(from: date!)
-                    let gtEndTime:String = formatter1.string(from: date!)
-                    print(getEndTime)
-                    
-                    fieldDueTime.text = getEndTime
-                    DuetimeTask.text = gtEndTime
-                    
-                    
-                    formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-                    self.endTime = formatter.string(from: date!)
-                }
-                
-                UserDefaults.standard.removeObject(forKey: "showingDayView")
-                UserDefaults.standard.removeObject(forKey: "eventStartDate")
-            }else{
+//            if((UserDefaults.standard.object(forKey: "showingDayView")) != nil) {
+//                if let eventStartDAte = UserDefaults.standard.object(forKey: "eventStartDate") as? Date {
+//                    let formatter = DateFormatter()
+//                    formatter.dateFormat = "yyyy-MM-dd"
+//                    let getStartTime:String = formatter.string(from: Date())
+//                    fieldStartTime.text = getStartTime
+//
+//                    let formatter1 = DateFormatter()
+//                    formatter1.dateFormat = "hh:00 a"
+//                    let gtStartTime:String = formatter1.string(from: Date())
+//                    StartTimetask.text = gtStartTime
+//
+//                    formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+//                    formatter.dateFormat = "yyyy-MM-dd'T'HH:00:ss.SSSZ"
+//                    self.startTime = formatter.string(from: Date())
+//
+//
+//                    let calendar = Calendar.current
+//                    let date = calendar.date(byAdding: .hour, value: 1, to: Date())
+//                    formatter.dateFormat = "yyyy-MM-dd"
+//                    formatter1.dateFormat = "hh:00 a"
+//                    let getEndTime:String = formatter.string(from: date!)
+//                    let gtEndTime:String = formatter1.string(from: date!)
+//                    print(getEndTime)
+//
+//                    fieldDueTime.text = getEndTime
+//                    DuetimeTask.text = gtEndTime
+//
+//
+//                    formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+//                    formatter.dateFormat = "yyyy-MM-dd'T'HH:00:ss.SSSZ"
+//                    self.endTime = formatter.string(from: date!)
+//                }
+//
+//                UserDefaults.standard.removeObject(forKey: "showingDayView")
+//                UserDefaults.standard.removeObject(forKey: "eventStartDate")
+//            }else{
                 if(StartTime == nil){
                 let formatter1 = DateFormatter()
                 formatter1.dateFormat = "hh:00 a"
@@ -288,7 +288,7 @@ class NewTaskController: UITableViewController {
                     formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
                     self.endTime = formatter.string(from: date!)
                 }
-            }
+           // }
         }
         
         if(IsEdit){
@@ -320,7 +320,7 @@ class NewTaskController: UITableViewController {
                                    "LinkParentId": Id]
         print(json)
         
-        APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(json)
                 var resultsArray : [JSON] = []
@@ -351,7 +351,7 @@ class NewTaskController: UITableViewController {
                                    "LinkParentId":Id]
         print(json)
         
-        APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(json)
                 var resultsArray : [JSON] = []
@@ -378,7 +378,7 @@ class NewTaskController: UITableViewController {
                                    "LinkParentId": Id]
         print(json)
         
-        APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(json)
                 var resultsArray : [JSON] = []
@@ -584,7 +584,26 @@ class NewTaskController: UITableViewController {
             print("Cancel button tapped")
             self.setupBottomViewEdit()
         })
-        
+        let NoteButton = UIAlertAction(title: "Add Note", style: .default, handler: { (action) -> Void in
+            print("Note button tapped")
+            let controller = self.storyboard?.instantiateViewController(withIdentifier: "NoteDetailsVC") as! NoteDetailsVC
+            if(self.openedActivties != nil)
+            {
+                controller.taskActivitiesCreated = self.openedActivties.activity.createdBy
+                controller.taskActivitiesModified = self.openedActivties.activity.modifiedBy
+                controller.taskAcitivitiesID = self.openedActivties.activity.id
+            }else
+            {
+                controller.taskActivitiesCreated = self.CreatedBy
+                controller.taskActivitiesModified = self.ModifiedBy
+                controller.taskAcitivitiesID = self.Id
+            }
+            controller.passDefaultTaskSubject = self.fieldSubject.text!
+            controller.fromviewcontroller = "task"
+            controller.editModeON = false
+            self.navigationController?.pushViewController(controller, animated: true)
+        })
+        alertController.addAction(NoteButton)
         alertController.addAction(sendButton)
         alertController.addAction(closeButton)
         alertController.addAction(deleteButton)
@@ -645,6 +664,8 @@ class NewTaskController: UITableViewController {
             self.UpdatedNewTask(jsonParameter: param)
         }))
         alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: { (alert) in
+            self.cancelBtn.isUserInteractionEnabled = true
+            self.donelBtn.isUserInteractionEnabled = true
         }))
         self.present(alert, animated: true, completion: nil)
     }
@@ -713,6 +734,8 @@ class NewTaskController: UITableViewController {
             self.UpdatedNewTask(jsonParameter: param)
         }))
         alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: { (alert) in
+            self.cancelBtn.isUserInteractionEnabled = true
+            self.donelBtn.isUserInteractionEnabled = true
         }))
         self.present(alert, animated: true, completion: nil)
     }
@@ -866,6 +889,8 @@ class NewTaskController: UITableViewController {
             self.UpdatedNewTask(jsonParameter: param)
         }))
         alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: { (alert) in
+            self.cancelBtn.isUserInteractionEnabled = true
+            self.donelBtn.isUserInteractionEnabled = true
         }))
         self.present(alert, animated: true, completion: nil)
     }
@@ -876,10 +901,10 @@ class NewTaskController: UITableViewController {
             "Content-Type": "application/json",
             ]
         if(EditUrl == 2 || EditUrl == 3){
-            mainURL = "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/modify.json"
+            mainURL = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/modify.json"
         }
         else{
-            mainURL = "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/delete.json"
+            mainURL = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/delete.json"
         }
         let request = NSMutableURLRequest(url: NSURL(string: mainURL)! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
@@ -1012,7 +1037,7 @@ class NewTaskController: UITableViewController {
         let parameters = [
             "OrderBy": "",
             "ParentId": "",
-            "ResultsPerPage": 500,
+            "ResultsPerPage": 5000,
             "OrganizationId": currentOrgID,
             "PassKey": passKey,
             "ParentObjectName": "",
@@ -1021,7 +1046,7 @@ class NewTaskController: UITableViewController {
             "AscendingOrder":true
             ] as [String : Any]
         
-        let request = NSMutableURLRequest(url: NSURL(string: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json")! as URL,
+        let request = NSMutableURLRequest(url: NSURL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json")! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
                                           timeoutInterval: 10.0)
         request.httpMethod = "POST"
@@ -1099,7 +1124,7 @@ class NewTaskController: UITableViewController {
                                    "ResultsPerPage": 5000]
         print(json)
         
-        APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 self.getTeamMembers()
                 print(json)
@@ -1173,7 +1198,7 @@ class NewTaskController: UITableViewController {
                                    "AscendingOrder":true,
                                    "OrderBy":"Name"]
         print(json)
-        APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(json)
                 let contactModel = AppointmentTypeModel.init(fromDictionary: jsonResponse)
@@ -1203,7 +1228,7 @@ class NewTaskController: UITableViewController {
                                    "PassKey":passKey]
         print(json)
         
-        APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 
                 print(json)
@@ -1263,7 +1288,7 @@ class NewTaskController: UITableViewController {
             mainURL = modifyURL
         }
         print(mainURL)
-        print("https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/create.json")
+        print(globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/create.json")
         
         let request = NSMutableURLRequest(url: NSURL(string: mainURL)! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
@@ -1397,6 +1422,8 @@ class NewTaskController: UITableViewController {
             self.registerNewTask(jsonParameter: param)
         }))
         alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: { (alert) in
+            self.cancelBtn.isUserInteractionEnabled = true
+            self.donelBtn.isUserInteractionEnabled = true
         }))
         self.present(alert, animated: true, completion: nil)
     }
@@ -1486,7 +1513,9 @@ class NewTaskController: UITableViewController {
             APIManager.sharedInstance.postRequestCall(postURL: linkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
                     print(json)
+                    if(self.contactsIDList.count > 0){
                     self.contactsIDList.removeObject(at: 0)
+                    }
                     if self.contactsIDList.count == 0 {
                         self.linkAppointmentUseres(rightID: rightID)
                     }else{
@@ -1598,7 +1627,9 @@ class NewTaskController: UITableViewController {
             APIManager.sharedInstance.postRequestCall(postURL: linkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
                     print(json)
+                    if(self.teamMembersIDList.count > 0){
                     self.teamMembersIDList.removeObject(at: 0)
+                    }
                     self.linkAppointmentUseres(rightID: rightID)
                 }
             },  onFailure: { error in
@@ -1712,7 +1743,9 @@ class NewTaskController: UITableViewController {
             APIManager.sharedInstance.postRequestCall(postURL: linkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
                     print(json)
+                    if(self.accountsIDList.count > 0){
                     self.accountsIDList.removeObject(at: 0)
+                    }
                     self.linkAppointmentCompanies(rightID: rightID)
                 }
             },  onFailure: { error in
@@ -1771,7 +1804,7 @@ class NewTaskController: UITableViewController {
             "ResultsPerPage":1000
             ] as [String : Any]
         print(parameters)
-        let request = NSMutableURLRequest(url: NSURL(string: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json")! as URL,
+        let request = NSMutableURLRequest(url: NSURL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json")! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
                                           timeoutInterval: 30.0)
         request.httpMethod = "POST"
@@ -1853,7 +1886,7 @@ class NewTaskController: UITableViewController {
             "ResultsPerPage":1000
             ] as [String : Any]
         print(parameters)
-        let request = NSMutableURLRequest(url: NSURL(string: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json")! as URL,
+        let request = NSMutableURLRequest(url: NSURL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json")! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
                                           timeoutInterval: 30.0)
         request.httpMethod = "POST"
@@ -1938,7 +1971,7 @@ class NewTaskController: UITableViewController {
             "ResultsPerPage":1000
             ] as [String : Any]
         print(parameters)
-        let request = NSMutableURLRequest(url: NSURL(string: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json")! as URL,
+        let request = NSMutableURLRequest(url: NSURL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json")! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
                                           timeoutInterval: 30.0)
         request.httpMethod = "POST"
@@ -2565,7 +2598,9 @@ extension NewTaskController: CZPickerViewDelegate, CZPickerViewDataSource {
             APIManager.sharedInstance.postRequestCall(postURL: removeLinkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
                     print(json)
+                    if(contactListID.count > 0){
                     contactListID.removeObject(at: 0)
+                    }
                     self.removeUpdatedLink(contactListID: contactListID, addContactListID: addContactListID)
                 }
             },  onFailure: { error in
@@ -2587,7 +2622,9 @@ extension NewTaskController: CZPickerViewDelegate, CZPickerViewDataSource {
             APIManager.sharedInstance.postRequestCall(postURL: linkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
                     print(json)
+                     if(addContactListID.count > 0){
                     addContactListID.removeObject(at: 0)
+                    }
                     self.removeUpdatedLink(contactListID: contactListID, addContactListID: addContactListID)
                 }
             },  onFailure: { error in
@@ -2653,7 +2690,9 @@ extension NewTaskController: CZPickerViewDelegate, CZPickerViewDataSource {
             APIManager.sharedInstance.postRequestCall(postURL: removeLinkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
                     print(json)
+                    if(contactListID.count > 0){
                     contactListID.removeObject(at: 0)
+                    }
                     self.removeUpdatedteamLink(contactListID: contactListID, addContactListID: addContactListID)
                 }
             },  onFailure: { error in
@@ -2675,7 +2714,9 @@ extension NewTaskController: CZPickerViewDelegate, CZPickerViewDataSource {
             APIManager.sharedInstance.postRequestCall(postURL: linkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
                     print(json)
+                     if(addContactListID.count > 0){
                     addContactListID.removeObject(at: 0)
+                    }
                     self.removeUpdatedteamLink(contactListID: contactListID, addContactListID: addContactListID)
                 }
             },  onFailure: { error in
@@ -2739,7 +2780,9 @@ extension NewTaskController: CZPickerViewDelegate, CZPickerViewDataSource {
             APIManager.sharedInstance.postRequestCall(postURL: removeLinkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
                     print(json)
+                     if(contactListID.count > 0){
                     contactListID.removeObject(at: 0)
+                    }
                     self.removeUpdatedAccountsLink(contactListID: contactListID, addContactListID: addContactListID)
                 }
             },  onFailure: { error in
@@ -2761,7 +2804,9 @@ extension NewTaskController: CZPickerViewDelegate, CZPickerViewDataSource {
             APIManager.sharedInstance.postRequestCall(postURL: linkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
                     print(json)
+                     if(addContactListID.count > 0){
                     addContactListID.removeObject(at: 0)
+                    }
                     self.removeUpdatedAccountsLink(contactListID: contactListID, addContactListID: addContactListID)
                 }
             },  onFailure: { error in
@@ -3157,29 +3202,5 @@ extension NewTaskController:URLSessionDelegate {
         completionHandler(.useCredential, URLCredential(trust: trust))
     }
 }
-extension Date {
-    func adding(hour: Int) -> Date {
-        return Calendar.current.date(byAdding: .hour, value: hour, to: self)!
-    }
-    func Addminute(minute: Int) -> Date {
-        return Calendar.current.date(byAdding: .minute, value: minute, to: self)!
-    }
-}
-extension Date {
-    
-    // Convert local time to UTC (or GMT)
-    func toGlobalTime() -> Date {
-        let timezone = TimeZone.current
-        let seconds = -TimeInterval(timezone.secondsFromGMT(for: self))
-        return Date(timeInterval: seconds, since: self)
-    }
-    
-    // Convert UTC (or GMT) to local time
-    func toLocalTime() -> Date {
-        let timezone = TimeZone.current
-        let seconds = TimeInterval(timezone.secondsFromGMT(for: self))
-        return Date(timeInterval: seconds, since: self)
-    }
-    
-}
+
 

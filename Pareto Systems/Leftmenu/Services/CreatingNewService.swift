@@ -164,7 +164,7 @@ class CreatingNewService: UITableViewController {
                                        "PassKey":passKey,
                                        "OrganizationId":currentOrgID]
             print(json)
-            APIManager.sharedInstance.postRequestCall(postURL:"https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+            APIManager.sharedInstance.postRequestCall(postURL:globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
                     print(json)
                     let controller = GetServiceInfoModel.init(fromDictionary: jsonResponse)
@@ -241,7 +241,7 @@ class CreatingNewService: UITableViewController {
                                   "OrganizationId":currentOrgID
                                   ]
         print(json)
-        APIManager.sharedInstance.postRequestCall(postURL:"https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL:globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             if self.serviceList != nil {
                 if self.serviceList.AssigneeId != nil {
                     self.assigneeName(assignID: self.serviceList.AssigneeId!)
@@ -889,7 +889,7 @@ class CreatingNewService: UITableViewController {
                                        "OrganizationId": currentOrgID,
                                        "PassKey":passKey]
             print(json)
-            APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/delete.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+            APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/delete.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
                     print(json)
                     self.navigationController?.popViewController(animated:true)

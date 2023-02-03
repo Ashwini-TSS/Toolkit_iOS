@@ -256,6 +256,7 @@ class NavigationHelper: NSObject {
 }
 extension UIViewController {
     
+    
     func setNavigationBarItem() {
         
         self.addLeftBarButtonWithImage(UIImage.init(named:"ic_side_menu")!)

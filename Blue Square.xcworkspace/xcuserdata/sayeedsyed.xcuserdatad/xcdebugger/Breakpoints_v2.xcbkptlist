@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Bucket
+   uuid = "F76BF763-5F4D-4BAA-832E-A301FA5AF4F0"
    type = "0"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "4A763E88-A89F-48DB-8BFE-15A7A621F8D5"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Pareto Systems/AppDelegate.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "65"
+            endingLineNumber = "65"
+            landmarkName = "crashlyticsDidDetectReport(forLastExecution:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>

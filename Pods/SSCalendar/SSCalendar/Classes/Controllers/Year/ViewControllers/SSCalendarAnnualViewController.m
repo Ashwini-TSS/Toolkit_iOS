@@ -19,7 +19,7 @@
 #import "SSCalendarAnnualHeaderView.h"
 #import "GetOwnCalendarActivity.h"
 #import "SSEvent.h"
-
+@class Weeklyviewcontroller;
 @interface SSCalendarAnnualViewController()<UISearchDisplayDelegate,UISearchBarDelegate,UIScrollViewDelegate>
 
 @property (nonatomic, strong) SSDataController *dataController;
@@ -36,7 +36,7 @@
     
     NSBundle *bundle = [SSCalendarUtils calendarBundle];
     if (self = [super initWithNibName:@"SSCalendarAnnualViewController" bundle:bundle]) {
-
+        
         self.dataController = [[SSDataController alloc] init];
         [_dataController setEvents:events];
     }
@@ -44,30 +44,39 @@
 }
 - (IBAction)tappedFilter:(id)sender {
     [[NSNotificationCenter defaultCenter] removeObserver:@"tappedFilter"];
-
+    
     [[NSNotificationCenter defaultCenter]
      postNotificationName:@"tappedFilter"
      object:self];
-
+    
 }
 - (IBAction)tappedToday:(id)sender {
     
-   
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    Weeklyviewcontroller *myNewVC = (Weeklyviewcontroller *)[storyboard instantiateViewControllerWithIdentifier:@"Weeklyviewcontroller"];
+    NSDate * date1 = [NSDate date];
+    NSDateFormatter* df = [[NSDateFormatter alloc]init];
+    [df setDateFormat:@"dd-MM-yyyy"];
+    NSString *date = [df stringFromDate:date1];
+    NSString * str = [NSString stringWithFormat: @"%@", date];
+    [[NSUserDefaults standardUserDefaults] setObject:str forKey:@"selectDay"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    [self.navigationController pushViewController:myNewVC animated:YES];
     
-    [self gotoInitialNextPage];
+   // [self gotoInitialNextPage];
     
-    NSDateComponents *components1 = [[NSCalendar currentCalendar] components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear fromDate:[NSDate date]];
-    [[NSNotificationCenter defaultCenter]
-     postNotificationName:@"yearPicked"
-     object:[NSString stringWithFormat:@"%li", (long)[components1 year]]];
+//    NSDateComponents *components1 = [[NSCalendar currentCalendar] components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear fromDate:[NSDate date]];
+//    [[NSNotificationCenter defaultCenter]
+//     postNotificationName:@"yearPicked"
+//     object:[NSString stringWithFormat:@"%li", (long)[components1 year]]];
     
-//
-//    NSMutableArray *addYears = [NSMutableArray new];
-//    
-//    NSString *savedValue = [[NSUserDefaults standardUserDefaults]
-//                            stringForKey:@"selectedYear"];
-//    SSYearNode *yearNode = [[SSYearNode alloc] initWithValue:[@"2018" integerValue]];
-//    NSLog(@"%@",yearNode.days);
+    //
+    //    NSMutableArray *addYears = [NSMutableArray new];
+    //
+    //    NSString *savedValue = [[NSUserDefaults standardUserDefaults]
+    //                            stringForKey:@"selectedYear"];
+    //    SSYearNode *yearNode = [[SSYearNode alloc] initWithValue:[@"2018" integerValue]];
+    //    NSLog(@"%@",yearNode.days);
     
 }
 
@@ -80,89 +89,17 @@
 {
     [super viewDidLoad];
     
-    [_searchBar setHidden:YES];
-//    var getCalendarActivityList:[GetCalendarListActivity] = []
-
-//    self.title = @"Calendar";
-    
-    self.dataSource = [[SSCalendarAnnualDataSource alloc] initWithView:_yearView];
-    _yearView.dataSource = _dataSource;
-    _yearView.delegate = self;
-
-    self.navigationController.navigationBar.titleTextAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[UIColor colorWithHexString:COLOR_SECONDARY], NSForegroundColorAttributeName, [UIFont systemFontOfSize:17.0], NSFontAttributeName, nil];
-    
-    self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
-    self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:COLOR_SECONDARY];
-    
-//    [[UINavigationBar appearance] setBackIndicatorImage:[UIImage imageNamed:@"ic_back_arrow"]];
-//    [[UINavigationBar appearance] setBackIndicatorTransitionMaskImage:[UIImage imageNamed:@"ic_back_arrow"]];
-
-    
-    // Navigation bar appearance (background and title)
-    
-  
-
-//    [[UINavigationBar appearance] setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[UIColor blackColor], NSForegroundColorAttributeName, [UIFont fontWithName:@"Raleway-Bold" size:18.0], NSFontAttributeName, nil]];
-//
-//    [[UINavigationBar appearance] setTintColor:[UIColor blackColor]];
-////    [UINavigationBar appearance]
-//    // Navigation bar buttons appearance
-//
-//    [self.navigationController.navigationBar setTitleTextAttributes:
-//     @{NSForegroundColorAttributeName:[UIColor whiteColor]}];
-//
-//
-//    NSDictionary *barButtonAppearanceDict = @{NSFontAttributeName : [UIFont fontWithName:@"Raleway-Bold" size:18.0], NSForegroundColorAttributeName: [UIColor whiteColor]};
-//    [[UIBarButtonItem appearance] setTitleTextAttributes:barButtonAppearanceDict forState:UIControlStateNormal];
-
-    
-//    [[UIBarButtonItem appearance] setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[UIColor whiteColor], NSForegroundColorAttributeName, shadowColor, NSShadowAttributeName, [UIFont fontWithName:@"Raleway-Bold" size:18.0], NSFontAttributeName, nil] forState:normal];
-//
-//    [[UIBarButtonItem appearance] setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[UIColor whiteColor], NSForegroundColorAttributeName, shadowColor, NSShadowAttributeName, [UIFont fontWithName:@"Raleway-Bold" size:18.0], NSFontAttributeName, nil]];
-
-     
-    _dataSource.years = _dataController.calendarYears;
-
-    [_yearView reloadData];
-    [_yearView setHidden:YES];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        [_yearView setHidden:NO];
-
-        [self scrollToCureentYear];
-        
-        NSDateComponents *components1 = [[NSCalendar currentCalendar] components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear fromDate:[NSDate date]];
-        [[NSNotificationCenter defaultCenter]
-         postNotificationName:@"yearPicked"
-         object:[NSString stringWithFormat:@"%li", (long)[components1 year]]];
-        
-        [self gotoInitialNextPage];
-
-    });
-    
-    
-    
-    // first we create a button and set it's properties
-    UIBarButtonItem *myButton = [[UIBarButtonItem alloc]init];
-    myButton.action = @selector(doTheThing);
-    myButton.title = @"";
-    myButton.image = [UIImage imageNamed:@"ic_search"];
-    myButton.target = self;
-    
-    // then we add the button to the navigation bar
-   // self.navigationItem.rightBarButtonItem = myButton;
-    
-    
     
 }
 
 -(void)setupEventNames{
-//    SSYearNode *year = _dataSource.years[0];
-//    NSLog(@"Year",year.)
-
+    //    SSYearNode *year = _dataSource.years[0];
+    //    NSLog(@"Year",year.)
+    
 }
 // method called via selector
 - (void) doTheThing {
-//    _searchBar.tex
+    //    _searchBar.tex
     [_searchBar setHidden:NO];
     [_searchBar becomeFirstResponder];
     [_yearView setHidden:YES];
@@ -170,8 +107,8 @@
     self.searchDisplayController.active = YES;
     self.searchDisplayController.searchBar.text = @"";
     [self.searchDisplayController.searchBar becomeFirstResponder];
-//    [self searchBar:_searchBar textDidChange: @""];
-
+    //    [self searchBar:_searchBar textDidChange: @""];
+    
     
     NSLog(@"Doing the thing");
     
@@ -224,7 +161,7 @@
             SSYearNode *year = _dataSource.years[indexPath.section];
             
             GetOwnCalendarModel *model = [[ GetOwnCalendarModel alloc]initWithDictionary:_listAppointments];
-
+            
             NSKeyedArchiver *archeive = [NSKeyedArchiver archivedDataWithRootObject:model];
             [NSUserDefaults.standardUserDefaults setObject:archeive forKey:@"userSelectedModel"];
             [NSUserDefaults.standardUserDefaults synchronize];
@@ -233,12 +170,13 @@
             SSCalendarMonthlyViewController *viewController = [[SSCalendarMonthlyViewController alloc] initWithDataController:_dataController];
             viewController.listAppointments = _listAppointments;
             viewController.selectedYear = self.title;
-//            viewController.isFromMonthView = YES;
+            //            viewController.isFromMonthView = YES;
             NSInteger section = indexPath.section * year.months.count + indexPath.row;
             NSIndexPath *startingIndexPath = [NSIndexPath indexPathForRow:0 inSection:section];
             
             viewController.startingIndexPath = startingIndexPath;
-            
+            [[NSUserDefaults standardUserDefaults]setObject:_listAppointments forKey:@"appointmentPobject"];
+            [[NSUserDefaults standardUserDefaults]synchronize];
             [self.navigationController pushViewController:viewController animated:NO];
             
             break;
@@ -256,28 +194,30 @@
     NSDateComponents *components = [[SSCalendarUtils calendar] components:NSCalendarUnitYear|NSCalendarUnitMonth fromDate:[NSDate date]];
     
     int indexx = 0;
-
+    
     for (SSYearNode *year in _dataController.calendarYears)
     {
         if (year.value == components.year)
         {
-//            NSInteger section = 7 * year.months.count + indexPath.row;
-//            NSIndexPath *startingIndexPath = [NSIndexPath indexPathForRow:0 inSection:section];
+                      
             
-//            NSLog(@"%ld",[(long)[components month] - 1]);
+                      //  NSLog(@"%ld",[(long)[components month] - 1]);
             NSInteger currentMonth = [components month];
             
             currentMonth = currentMonth - 1;
             
-            NSIndexPath *indexPath = [NSIndexPath indexPathForItem:currentMonth inSection:indexx];
-                [self scrollToIndexPath:indexPath updateTitle:YES];
             
+            NSIndexPath *indexPath = [NSIndexPath indexPathForItem:currentMonth inSection:indexx];
+            [self scrollToIndexPath:indexPath updateTitle:YES];
+            
+//            NSInteger section = 7 * year.months.count + indexPath.row;
+//            NSIndexPath *startingIndexPath = [NSIndexPath indexPathForRow:0 inSection:section];
             SSYearNode *year = _dataSource.years[indexPath.section];
             
             
             SSCalendarMonthlyViewController *viewController = [[SSCalendarMonthlyViewController alloc] initWithDataController:_dataController];
             viewController.selectedYear = self.title;
-
+            
             NSInteger section = indexPath.section * year.months.count + indexPath.row;
             NSIndexPath *startingIndexPath = [NSIndexPath indexPathForRow:0 inSection:section];
             
@@ -289,46 +229,57 @@
         } else
         {
             indexx = indexx + 1;
-           
+            
         }
     }
     
 }
 -(void)todayPressed {
-    NSDateComponents *components = [[SSCalendarUtils calendar] components:NSCalendarUnitYear|NSCalendarUnitMonth fromDate:[NSDate date]];
+//    NSDateComponents *components = [[SSCalendarUtils calendar] components:NSCalendarUnitYear|NSCalendarUnitMonth fromDate:[NSDate date]];
+//
+//    int indexx = 0;
+//
+//    NSInteger monthCount = 0;
+//    for (SSYearNode *year in _dataController.calendarYears)
+//    {
+//        if (year.value == components.year)
+//        {
+//            monthCount = monthCount + components.month - 1;
+//            break;
+//        }
+//        else
+//        {
+//            indexx = indexx + 1;
+//            monthCount = monthCount + year.months.count;
+//        }
+//    }
+//    //201
+//    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:0 inSection:indexx];
+//    //    [self scrollToIndexPath:indexPath updateTitle:YES];
+//
+//    SSYearNode *year = _dataSource.years[indexPath.section];
+//
+//
+//    SSCalendarMonthlyViewController *viewController = [[SSCalendarMonthlyViewController alloc] initWithDataController:_dataController];
+//    viewController.selectedYear = self.title;
+//
+//    NSInteger section = indexPath.section * year.months.count + indexPath.row;
+//    NSIndexPath *startingIndexPath = [NSIndexPath indexPathForRow:0 inSection:section];
+//
+//    viewController.startingIndexPath = startingIndexPath;
+//
+//    [self.navigationController pushViewController:viewController animated:YES];
     
-    int indexx = 0;
-    
-    NSInteger monthCount = 0;
-    for (SSYearNode *year in _dataController.calendarYears)
-    {
-        if (year.value == components.year)
-        {
-            monthCount = monthCount + components.month - 1;
-            break;
-        }
-        else
-        {
-            indexx = indexx + 1;
-            monthCount = monthCount + year.months.count;
-        }
-    }
-    //201
-    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:0 inSection:indexx];
-    //    [self scrollToIndexPath:indexPath updateTitle:YES];
-    
-    SSYearNode *year = _dataSource.years[indexPath.section];
-    
-
-    SSCalendarMonthlyViewController *viewController = [[SSCalendarMonthlyViewController alloc] initWithDataController:_dataController];
-    viewController.selectedYear = self.title;
-
-    NSInteger section = indexPath.section * year.months.count + indexPath.row;
-    NSIndexPath *startingIndexPath = [NSIndexPath indexPathForRow:0 inSection:section];
-    
-    viewController.startingIndexPath = startingIndexPath;
-    
-    [self.navigationController pushViewController:viewController animated:YES];
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    Weeklyviewcontroller *myNewVC = (Weeklyviewcontroller *)[storyboard instantiateViewControllerWithIdentifier:@"Weeklyviewcontroller"];
+    NSDate * date1 = [NSDate date];
+    NSDateFormatter* df = [[NSDateFormatter alloc]init];
+    [df setDateFormat:@"dd-MM-yyyy"];
+    NSString *date = [df stringFromDate:date1];
+    NSString * str = [NSString stringWithFormat: @"%@", date];
+    [[NSUserDefaults standardUserDefaults] setObject:str forKey:@"selectDay"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    [self.navigationController pushViewController:myNewVC animated:YES];
 }
 
 - (void)scrollToIndexPath:(NSIndexPath *)indexPath updateTitle:(BOOL)updateTitle
@@ -350,50 +301,50 @@
 }
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-//    CGFloat total = scrollView.contentSize.height - scrollView.bounds.size.height;
-////    NSLog(@"========total %f======",total);
-//  
-//    CGFloat offset = scrollView.contentOffset.y;
-//    CGFloat percent = offset / total;
-//    NSLog(@"========%f======",percent);
-//    
-//    if (self->lastContentOffset > scrollView.contentOffset.y)
-//    {
-//        NSLog(@"Scrolling Up");
-//    }
-//    else if (self->lastContentOffset < scrollView.contentOffset.y)
-//    {
-//        NSLog(@"Scrolling Down");
-//    }
-//    
-//    self->lastContentOffset = scrollView.contentOffset.y;
-//    
-//    float scrollViewHeight = scrollView.frame.size.height;
-//    float scrollContentSizeHeight = scrollView.contentSize.height;
-//    float scrollOffset = scrollView.contentOffset.y;
-//    
-//    if (scrollOffset == 0)
-//    {
-//        NSLog(@"==============start ==========");
-//        // then we are at the top
-//    }
-//    else if (scrollOffset + scrollViewHeight == scrollContentSizeHeight)
-//    {
-//        NSLog(@"==============end ==========");
-//
-//        // then we are at the end
-//    }
+    //    CGFloat total = scrollView.contentSize.height - scrollView.bounds.size.height;
+    ////    NSLog(@"========total %f======",total);
+    //
+    //    CGFloat offset = scrollView.contentOffset.y;
+    //    CGFloat percent = offset / total;
+    //    NSLog(@"========%f======",percent);
+    //
+    //    if (self->lastContentOffset > scrollView.contentOffset.y)
+    //    {
+    //        NSLog(@"Scrolling Up");
+    //    }
+    //    else if (self->lastContentOffset < scrollView.contentOffset.y)
+    //    {
+    //        NSLog(@"Scrolling Down");
+    //    }
+    //
+    //    self->lastContentOffset = scrollView.contentOffset.y;
+    //
+    //    float scrollViewHeight = scrollView.frame.size.height;
+    //    float scrollContentSizeHeight = scrollView.contentSize.height;
+    //    float scrollOffset = scrollView.contentOffset.y;
+    //
+    //    if (scrollOffset == 0)
+    //    {
+    //        NSLog(@"==============start ==========");
+    //        // then we are at the top
+    //    }
+    //    else if (scrollOffset + scrollViewHeight == scrollContentSizeHeight)
+    //    {
+    //        NSLog(@"==============end ==========");
+    //
+    //        // then we are at the end
+    //    }
     
     NSArray *visibleCells = [_yearView indexPathsForVisibleItems];
-//    NSIndexPath *cell = [[_yearView indexPathsForVisibleItems] objectAtIndex:0];
-
+    //    NSIndexPath *cell = [[_yearView indexPathsForVisibleItems] objectAtIndex:0];
+    
     for (NSIndexPath *cell in visibleCells)
     {
         NSInteger year = ((SSYearNode *) [_dataController.calendarYears objectAtIndex:cell.section]).value;
         [[NSNotificationCenter defaultCenter]
          postNotificationName:@"yearPicked"
          object:[NSString stringWithFormat:@"%li", (long)year]];
-
+        
         self.title = [NSString stringWithFormat:@"%li", (long)year];
     }
 }
@@ -406,6 +357,48 @@
 //-(void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
 //-scrollviewd
 -(void)viewWillAppear:(BOOL)animate  {
+    [_searchBar setHidden:YES];
+    //    var getCalendarActivityList:[GetCalendarListActivity] = []
+    
+    //    self.title = @"Calendar";
+    self.dataSource = [[SSCalendarAnnualDataSource alloc] initWithView:_yearView];
+    _yearView.dataSource = _dataSource;
+    _yearView.delegate = self;
+    
+    self.navigationController.navigationBar.titleTextAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[UIColor colorWithHexString:COLOR_SECONDARY], NSForegroundColorAttributeName, [UIFont systemFontOfSize:17.0], NSFontAttributeName, nil];
+    
+    self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+    self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:COLOR_SECONDARY];
+    
+    _dataSource.years = _dataController.calendarYears;
+    
+    [_yearView reloadData];
+    [_yearView setHidden:YES];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        [_yearView setHidden:NO];
+        
+        [self scrollToCureentYear];
+        
+        NSDateComponents *components1 = [[NSCalendar currentCalendar] components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear fromDate:[NSDate date]];
+        [[NSNotificationCenter defaultCenter]
+         postNotificationName:@"yearPicked"
+         object:[NSString stringWithFormat:@"%li", (long)[components1 year]]];
+        
+      //  [self gotoInitialNextPage];
+        
+    });
+    
+    
+    
+    // first we create a button and set it's properties
+    UIBarButtonItem *myButton = [[UIBarButtonItem alloc]init];
+    myButton.action = @selector(doTheThing);
+    myButton.title = @"";
+    myButton.image = [UIImage imageNamed:@"ic_search"];
+    myButton.target = self;
+    
+    // then we add the button to the navigation bar
+    // self.navigationItem.rightBarButtonItem = myButton;
     
     [self.whiteBG setFrame:self.view.frame];
     [self.view addSubview:self.whiteBG];
@@ -460,7 +453,7 @@
             endTime = [NSString stringWithFormat:@"%@",sep[1]];
         }
         if (sep.count > 2) {
-                      // nameLabel.backgroundColor = [UIColor colorWithHexString:[NSString stringWithFormat:@"#%@",sep[2]]];
+            // nameLabel.backgroundColor = [UIColor colorWithHexString:[NSString stringWithFormat:@"#%@",sep[2]]];
         }
     }else{
         startTime = event.startTime;
@@ -473,7 +466,6 @@
     
     GetOwnCalendarModel *model = [[ GetOwnCalendarModel alloc]initWithDictionary:_listAppointments];
     _calActivity = model.activities;
-    
     SSEvent *event = [SSEvent alloc];
     if (tableView == self.searchDisplayController.searchResultsTableView) {
         event = searchResults[indexPath.row];
@@ -491,6 +483,13 @@
                      postNotificationName:@"pushToActivity"
                      object:model.toDictionary];
                 }else{
+//                    if(event.isAllday){
+//                        [[NSNotificationCenter defaultCenter]
+//                         postNotificationName:@"Allday"
+//                         object:@"true"];
+//                    }
+                    [[NSUserDefaults standardUserDefaults]setObject:_calActivity forKey:@"appointmentPobject"];
+                    [[NSUserDefaults standardUserDefaults]synchronize];
                     [[NSNotificationCenter defaultCenter]
                      postNotificationName:@"pushToActivity1"
                      object:model.toDictionary];
@@ -520,7 +519,7 @@
 -(void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
     [_searchBar setHidden:YES];
     [_yearView setHidden:NO];
-
+    
 }
 -(BOOL)searchDisplayController:(UISearchDisplayController *)controller shouldReloadTableForSearchString:(NSString *)searchString
 {
@@ -537,17 +536,16 @@
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
     SSYearNode *year = _dataSource.years[indexPath.section];
-
+    
     SSCalendarMonthlyViewController *viewController = [[SSCalendarMonthlyViewController alloc] initWithDataController:_dataController];
     viewController.selectedYear = self.title;
-
+    
     viewController.addEvents = addEvents;
     viewController.listAppointments = _listAppointments;
     NSInteger section = indexPath.section * year.months.count + indexPath.row;
     NSIndexPath *startingIndexPath = [NSIndexPath indexPathForRow:0 inSection:section];
     
     viewController.startingIndexPath = startingIndexPath;
-
     [self.navigationController pushViewController:viewController animated:YES];
 }
 

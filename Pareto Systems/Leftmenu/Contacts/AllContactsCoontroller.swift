@@ -21,10 +21,10 @@ class AllContactsCoontroller: UIViewController {
     @IBOutlet weak var searchBBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
     var userOrgID:String = ""
-    
+    var taskmodelobj : Taskmodel!
     var fromAccounts:Bool = false
     var objectName:String = "contact"
-    
+    var appointmentList : GetAppointmentModelModel!
     var items: [[DropdownItem]]!
     var showSection: Bool = true
     var selectedRow: Int = 0
@@ -62,6 +62,8 @@ class AllContactsCoontroller: UIViewController {
     }
     override func viewWillAppear(_ animated: Bool) {
 
+        UserDefaults.standard.setValue(false, forKey: "Goday")
+
         var fullWidth = UIScreen.main.bounds.width
         fullWidth = fullWidth / 3 - 10
         
@@ -80,7 +82,10 @@ class AllContactsCoontroller: UIViewController {
         selectedContactInfo = nil
         
         self.userOrgID = currentOrgID
+        self.getTask()
+        self.getAppointments()
         self.getContactListAPI(orgID: self.userOrgID)
+       
 //        NavigationHelper().setupScreen(vc: self)
         
 //        let tabView = NavigationHelper().setupBarSqureImage()
@@ -116,15 +121,160 @@ class AllContactsCoontroller: UIViewController {
             print(error.localizedDescription)
         })
     }
-    
-    
-    
-    
+    //MARK:- GET Appiontment
+    func getAppointments()
+    {
+        let param: [String: Any] = ["ObjectName":"appointment",
+                                   "OrganizationId":currentOrgID,
+                                   "IncludeExtendedProperties" :  true,
+                                   "OrderBy" : "Subject",
+                                   "PassKey": passKey,
+                                   "SearchTerm":"",
+                                   "PageOffset": 1,
+                                   "AscendingOrder":true,
+                                   "ResultsPerPage": 5000]
+        
+        do{
+            OperationQueue.main.addOperation {
+                SVProgressHUD.show()
+            }
+        let postData = try JSONSerialization.data(withJSONObject: param, options: [])
+        let request = NSMutableURLRequest(url: URL(string: searchURL)!)
+        let session = URLSession.shared
+        request.httpBody = postData as Data
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue("application/json", forHTTPHeaderField: "Accept")
+        
+        let task = session.dataTask(with: request as URLRequest, completionHandler: {data, response, error -> Void in
+            if (data != nil && error == nil) {
+                do {
+                    OperationQueue.main.addOperation {
+                        SVProgressHUD.dismiss()
+                    }
+                    let decoder = JSONDecoder()
+                    self.appointmentList = try? decoder.decode(GetAppointmentModelModel.self, from: data!)
+                }
+                catch
+                {
+                    
+                }
+     
+                
+            } else {
+                print("Web Service have Error")
+            }
+        })
+        
+        task.resume()
+        }catch
+        {
+            
+        }
+    }
+    //MARK:- GET Task
+    func getTask()
+    {
+        
+            let param: [String: Any] = ["ObjectName":"task",
+                                       "OrganizationId":currentOrgID,
+                                       "IncludeExtendedProperties" :  true,
+                                       "OrderBy" : "Subject",
+                                       "PassKey": passKey,
+                                       "SearchTerm":"",
+                                       "PageOffset": 1,
+                                       "AscendingOrder":true,
+                                       "ResultsPerPage": 5000]
+        UserDefaults.standard.set(true, forKey: "tasklist")
+        do{
+            OperationQueue.main.addOperation {
+                SVProgressHUD.show()
+            }
+        let postData = try JSONSerialization.data(withJSONObject: param, options: [])
+        let request = NSMutableURLRequest(url: URL(string: searchURL)!)
+        let session = URLSession.shared
+        request.httpBody = postData as Data
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue("application/json", forHTTPHeaderField: "Accept")
+        
+        let task = session.dataTask(with: request as URLRequest, completionHandler: {data, response, error -> Void in
+            if (data != nil && error == nil) {
+                do {
+                    OperationQueue.main.addOperation {
+                        SVProgressHUD.dismiss()
+                    }
+                    let decoder = JSONDecoder()
+                    self.taskmodelobj = try? decoder.decode(Taskmodel.self, from: data!)
+                }
+                catch
+                {
+                    
+                }
+     
+                
+            } else {
+                print("Web Service have Error")
+            }
+        })
+        
+        task.resume()
+        }catch
+        {
+            
+        }
+    }
+    func getremainContactsOrAccounts(name : String, orgID:String)
+    {
+        let parameters = [
+            "OrderBy": "",
+            "ParentId": "",
+            "ResultsPerPage": 5000,
+            "OrganizationId": orgID,
+            "PassKey": passKey,
+            "ParentObjectName": "",
+            "PageOffset": 1,
+            "ObjectName": name,
+            "AscendingOrder":true
+            ] as [String : Any]
+        print(parameters)
+        print(getOrgListURL)
+        APIManager.sharedInstance.postRequestCall(postURL: getOrgListURL, parameters: parameters, senderVC: self, onSuccess: { (jsonResponse, json) in
+            DispatchQueue.main.async {
+                print(json)
+        if(name == "company")
+        {
+            let contactModel = GetAccountsListModel.init(fromDictionary: jsonResponse)
+            print(contactModel.responseMessage)
+            if(!contactModel.valid){
+                self.loginUser()
+            }
+            else {
+                self.accountList = contactModel.results
+                self.filteredaccountList = self.accountList
+                
+            }}else{
+            let contactModel = ContactListModel.init(fromDictionary: jsonResponse)
+            print(contactModel.responseMessage)
+            if(!contactModel.valid){
+                self.loginUser()
+            }
+            else {
+                self.contactList = contactModel.results
+                self.filteredcontactList = self.contactList
+            }
+                }} },  onFailure: { error in
+                    print(error.localizedDescription)
+                    NavigationHelper.showSimpleAlert(message:error.localizedDescription)
+                    
+            })
+            
+        }
     func getContactListAPI(orgID:String){
         let parameters = [
             "OrderBy": "",
             "ParentId": "",
-            "ResultsPerPage": 500,
+            "ResultsPerPage": 5000,
             "OrganizationId": orgID,
             "PassKey": passKey,
             "ParentObjectName": "",
@@ -173,6 +323,7 @@ class AllContactsCoontroller: UIViewController {
                     self.carSectionTitles = [String](self.carsDictionary.keys)
                     
                     self.carSectionTitles = self.carSectionTitles.sorted(by: { $0 < $1 })
+                    self.getremainContactsOrAccounts(name: "contact", orgID: orgID)
                     }
                 }else{
                     let contactModel = ContactListModel.init(fromDictionary: jsonResponse)
@@ -215,11 +366,11 @@ class AllContactsCoontroller: UIViewController {
                     print(self.carSectionTitles)
                     
                     self.carSectionTitles = self.carSectionTitles.sorted(by: { $0 < $1 })
+                    self.getremainContactsOrAccounts(name: "company", orgID: orgID)
+
                 }
                 }
-               
                     self.tableView.reloadData()
-                
             }
         },  onFailure: { error in
             print(error.localizedDescription)
@@ -362,6 +513,10 @@ extension AllContactsCoontroller: UITableViewDelegate, UITableViewDataSource {
                     if contactName == carTitle {
                         let controller:NewAccountsController = self.storyboard?.instantiateViewController(withIdentifier:"NewAccountsController") as! NewAccountsController
                         controller.contactInfoDetail = accountList[index]
+                        controller.allmainaccountList = accountList
+                        controller.allContactList = contactList
+                        controller.passTaskList = self.taskmodelobj
+                        controller.passAppointmentList = self.appointmentList
                         self.navigationController?.pushViewController(controller, animated: true)
                         return
                     }
@@ -384,7 +539,6 @@ extension AllContactsCoontroller: UITableViewDelegate, UITableViewDataSource {
                         return
                     }
                     
-                    
                     for index in 0..<contactList.count {
                         let result = contactList[index]
                         let contactName:String = "\(result.id!)"
@@ -392,7 +546,10 @@ extension AllContactsCoontroller: UITableViewDelegate, UITableViewDataSource {
                         if contactName == carTitle {
                             let controller:ContactssController = self.storyboard?.instantiateViewController(withIdentifier:"ContactssController") as! ContactssController
                             controller.contactInfoDetail = contactList[index]
-                            print(contactList)
+                            controller.allContactList = contactList
+                            controller.allmainaccountList = accountList
+                            controller.passTaskList = self.taskmodelobj
+                            controller.passAppointmentList = self.appointmentList
                             self.navigationController?.pushViewController(controller, animated: true)
                             return
                         }
@@ -493,7 +650,7 @@ extension AllContactsCoontroller: UITableViewDelegate, UITableViewDataSource {
             "PassKey": passKey
             ] as [String : Any]
         
-        let request = NSMutableURLRequest(url: NSURL(string: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/delete.json")! as URL,
+        let request = NSMutableURLRequest(url: NSURL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/delete.json")! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
                                           timeoutInterval: 10.0)
         request.httpMethod = "POST"
@@ -593,7 +750,6 @@ extension AllContactsCoontroller: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
 //        var filteredcontactList:[ContactListResult] = []
 //        var filteredaccountList:[GetAccountsListResult] = []
-        
         
         if self.fromAccounts {
             accountList = filteredaccountList.filter {

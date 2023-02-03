@@ -11,19 +11,16 @@
 #import "SSCalendarEventsCell.h"
 #import "SSDayNode.h"
 #import "SSConstants.h"
-#import "SSEvent.h"
 
 @implementation SSCalendarDayViewController
 
 #pragma mark - Lifecycle Methods
 
-- (id)initWithView:(UICollectionView *)view andDict:(NSDictionary*)result
+- (id)initWithView:(UICollectionView *)view
 {
     self = [super init];
     if (self)
     {
-        
-        _listAppointments = result;
         self.view = view;
         
         view.collectionViewLayout = [[SSCalendarDayLayout alloc] init];
@@ -31,9 +28,6 @@
 
         NSBundle *bundle = [SSCalendarUtils calendarBundle];
         [view registerNib:[UINib nibWithNibName:@"SSCalendarEventsCell" bundle:bundle] forCellWithReuseIdentifier:@"EventsCell"];
-        self.view.delegate = self;
-        self.view.dataSource = self;
-        
     }
     return self;
 }
@@ -85,7 +79,6 @@
 
 - (void)reloadDay
 {
-    if(_day != nil){
     NSMutableArray *newVisibleDays = [NSMutableArray arrayWithObject:_day];
     
     NSInteger index = [SSCalendarUtils numberOfDaysFrom:startDate To:_day.date];
@@ -105,25 +98,10 @@
     self.visibleDays = newVisibleDays;
     [_view reloadData];
     
-    [[NSUserDefaults standardUserDefaults]setObject:_day.date forKey:@"eventStartDate"];
-    [[NSUserDefaults standardUserDefaults]synchronize];
-    
-//    SSDayNode *day = _day;
-//    if(day.events > 0 ){
-//        SSEvent *event = day.events[0];
-//        [[NSUserDefaults standardUserDefaults]setObject:_day.date forKey:@"eventStartDate"];
-//        [[NSUserDefaults standardUserDefaults]synchronize];
-//    }else{
-//        [[NSUserDefaults standardUserDefaults]setObject:[NSDate date] forKey:@"eventStartDate"];
-//        [[NSUserDefaults standardUserDefaults]synchronize];
-//    }
-    
-    
+
     index = [_visibleDays indexOfObject:_day];
     NSIndexPath *indexPath = [NSIndexPath indexPathForItem:index inSection:0];
     [_view scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionLeft animated:NO];
-    }
-    
 }
 
 
@@ -145,21 +123,10 @@
 {
     static NSString *CellIdentifier = @"EventsCell";
     SSCalendarEventsCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:CellIdentifier forIndexPath:indexPath];
-    cell.listAppointments = _listAppointments;
+    
     cell.day = [_visibleDays objectAtIndex:indexPath.row];
+    
     return cell;
 }
--(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    
-//    SSDayNode *day = [_visibleDays objectAtIndex:indexPath.row];
-//    if(day.events > 0 ){
-//        SSEvent *event = day.events[0];
-//        [[NSUserDefaults standardUserDefaults]setObject:event.startDate forKey:@"eventStartDate"];
-//        [[NSUserDefaults standardUserDefaults]synchronize];
-//    }else{
-//        [[NSUserDefaults standardUserDefaults]setObject:[NSDate date] forKey:@"eventStartDate"];
-//        [[NSUserDefaults standardUserDefaults]synchronize];
-//    }
-   
-}
+
 @end

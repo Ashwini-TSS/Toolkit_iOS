@@ -53,7 +53,7 @@ class NewAppliedProcess: UIViewController {
         let dateFormatter = DateFormatter()
         let tempLocale = dateFormatter.locale // save locale temporarily
         dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
         if let date = dateFormatter.date(from: dateString) {
             dateFormatter.dateFormat = "YYYY-MM-dd" ; //"dd-MM-yyyy HH:mm:ss"
             dateFormatter.locale = tempLocale // reset the locale --> but no need here
@@ -72,7 +72,7 @@ class NewAppliedProcess: UIViewController {
         let result = formatter.string(from: date)
         fieldInitializationDate.text = result
         formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
         self.initDate = formatter.string(from: date)
         
         setupProcessList()
@@ -144,15 +144,12 @@ class NewAppliedProcess: UIViewController {
             self.fieldContact.placeholder = "Search Company"
             
             if appliedProcess != nil {
-                
                 if appliedProcess.CompanyId != nil {
                     getCompany(companyID: appliedProcess.CompanyId)
                 }
-                
             }else{
                 getCompanyLists()
             }
-            
             
         }
     }
@@ -239,12 +236,9 @@ class NewAppliedProcess: UIViewController {
         APIManager.sharedInstance.postRequestCall(postURL: searchURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(json)
-                
                 let model = searchAccountClassModel.init(fromDictionary: jsonResponse)
                 if model.valid == true {
-                    
                     self.getSearchList = model.results
-
                     for index in 0..<model.results.count {
                         let getResult = model.results[index]
                         if getResult.id == companyID {
@@ -430,7 +424,7 @@ class NewAppliedProcess: UIViewController {
                                    "DataObject":dataObject]
         print(json)
         
-        APIManager.sharedInstance.postRequestCall(postURL:"https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/create.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL:globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/create.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(json)
                 if let getValid = jsonResponse["Valid"] as? Bool {
@@ -557,7 +551,7 @@ class NewAppliedProcess: UIViewController {
                                    "PageOffset": 1,
                                    "ResultsPerPage": 5000]
         print(json)
-        APIManager.sharedInstance.postRequestCall(postURL:"https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL:globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(json)
                 let result = familyContactClassModel.init(fromDictionary: jsonResponse)
@@ -585,7 +579,7 @@ class NewAppliedProcess: UIViewController {
                                    "PageOffset": 1,
                                    "ResultsPerPage": 5000]
         print(json)
-        APIManager.sharedInstance.postRequestCall(postURL:"https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL:globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(json)
                 let model = searchAccountClassModel.init(fromDictionary: jsonResponse)
@@ -818,11 +812,6 @@ extension NewAppliedProcess: CZPickerViewDelegate, CZPickerViewDataSource {
             }
             
             self.fieldAppointmentType.text = contactTypes[row] as? String
-            
-            
-            
-            
-            
         }else if pickerView.tag == 1 {
             
             let getcontact:familyContactResult = contactsList[row]
@@ -1003,7 +992,7 @@ extension NewAppliedProcess:UITextFieldDelegate {
                     self.fieldInitializationDate.text = formatter.string(from: date!)
                     
                     formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
                     self.initDate = formatter.string(from: date!)
                     
                     // TODO: you code here

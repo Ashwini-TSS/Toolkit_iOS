@@ -41,9 +41,10 @@ class ContactsUsViewcontroller: UIViewController,MFMailComposeViewControllerDele
     func configureMailComposer() -> MFMailComposeViewController{
         let mailComposeVC = MFMailComposeViewController()
         mailComposeVC.mailComposeDelegate = self
-        mailComposeVC.setToRecipients(["clientsupport@bluesquareapps.com"])
-        mailComposeVC.setSubject("Subject for email")
-        mailComposeVC.setMessageBody("Email message string", isHTML: false)
+//        mailComposeVC.setToRecipients(["clientsupport@bluesquareapps.com"])
+        mailComposeVC.setToRecipients(["support@bluesquareapps.com"])        
+        mailComposeVC.setSubject("Toolkit CRM")
+//        mailComposeVC.setMessageBody("Email message string", isHTML: false)
         return mailComposeVC
     }
     

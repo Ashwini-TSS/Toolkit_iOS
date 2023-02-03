@@ -9,10 +9,9 @@
 import UIKit
 import SSCalendar
 var StrCondition : String!
-
 class CalendarController: UIViewController {
     
-    
+    var isdrag : Bool = false
     @IBOutlet weak var btnListView: UIButton!
     @IBOutlet weak var btnBack: UIButton!
     @IBOutlet weak var calendarView: UIView!
@@ -22,10 +21,15 @@ class CalendarController: UIViewController {
     var appointmentColorList:NSMutableArray = []
     var pushed:Bool = false
     var appointmentDict:NSDictionary = [:]
-    
+    var parseFilterList : [String] = []
+    var parseUserList : [String] = []
     var isalldayevent : String = "false"
     
-   
+    var indexvalue : Int = 0
+    var  dummyobj : DummyModal!
+
+    var appointmentColor : NSMutableArray = []
+    var appointmentIDD : NSMutableArray = []
     
     var isalldayeventcondition : String!
     var items: [[DropdownItem]]!
@@ -42,23 +46,30 @@ class CalendarController: UIViewController {
         setNavigationBarItem()
         self.title = ""
         
-        
         UserDefaults.standard.removeObject(forKey: "filterarray")
+        
+        UserDefaults.standard.set("no", forKey: "DAYALL")
         
         SSStyles.applyNavigationBarStyles()
         
         self.navigationController?.navigationBar.backgroundColor = .red
-        
+
         self.navigationController?.navigationBar.barTintColor = .black
-        
+
         self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.white]
+        
+        self.navigationController?.navigationBar.barStyle = UIBarStyle.black
+        
+        self.navigationController?.navigationBar.tintColor = UIColor.white
+        
+       // self.demoactivity()
         
         // TODO: you code here
     }
     
     
     override func viewDidAppear(_ animated: Bool) {
-        UIApplication.statusBarBackgroundColor = .blue
+       // UIApplication.statusBarBackgroundColor = .blue
     }
     @IBAction func tappedSearch(_ sender: Any) {
         let controller:SearchCalendarController = self.storyboard?.instantiateViewController(withIdentifier: "SearchCalendarController") as! SearchCalendarController
@@ -73,11 +84,9 @@ class CalendarController: UIViewController {
         //        NotificationCenter.default.removeObserver(self)
         //NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "pushToActivity"), object: nil)
         // NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "pushToActivity1"), object: nil)
-        
-        
         let dictObject:NSDictionary = notfication.object as! NSDictionary
         let getAddress:OpenActivityActivity = OpenActivityActivity.init(fromDictionary: dictObject as! [String : Any])
-        let controller:NewTaskController = (self.storyboard?.instantiateViewController(withIdentifier: "NewTaskController") as? NewTaskController)!
+        let controller:UpdatenewtaskVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewtaskVC") as? UpdatenewtaskVC)!
         controller.openedActivties = getAddress
         self.navigationController?.pushViewController(controller, animated: true)
         
@@ -105,19 +114,21 @@ class CalendarController: UIViewController {
             StrCondition = "Second"
             OperationQueue.main.addOperation {
                 let getAddress:OpenActivityActivity = OpenActivityActivity.init(fromDictionary: dictObject as! [String : Any])
-                if let controller = self.storyboard?.instantiateViewController(withIdentifier: "NewAppointmentsController") as? NewAppointmentsController {
+                if let controller = self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewappointmentVC") as? UpdatenewappointmentVC {
                     controller.Editvalue = "edit"
                     controller.EditCondition = "calendar"
                     if(self.isalldayevent == "true"){
-                        controller.isallday = self.isalldayevent
+                        controller.isallday = "true"
                         self.isalldayevent = "false"
                     }
                     else{
                         controller.isallday = "false"
                     }
                     controller.openedActivties = getAddress
+                    controller.passCalendarActivityList = self.getCalendarActivityList
                     let nvc: UINavigationController = UINavigationController(rootViewController: controller)
-                    nvc.navigationBar.tintColor = .white
+                    nvc.navigationBar.tintColor = .black
+                    nvc.navigationBar.barTintColor = .black
                     nvc.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.white]
                     
                     let appDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -286,7 +297,7 @@ class CalendarController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(self.hideListView(notification:)), name: Notification.Name("hidedDailyView"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.methodOfReceivedNotification(notification:)), name: Notification.Name("tappedFilter"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.yearReceivedNotification(notification:)), name: Notification.Name("yearPicked"), object: nil)
-        
+        NotificationCenter.default.addObserver(self, selector: #selector(self.getDragMenthods), name: Notification.Name("dragappointment"), object: nil)
         
         
         let notificationCenter = NotificationCenter.default
@@ -311,15 +322,31 @@ class CalendarController: UIViewController {
         
         let dateformatter = DateFormatter()
         dateformatter.dateFormat = "YYYY"
-        let currentYear = dateformatter.string(from: Date())
-        
+        let monthsToAdd = 0
+                let daysToAdd = 0
+                let yearsToAdd = -1
+        var dateComponent = DateComponents()
+               
+               dateComponent.month = monthsToAdd
+               dateComponent.day = daysToAdd
+               dateComponent.year = yearsToAdd
+               
+        let futureDate = Calendar.current.date(byAdding: dateComponent, to: Date())!
+        let currentYear = dateformatter.string(from: futureDate)
+
+//        let currentYear = "2021"
         startTime = "\(currentYear)-01-01"
         endTime = "\(2100)-12-31"
         selectedYear = currentYear
         UserDefaults.standard.set(currentYear, forKey: "selectedYear")
         
     }
-    
+    ////// mvcdxwq
+    @objc func getDragMenthods()
+    {
+        self.isdrag = true
+        self.getAppointmentTypesList()
+    }
     func getAppointmentTypesList(){
         let json: [String: Any] = ["PageOffset": 1,
                                    "ResultsPerPage": 5000,
@@ -340,7 +367,7 @@ class CalendarController: UIViewController {
                 self.appointmentIDList = []
                 self.appointmentColorList = []
                 if(!model.valid){
-                   self.loginUser()
+                    self.loginUser()
                 }
                 else {
                     var getModelResult:[GetAppointmentTypesResult] = model.results
@@ -394,10 +421,36 @@ class CalendarController: UIViewController {
         })
     }
     
+   
+    
+  
+    
+    
     func getActivitiesList(){
         
-//        {"ObjectName":null,"From":"2019-06-29T18:30:00.000Z","To":"2019-08-10T18:30:00.000Z","IncludeAppointments":true,"IncludeTasks":false,"IncludeAttendees":true,"ForUsers":[],"ForContacts":null,"ForCompanies":null,"PassKey":"2IJRDyvyRjzsWgy9IU3JoFj9Hhn1yLIYUamcxoaW3gQ8HDPqPM2hwaQJyLaZZcnaf03Zi420gRPfXmAP2LxeH0w","OrganizationId":"9eb96243-e446-4ed4-ba6d-4bf3e0cb1c67"}
+        let teamlist = UserDefaults.standard.string(forKey: "filter_team")
+
+        if(self.parseFilterList.count == 0)
+        {
+            let appoinmentlist = UserDefaults.standard.string(forKey: "filter_appoin")
+            if(appoinmentlist != nil && appoinmentlist != "")
+            {
+                self.parseFilterList = appoinmentlist?.components(separatedBy: ",") ?? []
+            }
+        }
         
+        if (self.parseUserList.count > 0)
+        {
+            forUsers = self.parseUserList as NSArray
+        }
+        else if (teamlist != nil && teamlist != "")
+        {
+            forUsers = teamlist?.components(separatedBy: ",") as NSArray? ?? []
+        }else{
+            forUsers = []
+            forAppointmentTypes = []
+        }
+       
         let json:[String: Any] = ["ObjectName":"",
                                   "From":startTime,
                                   "To":endTime,
@@ -416,12 +469,156 @@ class CalendarController: UIViewController {
                 //                print(json)
                 self.getCalendarActivityList = []
                 self.appointmentDict = [:]
+                var filterdict : [GetCalendarListActivity] = []
                 let model = GetCalendarListRootClass.init(fromDictionary: jsonResponse)
                 if model.valid {
-                    self.getCalendarActivityList = model.activities
+                    if(self.parseFilterList.count > 0)
+                    {
+                        for (index,element) in model.activities.enumerated()
+                        {
+                            let appoinid = element.activity.appointmentTypeId as? String
+                            if(appoinid != nil){
+                                if(self.parseFilterList.contains(appoinid!))
+                                {
+                                    filterdict.append((model.activities?[index])!)
+                                }}
+                        }
+                        
+                        var abc : GetCalendarListActivity!
+                        var sample : GetCalendarListActivity!
+                        var dateString : String!
+                        for (index,element) in filterdict.enumerated()
+                        {
+                            var appoinid = element.activity.appointmentTypeId as? String
+                            if(appoinid != nil){
+                            }
+                            else{
+                                appoinid = ""
+                            }
+                            let start : String = element.activity.startTime
+                            let end : String = element.activity.endTime
+                            let dateFormatter = DateFormatter()
+                            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+                            var st_date : Date = dateFormatter.date(from: start)!
+                            let en_date : Date = dateFormatter.date(from: end)!
+                            let diff = Calendar.current.dateComponents([.day], from: st_date, to: en_date)
+                            if diff.day == 0 {
+                            } else {
+                                for isdex in stride(from: diff.day!, to: 0, by: -1) {
+                                    let tomorrow = Calendar.current.date(byAdding:.day,value: 1,to: st_date)
+                                    dateString = dateFormatter.string(from: tomorrow!)
+                                    st_date = tomorrow!
+                                    sample = element.copy() as? GetCalendarListActivity
+                                    abc = element.activity.copy() as? GetCalendarListActivity
+                                    if(isdex == 1)
+                                    {  let date = dateString.components(separatedBy: "T")
+                                        if(date.count > 0){
+                                            let combinedate = date.first! + "T18:29:00" + ".000Z"
+                                            let enddate = date.first! + "T18:29:59" + ".000Z"
+                                            abc.startTime = combinedate
+                                            abc.endTime = enddate
+                                        }
+                                    }else
+                                    {
+                                        let date = dateString.components(separatedBy: "T")
+                                        if(date.count > 0){
+                                            let combinedate = date.first! + "T18:29:00" + ".000Z"
+                                            let enddate = date.first! + "T18:29:59" + ".000Z"
+                                            abc.startTime = combinedate
+                                            abc.endTime = enddate
+                                        }else
+                                        {
+                                            abc.startTime = dateString
+                                        }
+                                    }
+                                    sample.activity = abc
+                                    filterdict.append(sample)
+                                }
+                            }
+                        }
+                        self.getCalendarActivityList = filterdict
+                        let encodedData = NSKeyedArchiver.archivedData(withRootObject: self.getCalendarActivityList)
+                        UserDefaults.standard.set(encodedData, forKey: "longterm")
+                        
+                    }else
+                    {
+                        var abc : GetCalendarListActivity!
+                        var def : GetCalendarListActivity!
+                        var sample : GetCalendarListActivity!
+                        var dateString : String!
+                        
+                        
+                        for (index,element) in model.activities.enumerated()
+                        {
+                            let start : String = model.activities[index].activity.startTime
+                            let end : String = model.activities[index].activity.endTime
+                            
+                            var appoinid = element.activity.appointmentTypeId as? String
+                            if(appoinid != nil){
+                            }
+                            else{
+                                appoinid = ""
+                            }
+                            var en_date : Date!
+                            let dateFormatter = DateFormatter()
+                            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+                            var st_date : Date = dateFormatter.date(from: start)!
+                            if let enn_date : Date = dateFormatter.date(from: end){
+                                en_date = enn_date
+                            }else
+                            {
+                                en_date = dateFormatter.date(from: "2020-03-08T01:59:00.000Z")
+//                                let calendar = Calendar.current
+//                                let reducedate = calendar.date(byAdding: .minute, value: -5, to: en_date)
+                            }
+                           
+                            let diff = Calendar.current.dateComponents([.day], from: st_date, to: en_date)
+                            if diff.day == 0 {
+                                
+                            } else {
+                                    for isdex in stride(from: diff.day!, to: 0, by: -1) {
+                                        let tomorrow = Calendar.current.date(byAdding:.day,value: 1,to: st_date)
+                                        dateString = dateFormatter.string(from: tomorrow!)
+                                        st_date = tomorrow!
+                                        sample = element.copy() as? GetCalendarListActivity
+                                        abc = element.activity.copy() as? GetCalendarListActivity
+                                        if(isdex == 1)
+                                        {  let date = dateString.components(separatedBy: "T")
+                                            if(date.count > 0){
+                                                let combinedate = date.first! + "T18:29:00" + ".000Z"
+                                                let enddate = date.first! + "T18:29:59" + ".000Z"
+                                                abc.startTime = combinedate
+                                                abc.endTime = enddate
+                                            }
+                                        }else
+                                        {
+                                            let date = dateString.components(separatedBy: "T")
+                                            if(date.count > 0){
+                                                let combinedate = date.first! + "T18:29:00" + ".000Z"
+                                                let enddate = date.first! + "T18:29:59" + ".000Z"
+                                                abc.startTime = combinedate
+                                                abc.endTime = enddate
+                                            }else
+                                            {
+                                                abc.startTime = dateString
+                                            }
+                                        }
+                                        sample.activity = abc
+                                        model.activities.append(sample)
+                                    }
+                        }
+                            
+                        }
+                        self.getCalendarActivityList = model.activities
+                        let encodedData = NSKeyedArchiver.archivedData(withRootObject: self.getCalendarActivityList)
+                        UserDefaults.standard.set(encodedData, forKey: "longterm")
+                    }
                     self.getCalendarActivityList = self.getCalendarActivityList.sorted { $0.subject.localizedCaseInsensitiveCompare($1.subject) == ComparisonResult.orderedAscending }
                     self.appointmentDict = jsonResponse
+                    if(!self.isdrag){
                     self.setupCalendarView()
+                    }
+                    self.isdrag = false
                 }
             }
         },  onFailure: { error in
@@ -432,6 +629,8 @@ class CalendarController: UIViewController {
         })
     }
     
+   
+    
     func setupCalendarView(){
         
         for v in calendarView.subviews{
@@ -440,7 +639,7 @@ class CalendarController: UIViewController {
         UserDefaults.standard.set(selectedYear, forKey: "selectedYear") //setObject
         
         let annualViewController:SSCalendarAnnualViewController = (SSCalendarAnnualViewController(events: generateEvents()))!
-        annualViewController.listAppointments = (appointmentDict as! [AnyHashable : Any])
+        //annualViewController.listAppointments = (appointmentDict as! [AnyHashable : Any])
         //getAppointmentList
         let navigationController = UINavigationController(rootViewController: annualViewController)
         navigationController.navigationBar.isTranslucent = false
@@ -491,14 +690,27 @@ class CalendarController: UIViewController {
                     }
                     
                     var getColor:String = ""
+                    var getID:String = ""
                     
                     if result.appointmentTypeId != nil {
                         
                         if self.appointmentIDList.contains(result.appointmentTypeId) {
                             let getIndex = self.appointmentIDList.index(of: result.appointmentTypeId)
                             getColor = self.appointmentColorList[getIndex] as! String
+                            getID = self.appointmentIDList[getIndex] as! String
                             getTime = getTime + "!@#\(getColor)"
+                            appointmentColor.add(getColor)
+                            appointmentIDD.add(getID)
+                        }else{
+                            appointmentIDD.add("")
+                            appointmentColor.add("a5c2f2")
                         }
+                        
+                        let encodedData = NSKeyedArchiver.archivedData(withRootObject: appointmentColorList)
+                        UserDefaults.standard.set(encodedData, forKey: "ColorAppID")
+                        
+                        let encodedData1 = NSKeyedArchiver.archivedData(withRootObject: appointmentIDList)
+                        UserDefaults.standard.set(encodedData1, forKey: "AppointAppID")
                     }
                     var subjectName:String = ""
                     var subjectDescription:String = ""
@@ -509,7 +721,15 @@ class CalendarController: UIViewController {
                     if let getSubject:String = result.descriptionField {
                         subjectDescription = getSubject
                     }
-                    events.append(generateEvent(getYear!, month: getMonth!, Date: getDate!, info: subjectName, desc: subjectDescription, time: getTime, aID: result.id!, appointmentTypeID: result.AppointmentTypeId,isDay: result.allDay))
+                    if let value = result.appointmentTypeId as? String {
+                        print(value)
+                        if result.appointmentTypeId != nil {
+                            events.append(generateEvent(getYear!, month: getMonth!, Date: getDate!, info: subjectName, desc: subjectDescription, time: getTime, aID: result.id!, appointmentTypeID: result.appointmentTypeId! as! String,isDay: result.allDay))
+                        }
+                    }
+                    else{
+                        events.append(generateEvent(getYear!, month: getMonth!, Date: getDate!, info: subjectName, desc: subjectDescription, time: getTime, aID: result.id!, appointmentTypeID: "",isDay: result.allDay))
+                    }
                 }
                 
                 if !allYears.contains(startYear) {
@@ -536,7 +756,7 @@ class CalendarController: UIViewController {
         event.desc = desc
         event.location = aID
         event.contact = appointmentTypeID
-        event.isAllday = isDay
+        //event.isAllday = isDay
         return event
     }
     func converYearToString(dateString:String) -> String{
@@ -686,3 +906,7 @@ extension UIApplication {
         }
     }
 }
+
+
+
+

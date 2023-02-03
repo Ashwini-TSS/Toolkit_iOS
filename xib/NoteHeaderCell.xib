@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="NoteHeaderCell" rowHeight="66" id="KGk-i7-Jjw" customClass="NoteHeaderCell" customModule="Blue_square" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="65"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="320" height="64.5"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="    Notes" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="omy-8X-N10">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="65"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="65" id="ZSR-CY-Ewf"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
+                        <nil key="textColor"/>
+                        <color key="highlightedColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </label>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ONi-NE-f5e">
+                        <rect key="frame" x="0.0" y="65" width="320" height="44"/>
+                        <color key="backgroundColor" red="0.94892686605453491" green="0.94906681776046753" blue="0.94901960784313721" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="44" id="6Mc-Bo-pOO"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                        <state key="normal" title="Add note" image="ic_add_plus">
+                            <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </state>
+                    </button>
+                    <imageView clipsSubviews="YES" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic_right_black_arrow" translatesAutoresizingMaskIntoConstraints="NO" id="O49-Lr-nv1">
+                        <rect key="frame" x="297" y="22.5" width="20" height="20"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="20" id="2X6-pf-WPx"/>
+                            <constraint firstAttribute="width" constant="20" id="zdL-EW-J2d"/>
+                        </constraints>
+                    </imageView>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="ONi-NE-f5e" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="4yO-XG-yVi"/>
+                    <constraint firstAttribute="trailing" secondItem="ONi-NE-f5e" secondAttribute="trailing" id="6k7-ZP-7Yv"/>
+                    <constraint firstItem="O49-Lr-nv1" firstAttribute="centerY" secondItem="omy-8X-N10" secondAttribute="centerY" id="94r-Ex-z5b"/>
+                    <constraint firstAttribute="trailing" secondItem="omy-8X-N10" secondAttribute="trailing" id="QNt-PP-8wR"/>
+                    <constraint firstItem="omy-8X-N10" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="VNL-jb-2uK"/>
+                    <constraint firstAttribute="trailing" secondItem="O49-Lr-nv1" secondAttribute="trailing" constant="3" id="e30-fK-X0a"/>
+                    <constraint firstItem="ONi-NE-f5e" firstAttribute="top" secondItem="omy-8X-N10" secondAttribute="bottom" id="kpL-ye-ajv"/>
+                    <constraint firstItem="omy-8X-N10" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="oxi-wJ-fdG"/>
+                </constraints>
+            </tableViewCellContentView>
+            <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
+            <connections>
+                <outlet property="addnotebtn" destination="ONi-NE-f5e" id="3ZO-dn-bSE"/>
+                <outlet property="imgarrow" destination="O49-Lr-nv1" id="vmt-op-Sb3"/>
+            </connections>
+            <point key="canvasLocation" x="3703" y="130"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="ic_add_plus" width="26" height="26"/>
+        <image name="ic_right_black_arrow" width="26" height="26"/>
+    </resources>
+</document>

@@ -17,11 +17,7 @@
 - (void)awakeFromNib
 {
     [super awakeFromNib];
-    _tableView.tableFooterView = nil;
-    
-    self.tableViewController = [[SSCalendarEventsTableViewController alloc] initWithTableView:_tableView andDict:self.listAppointments];
-//    self.listAppointments = _listAppointments;
-    
+    self.tableViewController = [[SSCalendarEventsTableViewController alloc] initWithTableView:_tableView];
     _tableView.dataSource = _tableViewController;
     _tableView.delegate = _tableViewController;
     
@@ -32,7 +28,7 @@
     [self.contentView addSubview:loadingView];*/
 }
 
-//- (void)setListAppointmentCell:
+
 #pragma mark - Setter Methods
 
 - (void)setDay:(SSDayNode *)day

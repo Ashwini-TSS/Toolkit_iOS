@@ -47,14 +47,17 @@ class SignupController: UITableViewController {
         users.setValue(lastnameField.text!, forKey: "LastName")
 
         let json: [String: Any] = ["User": users,
+                                   "Device":"mobile",
                                        "Password": passwordField.text!]
        
-        
+        print(json)
         APIManager.sharedInstance.postRequestCall(postURL: signupURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
+                print(jsonResponse)
                 let logModel:LoginModel = LoginModel.init(fromDictionary: jsonResponse)
                 if logModel.valid {
                     DispatchQueue.main.async(execute: {
+                        globalURL  = "https://toolkit.bluesquareapps.com"
                         AJAlertController.initialization().showAlertWithOkButton(aStrMessage: "Signup submitted successfully. Please check your email to proceed.") { (index, title) in
                             self.dismiss(animated: true, completion: nil)
                         }

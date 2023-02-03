@@ -128,11 +128,11 @@ class SearchCalendarController: UITableViewController,UISearchBarDelegate {
             let getType:String = searchActivity[indexPath.section].type
             let getAddress:OpenActivityActivity = OpenActivityActivity.init(fromDictionary: searchActivity[indexPath.section].toDictionary())
             if getType == "Task" {
-                let controller:NewTaskController = (self.storyboard?.instantiateViewController(withIdentifier: "NewTaskController") as? NewTaskController)!
+                let controller:UpdatenewtaskVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewtaskVC") as? UpdatenewtaskVC)!
                 controller.openedActivties = getAddress
                 self.navigationController?.pushViewController(controller, animated: true)
             }else if getType == "Appointment" || getAddress.type == "Appointments" {
-                let controller:NewAppointmentsController = (self.storyboard?.instantiateViewController(withIdentifier: "NewAppointmentsController") as? NewAppointmentsController)!
+                let controller:UpdatenewappointmentVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewappointmentVC") as? UpdatenewappointmentVC)!
                 controller.EditCondition = "calendar"
                 controller.openedActivties = getAddress
                 self.navigationController?.pushViewController(controller, animated: true)
@@ -142,11 +142,11 @@ class SearchCalendarController: UITableViewController,UISearchBarDelegate {
         let getType:String = getCalendarActivityList[indexPath.section].type
         let getAddress:OpenActivityActivity = OpenActivityActivity.init(fromDictionary: getCalendarActivityList[indexPath.section].toDictionary())
         if getType == "Task" {
-            let controller:NewTaskController = (self.storyboard?.instantiateViewController(withIdentifier: "NewTaskController") as? NewTaskController)!
+            let controller:UpdatenewtaskVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewtaskVC") as? UpdatenewtaskVC)!
             controller.openedActivties = getAddress
             self.navigationController?.pushViewController(controller, animated: true)
         }else if getType == "Appointment" || getAddress.type == "Appointments" {
-            let controller:NewAppointmentsController = (self.storyboard?.instantiateViewController(withIdentifier: "NewAppointmentsController") as? NewAppointmentsController)!
+            let controller:UpdatenewappointmentVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewappointmentVC") as? UpdatenewappointmentVC)!
             controller.EditCondition = "calendar"
             controller.openedActivties = getAddress
             self.navigationController?.pushViewController(controller, animated: true)

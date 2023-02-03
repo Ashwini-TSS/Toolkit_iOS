@@ -18,6 +18,8 @@
     NSArray *searchResults;
     NSArray *addEvents;
     CGFloat lastContentOffset;
+    
+
 }
 @property (nonatomic, strong) IBOutlet UISearchBar *searchBar;
 @property (nonatomic, strong) IBOutlet UIView *whiteBG;

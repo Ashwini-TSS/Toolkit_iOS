@@ -26,6 +26,7 @@ class CreateRecurrencePattern: UITableViewController {
     var yearMonthsList:NSArray = []
     var appointmentNameList:NSMutableArray = []
     var appointmentIdList:NSMutableArray = []
+    var appointmentColor:NSMutableArray = []
     
     var assigneeNameList:NSMutableArray = []
     var assigneeIDSList:NSMutableArray = []
@@ -160,6 +161,7 @@ class CreateRecurrencePattern: UITableViewController {
 //            fieldDayOffset.text = "\(serviceList.dayOffset!)"
 //            fieldAssigneeType.text = serviceList.assigneeType
             fieldCustomPattern.text = serviceList.activityType
+            fieldCustomPattern.text = "Daily"
             self.fieldCustomPattern.placeholder = "Activity Type"
             isAllDay = serviceList.allDay
             isRollOver = serviceList.rollOver
@@ -180,9 +182,9 @@ class CreateRecurrencePattern: UITableViewController {
                                        "PassKey":passKey,
                                        "OrganizationId":currentOrgID,
                                        "PageOffset": 1,
-                                       "ResultsPerPage": 500,
+                                       "ResultsPerPage": 5000,
                                        "PageOffset":1,
-                                       "ResultsPerPage":100]
+                                       "ResultsPerPage":10000]
             print(json)
             APIManager.sharedInstance.postRequestCall(postURL: getURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
@@ -204,6 +206,21 @@ class CreateRecurrencePattern: UITableViewController {
         }
         
         if((UserDefaults.standard.object(forKey: "showingDayView")) != nil) {
+            
+            let vals = UserDefaults.standard.bool(forKey: "Goday")
+            if(vals)
+            {
+                let cdate = UserDefaults.standard.string(forKey: "Godate")!
+                let datefor = cdate + "T" + " 12:30:00.000Z"
+                filedRecurrenceStart.text = self.convertDateMonthString(dateString: datefor)
+                let dart = self.convertStringToDate(dateString: datefor)
+
+                let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:00:ss.SSSZ"
+                self.lblRecurrenceStartTime = formatter.string(from: dart)
+            }else{
+            
             let formatter = DateFormatter()
             formatter.dateFormat = "hh:00 a"
             let getStarttTime:String = formatter.string(from: Date())
@@ -235,8 +252,46 @@ class CreateRecurrencePattern: UITableViewController {
             
             UserDefaults.standard.removeObject(forKey: "showingDayView")
             UserDefaults.standard.removeObject(forKey: "eventStartDate")
+            }
         }else{
             
+            let vals = UserDefaults.standard.bool(forKey: "Goday")
+            if(vals)
+            {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "hh:00 a"
+                let getStarttTime:String = formatter.string(from: Date())
+                fieldStartTime.text = getStarttTime
+                
+                formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:00:ss.SSSZ"
+                self.lblStartTime = formatter.string(from: Date())
+                
+                let calendar = Calendar.current
+                let date = calendar.date(byAdding: .hour, value: 1, to: Date())
+                formatter.dateFormat = "hh:00 a"
+                let getEndTime:String = formatter.string(from: date!)
+
+                fieldEndTime.text = getEndTime
+                formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:00:ss.SSSZ"
+                self.lblEndTime = formatter.string(from: date!)
+                
+                let dater = Date()
+                let hour = calendar.component(.hour, from: dater)
+                let minutes = calendar.component(.minute, from: dater)
+                
+                let cdate = UserDefaults.standard.string(forKey: "Godate")!
+                let datefor = cdate + "T" + "\(hour):\(minutes):00.000Z"
+//                filedRecurrenceStart.text = self.convertDateMonthString(dateString: datefor)
+                filedRecurrenceStart.text = cdate
+                
+                let dart = self.convertStringToDate(dateString: datefor)
+                formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:00:ss.SSSZ"
+                self.lblRecurrenceStartTime = formatter.string(from: dart)
+                
+            }else{
             let formatter = DateFormatter()
             formatter.dateFormat = "hh:00 a"
             let getStarttTime:String = formatter.string(from: Date())
@@ -265,6 +320,7 @@ class CreateRecurrencePattern: UITableViewController {
             formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
             formatter.dateFormat = "yyyy-MM-dd'T'HH:00:ss.SSSZ"
             self.lblRecurrenceStartTime = formatter.string(from: Date())
+            }
         }
 
         
@@ -330,7 +386,7 @@ class CreateRecurrencePattern: UITableViewController {
         let parameters = [
             "OrderBy": "",
             "ParentId": "",
-            "ResultsPerPage": 500,
+            "ResultsPerPage": 5000,
             "OrganizationId": currentOrgID,
             "PassKey": passKey,
             "ParentObjectName": "",
@@ -431,7 +487,7 @@ class CreateRecurrencePattern: UITableViewController {
                                    "PassKey":passKey]
         print(json)
         
-        APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 
                 print(json)
@@ -690,34 +746,82 @@ class CreateRecurrencePattern: UITableViewController {
         }
         profileUpdateAlert()
     }
+    func convertStringToDate(dateString : String) -> Date
+    {
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+        dateFormatter.dateFormat =  "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        if let date = dateFormatter.date(from: dateString) {
+            return date
+        }
+        return Date()
+
+    }
+    func convertDateMonthString(dateString:String) -> String{
+        if dateString.count == 0 {
+            return ""
+        }
+        //"yyyy-MM-dd hh:mm a"
+        let dateFormatter = DateFormatter()
+        let tempLocale = dateFormatter.locale // save locale temporarily
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+        dateFormatter.dateFormat =  "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        if let date = dateFormatter.date(from: dateString) {
+            dateFormatter.dateFormat = "yyyy-MM-dd" ; //"dd-MM-yyyy HH:mm:ss"
+            dateFormatter.locale = tempLocale // reset the locale --> but no need here
+            let dateString = dateFormatter.string(from: date)
+            print("EXACT_DATE : \(dateString)")
+            return dateString
+        }
+        return ""
+    }
     
+    func convertTimeString(dateString:String) -> String{
+        if dateString.count == 0 {
+            return ""
+        }
+        //"yyyy-MM-dd hh:mm a"
+        let dateFormatter = DateFormatter()
+        let tempLocale = dateFormatter.locale // save locale temporarily
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+        dateFormatter.dateFormat =  "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        if let date = dateFormatter.date(from: dateString) {
+            dateFormatter.dateFormat = "hh:mm a" ; //"dd-MM-yyyy HH:mm:ss"
+            dateFormatter.locale = tempLocale // reset the locale --> but no need here
+            let dateString = dateFormatter.string(from: date)
+            print("EXACT_DATE : \(dateString)")
+            return dateString
+        }
+        return ""
+    }
     func updateRecurrencePattern(){
         cancelBtn.isUserInteractionEnabled = false
         donelBtn.isUserInteractionEnabled = false
         if serviceList != nil {
             let dataObject:NSMutableDictionary = [:]
-            dataObject.setValue(fieldDescription.text!, forKey: "Description")
-            dataObject.setValue(lblEndTime, forKey: "EndTime")
-            dataObject.setValue(isRollOver, forKey: "RollOver")
-            dataObject.setValue(fieldSchedulingType.text!, forKey: "ActivityType")
-            dataObject.setValue(appointmentID, forKey: "AppointmentTypeId")
-            dataObject.setValue(lblStartTime, forKey: "StartTime")
-            dataObject.setValue(serviceList.sequence, forKey: "Sequence")
-            dataObject.setValue(fieldSubject.text!, forKey: "Subject")
-            dataObject.setValue(isAllDay, forKey: "AllDay")
-            if fieldSchedulingType.text == "Set Date" {
-                dataObject.setValue("StaticDate", forKey: "DeliverableType")
-                dataObject.setValue(deliverableDate, forKey: "DeliverableDate")
-                
-            }else{
-                dataObject.setValue(removeWhiteSpaceFromAString(string: fieldSchedulingType.text!), forKey: "DeliverableType")
-                dataObject.setValue("", forKey: "DeliverableDate")
-                
-            }
-            dataObject.setValue(serviceList.id!, forKey: "Id")
-            dataObject.setValue(patternID, forKey: "RecurrencePatternId")
-            dataObject.setValue(fieldLocation.text!, forKey: "Location")
-            dataObject.setValue(assigneeID, forKey: "AssigneeId")
+            
+                dataObject.setValue(fieldDescription.text!, forKey: "Description")
+                dataObject.setValue(lblEndTime, forKey: "EndTime")
+                dataObject.setValue(isRollOver, forKey: "RollOver")
+                dataObject.setValue(fieldSchedulingType.text!, forKey: "ActivityType")
+                dataObject.setValue(appointmentID, forKey: "AppointmentTypeId")
+                dataObject.setValue(lblStartTime, forKey: "StartTime")
+                dataObject.setValue(serviceList.sequence, forKey: "Sequence")
+                dataObject.setValue(fieldSubject.text!, forKey: "Subject")
+                dataObject.setValue(isAllDay, forKey: "AllDay")
+                if fieldSchedulingType.text == "Set Date" {
+                    dataObject.setValue("StaticDate", forKey: "DeliverableType")
+                    dataObject.setValue(deliverableDate, forKey: "DeliverableDate")
+                    
+                }else{
+                    dataObject.setValue(removeWhiteSpaceFromAString(string: fieldSchedulingType.text!), forKey: "DeliverableType")
+                    dataObject.setValue("", forKey: "DeliverableDate")
+                    
+                }
+                dataObject.setValue(serviceList.id!, forKey: "Id")
+                dataObject.setValue(patternID, forKey: "RecurrencePatternId")
+                dataObject.setValue(fieldLocation.text!, forKey: "Location")
+                dataObject.setValue(assigneeID, forKey: "AssigneeId")
             
             createService(jsonInput: dataObject)
             return
@@ -727,7 +831,7 @@ class CreateRecurrencePattern: UITableViewController {
         
         //IF PATTERN TYPE DAILY
         
-        if btnCustom.currentImage == UIImage.init(named:"ic_check") && fieldCustomPattern.text == "Daily" {
+        if fieldCustomPattern.text == "Daily" {
             dataObject.setValue("Daily", forKey: "PatternType")
             dataObject.setValue("MaintainDay", forKey: "RescheduleAlgorithm")
             dataObject.setValue(false, forKey: "EnableMonthOverlap")
@@ -760,7 +864,7 @@ class CreateRecurrencePattern: UITableViewController {
             dataObject.setValue(0, forKey: "MonthOfYear")
             createRecurrencePattern(jsonInput: dataObject)
         }
-        else if btnCustom.currentImage == UIImage.init(named:"ic_check") && fieldCustomPattern.text == "Weekly" {
+        else if  fieldCustomPattern.text == "Weekly" {
             dataObject.setValue("Weekly", forKey: "PatternType")
             dataObject.setValue("MaintainDay", forKey: "RescheduleAlgorithm")
             dataObject.setValue(false, forKey: "EnableMonthOverlap")
@@ -819,8 +923,7 @@ class CreateRecurrencePattern: UITableViewController {
             createRecurrencePattern(jsonInput: dataObject)
             
         }
-        else if btnCustom.currentImage == UIImage.init(named:"ic_check") && fieldCustomPattern.text == "Monthly" {
-            if btnRecurMonth.currentImage == UIImage.init(named:"ic_check") {
+        else if  fieldCustomPattern.text == "Monthly" {
                 dataObject.setValue("MonthlyN", forKey: "PatternType")
                 dataObject.setValue("MaintainDay", forKey: "RescheduleAlgorithm")
                 dataObject.setValue(false, forKey: "EnableMonthOverlap")
@@ -856,31 +959,11 @@ class CreateRecurrencePattern: UITableViewController {
                 dataObject.setValue(statusName, forKey: "Name")
                 createRecurrencePattern(jsonInput: dataObject)
                 
-            }else{
-                dataObject.setValue("MonthlyV", forKey: "PatternType")
-                dataObject.setValue("MaintainDay", forKey: "RescheduleAlgorithm")
-                dataObject.setValue(false, forKey: "EnableMonthOverlap")
-                dataObject.setValue(Int(fieldTheMonthCount.text!), forKey: "Interval")
-                dataObject.setValue("Schedule", forKey: "WeekendAvoidanceMode")
-                dataObject.setValue(fieldTheMonth.text!, forKey: "WeekOfMonth")
-                dataObject.setValue(0, forKey: "MonthOfYear")
-                
-                var statusName:String = "The \(fieldTheMonth.text!)"
-                
-                
-                if weekDays.count > 0 {
-                    let weekNames:String = weekDays.componentsJoined(by: ",")
-                    statusName = statusName + " \(weekNames) of every \((Int(fieldMonthCount.text!)?.ordinal)!) month"
-                }
-                dataObject.setValue(statusName, forKey: "Name")
-                createRecurrencePattern(jsonInput: dataObject)
-                
-            }
+           
             
             
-        } else if btnCustom.currentImage == UIImage.init(named:"ic_check") && fieldCustomPattern.text == "Yearly" {
+        } else if  fieldCustomPattern.text == "Yearly" {
             
-            if btnRecureEveryYear.currentImage == UIImage.init(named:"ic_check") {
                 dataObject.setValue("AnnuallyN", forKey: "PatternType")
                 dataObject.setValue("MaintainDay", forKey: "RescheduleAlgorithm")
                 dataObject.setValue(false, forKey: "EnableMonthOverlap")
@@ -914,54 +997,17 @@ class CreateRecurrencePattern: UITableViewController {
                 dataObject.setValue(statusName, forKey: "Name")
                 createRecurrencePattern(jsonInput: dataObject)
                 
-            }else{
-                //fieldTheMonthYear
+            
                 
-                for index in 0..<yearMonthsList.count {
-                    let month:String = yearMonthsList[index] as! String
-                    if month == fieldTheMonthYear.text! {
-                        dataObject.setValue(index, forKey: "MonthOfYear")
-                    }
-                }
-                dataObject.setValue("AnnuallyV", forKey: "PatternType")
-                dataObject.setValue("MaintainDay", forKey: "RescheduleAlgorithm")
-                dataObject.setValue(false, forKey: "EnableMonthOverlap")
-                dataObject.setValue(Int(fieldTheEveryYearCount.text!), forKey: "Interval")
-                dataObject.setValue("Schedule", forKey: "WeekendAvoidanceMode")
-                dataObject.setValue(fieldMonthYear.text!, forKey: "WeekOfMonth")
-                
-                var statusName:String = "The \(fieldMonthYear.text!)"
-                var getMonth:String = fieldTheMonthYear.text!
-                getMonth = String(getMonth.prefix(3))
-                
-                if weekDays.count > 0 {
-                    let weekNames:String = weekDays.componentsJoined(by: ",")
-                    statusName = statusName + " \(weekNames) of \(getMonth) every \((Int(fieldTheEveryYearCount.text!)?.ordinal)!) year"
-                }
-                dataObject.setValue(statusName, forKey: "Name")
-                
-                if fieldRemovaRule.text?.count == 0 {
-                    if fieldRemovaRule.text == "Delete All Incomplete" {
-                        dataObject.setValue("AllIncomplete", forKey: "RecurrenceDeleteMode")
-                    }else if fieldRemovaRule.text == "Delete All Unmodified" {
-                        dataObject.setValue("AllUnmodified", forKey: "RecurrenceDeleteMode")
-                    }else if fieldRemovaRule.text == "Delete All Future" {
-                        dataObject.setValue("AllFuture", forKey: "RecurrenceDeleteMode")
-                    }
-                }
-                
-                createRecurrencePattern(jsonInput: dataObject)
-                
-            }
+            
             
         }else{
-            dataObject.setValue(patternID, forKey: "RecurrencePatternId")
             
             if btnExisting.currentImage == UIImage.init(named:"ic_check") {
                 dataObject.setValue(fieldSchedulingType.text!, forKey: "ActivityType")
             }
             dataObject.setValue(appointmentID, forKey: "AppointmentTypeId")
-            
+            dataObject.setValue("Daily", forKey: "PatternType")
             dataObject.setValue(fieldSubject.text!, forKey: "Subject")
             dataObject.setValue(fieldDescription.text!, forKey: "Description")
             dataObject.setValue(fieldLocation.text!, forKey: "Location")
@@ -981,8 +1027,12 @@ class CreateRecurrencePattern: UITableViewController {
                     dataObject.setValue("AllFuture", forKey: "RecurrenceDeleteMode")
                 }
             }
+           
+                dataObject.setValue(patternID, forKey: "RecurrencePatternId")
+                createRecurrencePattern(jsonInput: dataObject)
             
-            createService(jsonInput: dataObject)
+          
+
         }
         
         print(dataObject)
@@ -1022,7 +1072,18 @@ class CreateRecurrencePattern: UITableViewController {
     }
     func createServiceWithRecurrenceID(recID:String){
         let dataObject:NSMutableDictionary = [:]
-        
+        let vals = UserDefaults.standard.bool(forKey: "Goday")
+if(vals)
+{
+    UserDefaults.standard.setValue(false, forKey: "Goday")
+    let dstre = self.convertStringToDate(dateString: lblRecurrenceEndTime)
+   // let nextDate = Calendar.current.date(byAdding: .day, value: 1, to: dstre)!
+    let formatter = DateFormatter()
+    formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+    let fdates = formatter.string(from: dstre)
+    lblRecurrenceEndTime = fdates
+}
   
         dataObject.setValue(recID, forKey: "RecurrencePatternId")
         dataObject.setValue(fieldSchedulingType.text!, forKey: "ActivityType")
@@ -1034,10 +1095,8 @@ class CreateRecurrencePattern: UITableViewController {
         dataObject.setValue(lblEndTime, forKey: "EndTime")
         dataObject.setValue(isAllDay, forKey: "AllDay")
         dataObject.setValue(isRollOver, forKey: "RollOver")
-        
-        dataObject.setValue(lblRecurrenceStartTime, forKey: "RecurrenceStart")
+         dataObject.setValue(lblRecurrenceStartTime, forKey: "RecurrenceStart")
         dataObject.setValue(lblRecurrenceEndTime, forKey: "RecurrenceEnd")
-        
         if fieldRemovaRule.text?.count == 0 {
             if fieldRemovaRule.text == "Delete All Incomplete" {
                 dataObject.setValue("AllIncomplete", forKey: "RecurrenceDeleteMode")
@@ -1064,7 +1123,13 @@ class CreateRecurrencePattern: UITableViewController {
                         if let getDataObject:NSDictionary = jsonResponse["DataObject"] as? NSDictionary {
                             if let getID:String = getDataObject["Id"] as? String {
                                 print(getID)
+                                if(self.fieldChooseContacts.text != "")
+                                {
                                 self.linkAppointmentContacts(rightID: getID)
+                                }
+                                if(self.fieldChooseTeammemberes.text != ""){
+                                   self.linkAppointmentUseres(rightID: getID)
+                                }
                             }
                         }
                     }
@@ -1099,7 +1164,12 @@ class CreateRecurrencePattern: UITableViewController {
                         if let getDataObject:NSDictionary = jsonResponse["DataObject"] as? NSDictionary {
                             if let getID:String = getDataObject["Id"] as? String {
                                 print(getID)
+                                if(self.fieldChooseContacts.text != ""){
                                 self.linkAppointmentContacts(rightID: getID)
+                                }
+                                if(self.fieldChooseTeammemberes.text != ""){
+                                    self.linkAppointmentUseres(rightID: getID)
+                                }
                             }
                         }
                     }
@@ -1178,8 +1248,10 @@ class CreateRecurrencePattern: UITableViewController {
             
             APIManager.sharedInstance.postRequestCall(postURL: linkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
-                    print(json)
-                    self.contactsIDList.removeObject(at: 0)
+                    print(json)//dfdsg
+                    if self.contactsIDList.count > 0 {
+                        self.contactsIDList.removeObject(at: 0)
+                    }
                     if self.contactsIDList.count == 0 {
                         self.linkAppointmentUseres(rightID: rightID)
                     }else{
@@ -1367,8 +1439,10 @@ class CreateRecurrencePattern: UITableViewController {
             
             APIManager.sharedInstance.postRequestCall(postURL: linkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
-                    print(json)
+                    print(json)//fds
+                    if self.accountsIDList.count > 0 {
                     self.accountsIDList.removeObject(at: 0)
+                    }
                     self.linkAppointmentCompanies(rightID: rightID)
                 }
             },  onFailure: { error in
@@ -1630,24 +1704,24 @@ class CreateRecurrencePattern: UITableViewController {
             if btnCustom.currentImage == UIImage.init(named:"ic_check") {
                 return 60
             }
-            return 0
+            return 60
         }else if indexPath.row == 10 {
-            if fieldCustomPattern.text == "Daily" && btnCustom.currentImage == UIImage.init(named:"ic_check") {
+            if fieldCustomPattern.text == "Daily"  {
                 return 197
             }
-            return 0
+            return 197
         }else if indexPath.row == 11 {
-            if fieldCustomPattern.text == "Weekly" && btnCustom.currentImage == UIImage.init(named:"ic_check") {
+            if fieldCustomPattern.text == "Weekly"  {
                 return UIScreen.main.bounds.width-182
             }
             return 0
         }else if indexPath.row == 12 {
-            if fieldCustomPattern.text == "Monthly" && btnCustom.currentImage == UIImage.init(named:"ic_check") {
+            if fieldCustomPattern.text == "Monthly"  {
                 return 400
             }
             return 0
         }else if indexPath.row == 13 {
-            if fieldCustomPattern.text == "Yearly" && btnCustom.currentImage == UIImage.init(named:"ic_check") {
+            if fieldCustomPattern.text == "Yearly" {
                 return 406
             }
             return 0
@@ -1673,7 +1747,7 @@ class CreateRecurrencePattern: UITableViewController {
                                   "PassKey":passKey,
                                   "OrganizationId":currentOrgID,
                                   "PageOffset": 1,
-                                  "ResultsPerPage": 500]
+                                  "ResultsPerPage": 5000]
         print(json)
         APIManager.sharedInstance.postRequestCall(postURL: searchURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
@@ -1706,7 +1780,7 @@ class CreateRecurrencePattern: UITableViewController {
                                   "PassKey":passKey,
                                   "OrganizationId":currentOrgID,
                                   "PageOffset": 1,
-                                  "ResultsPerPage": 500]
+                                  "ResultsPerPage": 5000]
         print(json)
         APIManager.sharedInstance.postRequestCall(postURL: searchURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
@@ -1727,7 +1801,14 @@ class CreateRecurrencePattern: UITableViewController {
                         let patternUser = result[index]
                         self.appointmentNameList.add(patternUser.name!)
                         self.appointmentIdList.add((patternUser.id!))
+                        self.appointmentColor.add((patternUser.calendarColor!))
                     }
+                    let encodedData = NSKeyedArchiver.archivedData(withRootObject: self.appointmentColor)
+                    UserDefaults.standard.set(encodedData, forKey: "ColorAppID")
+                    
+                    let encodedData1 = NSKeyedArchiver.archivedData(withRootObject: self.appointmentIdList)
+                    UserDefaults.standard.set(encodedData1, forKey: "AppointAppID")
+                    
                     self.showAppointmentNameList()
                 }
             }
@@ -1822,7 +1903,7 @@ class CreateRecurrencePattern: UITableViewController {
 }
 extension CreateRecurrencePattern:UITextFieldDelegate {
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        removeBottomView()
+    removeBottomView()
         
         if textField == fieldSchedulingType {
             showSchedulingTypePicker()
@@ -2454,7 +2535,7 @@ extension CreateRecurrencePattern {
                 OperationQueue.main.addOperation {
                     self.fieldAppointmentType.text = value
                     self.appointmentID = self.appointmentIdList[index] as! String
-                    self.fieldPattern.becomeFirstResponder()
+                    //self.fieldPattern.becomeFirstResponder()
                 }
             }
         }
@@ -2595,19 +2676,39 @@ extension CreateRecurrencePattern {
                         formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
                         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
                         self.lblEndTime = formatter.string(from: date!)
-                        
-                    }else{
-                        self.lblStartTime = formatter.string(from: (self.custompicker?.date)!)
-                        let newstartdate = formatter.date(from: self.lblStartTime)
-                        let calendar = Calendar.current
-                        let date = calendar.date(byAdding: .hour, value: 1, to: newstartdate!)
-                        formatter.dateFormat = "hh:mm a"
-                        self.fieldEndTime.text = formatter.string(from: date!)
-                        formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-                        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-                        self.lblEndTime = formatter.string(from: date!)
                     }
-                    
+                    else{
+                        let vals = UserDefaults.standard.bool(forKey: "Goday")
+                        if(vals)
+                        {
+                            let cdate = UserDefaults.standard.string(forKey: "Godate")!
+                            self.lblStartTime = formatter.string(from: (self.custompicker?.date)!)
+                            let strcoll = self.lblStartTime.components(separatedBy: "T")
+                            let fdate = cdate+"T"+strcoll.last!
+                            let newstartdate = formatter.date(from: fdate)
+                            let calendar = Calendar.current
+                            let date = calendar.date(byAdding: .hour, value: 1, to: newstartdate!)
+                            formatter.dateFormat = "hh:mm a"
+                            self.fieldEndTime.text = formatter.string(from: date!)
+                            formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+                            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                            self.lblEndTime = formatter.string(from: date!)
+                            self.lblStartTime = fdate
+                        }
+                       else
+                        {
+                            self.lblStartTime = formatter.string(from: (self.custompicker?.date)!)
+                            let newstartdate = formatter.date(from:self.lblStartTime)
+                            let calendar = Calendar.current
+                            let date = calendar.date(byAdding: .hour, value: 1, to: newstartdate!)
+                            formatter.dateFormat = "hh:mm a"
+                            self.fieldEndTime.text = formatter.string(from: date!)
+                            formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+                            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                            self.lblEndTime = formatter.string(from: date!)
+                        }
+                        
+                    }
                 }
             }
         }
@@ -2633,7 +2734,22 @@ extension CreateRecurrencePattern {
         }
         
         DPPickerManager.shared.showPicker(title: pickTitle, picker: { (picker) in
-            picker.date = Date()
+//            picker.date = Date()
+            let formatter = DateFormatter()
+            formatter.dateFormat = "YYYY-MM-dd"
+            if textField != self.filedRecurrenceEnd {
+            picker.date = formatter.date(from: self.filedRecurrenceStart.text!)!
+            }
+            else
+            {
+                let getDate = formatter.date(from: self.filedRecurrenceStart.text!)
+                
+                let calendar = Calendar.current
+                let ennddate = calendar.date(byAdding: .day, value: 1, to: getDate!)!
+                picker.date = ennddate
+
+            }
+            
             picker.datePickerMode = .date
             if textField == self.filedRecurrenceEnd {
               //  picker.minimumDate = minimumDate
@@ -2656,21 +2772,18 @@ extension CreateRecurrencePattern {
                         self.lblRecurrenceEndTime = formatter.string(from: date!)
                         
                     }else{
-                        self.lblRecurrenceStartTime = formatter.string(from: date!)
                         
+                        self.lblRecurrenceStartTime = formatter.string(from: date!)
                         let calendar = Calendar.current
                         let date = calendar.date(byAdding: .day, value: 1, to: date!)
                         formatter.dateFormat = "YYYY-MM-dd"
                         self.filedRecurrenceEnd.text = formatter.string(from: date!)
-                        
                         
                         formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
                         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
                         self.lblRecurrenceEndTime = formatter.string(from: date!)
                         
                     }
-                    
-                    
                 }
             }
         }
@@ -2685,21 +2798,21 @@ extension CreateRecurrencePattern: WeekdaysSegmentedControlDelegate {
         var symbols = fmt.shortWeekdaySymbols
         symbols = Array(symbols![firstWeekday-1..<symbols!.count]) + symbols![0..<firstWeekday-1]
         
-        if btnCustom.currentImage == UIImage.init(named:"ic_check") && fieldCustomPattern.text == "Weekly" {
+        if  fieldCustomPattern.text == "Weekly" {
             let dayName:String = symbols![day]
             print(dayName)
             
             if !weekDays.contains(dayName) {
                 weekDays.add(dayName)
             }
-        }else if btnCustom.currentImage == UIImage.init(named:"ic_check") && fieldCustomPattern.text == "Monthly" {
+        }else if  fieldCustomPattern.text == "Monthly" {
             let dayName:String = symbols![day]
             print(dayName)
             
             if !weekDays.contains(dayName) {
                 weekDays.add(dayName)
             }
-        }else if btnCustom.currentImage == UIImage.init(named:"ic_check") && fieldCustomPattern.text == "Yearly" {
+        }else if  fieldCustomPattern.text == "Yearly" {
             let dayName:String = symbols![day]
             print(dayName)
             if !weekDays.contains(dayName) {
@@ -2718,20 +2831,20 @@ extension CreateRecurrencePattern: WeekdaysSegmentedControlDelegate {
         var symbols = fmt.shortWeekdaySymbols
         symbols = Array(symbols![firstWeekday-1..<symbols!.count]) + symbols![0..<firstWeekday-1]
         
-        if btnCustom.currentImage == UIImage.init(named:"ic_check") && fieldCustomPattern.text == "Weekly" {
+        if  fieldCustomPattern.text == "Weekly" {
             let dayName:String = symbols![day]
             print(dayName)
             if weekDays.contains(dayName) {
                 weekDays.remove(dayName)
             }
-        }else if btnCustom.currentImage == UIImage.init(named:"ic_check") && fieldCustomPattern.text == "Monthly" {
+        }else if  fieldCustomPattern.text == "Monthly" {
             let dayName:String = symbols![day]
             print(dayName)
             
             if weekDays.contains(dayName) {
                 weekDays.remove(dayName)
             }
-        }else if btnCustom.currentImage == UIImage.init(named:"ic_check") && fieldCustomPattern.text == "Yearly" {
+        }else if fieldCustomPattern.text == "Yearly" {
             let dayName:String = symbols![day]
             print(dayName)
             

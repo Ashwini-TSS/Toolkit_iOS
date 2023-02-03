@@ -4,103 +4,115 @@
 //
 //  Created by vivid on 20/04/18.
 //  Copyright © 2018 Thabresh. All rights reserved.
-//
+// 
 import Foundation
+import UIKit
 
 var selectedContactInfo:ContactListResult!
+let defaultNoteCellHeight = 138
+let commentHeight = 40
 
 let phoneNumberLength:Int = 9
 
-let endpintURL:String = "https://beta.paretoacademy.com/endpoints/ajax/"
+var globalURL : String! =  UserDefaults.standard.string(forKey: "logg")
+//let endpintURL:String = "https://toolkit.bluesquareapps.com/endpoints/ajax/"
+var endpintURL:String = globalURL + "/endpoints/ajax/"
 
-let imageLoadURL:String = "https://beta.paretoacademy.com"
+var passListAppointments : NSDictionary!
 
-let dataEndPointURL:String = "com.platform.vc.endpoints.data.VCDataEndpoint/"
+//let imageLoadURL:String = "https://toolkit.bluesquareapps.com"
+var imageLoadURL:String = globalURL
 
-let orgEndPointURL:String = "com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/"
+var dataEndPointURL:String = "com.platform.vc.endpoints.data.VCDataEndpoint/"
 
-let calenderEndPointURL:String = "com.platform.vc.endpoints.calendar.VCCalendarEndpoint/"
+var orgEndPointURL:String = "com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/"
 
-let syncEndPointURL:String = "com.platform.vc.endpoints.sync.VCSyncEndpoint/"
+var calenderEndPointURL:String = "com.platform.vc.endpoints.calendar.VCCalendarEndpoint/"
 
-let APIBaseURL:String = endpintURL + dataEndPointURL
+var syncEndPointURL:String = "com.platform.vc.endpoints.sync.VCSyncEndpoint/"
 
-let orgBaseURL:String = endpintURL + orgEndPointURL
+var APIBaseURL:String = endpintURL + dataEndPointURL
 
-let calenderBaseURL:String = endpintURL + calenderEndPointURL
+var orgBaseURL:String = endpintURL + orgEndPointURL
 
-let syncBaseURL:String = endpintURL + syncEndPointURL
+var calenderBaseURL:String = endpintURL + calenderEndPointURL
 
-let getHistoryURL:String = syncBaseURL + "getHistory.json"
+var syncBaseURL:String = endpintURL + syncEndPointURL
 
-let loginURL:String = APIBaseURL + "login.json"
+var getHistoryURL:String = syncBaseURL + "getHistory.json"
 
-let signupURL:String = APIBaseURL + "signup.json"
+var loginURL:String = APIBaseURL + "login.json"
 
-let forgotURL:String = APIBaseURL + "forgotPassword.json"
+var signupURL:String = APIBaseURL + "signup.json"
 
-let listByOrgURL:String = APIBaseURL + "listUserOrganizations.json"
+var forgotURL:String = APIBaseURL + "forgotPassword.json"
 
-let organizationStatusURL:String = orgBaseURL + "organizationStatus.json"
+var listByOrgURL:String = APIBaseURL + "listUserOrganizations.json"
 
-let listDefaultTrialPeriods:String = APIBaseURL + "listDefaultTrialPeriods.json"
+var organizationStatusURL:String = orgBaseURL + "organizationStatus.json"
 
-let packagesURL:String = APIBaseURL + "listSaleableVerticalPackages.json"
+var listDefaultTrialPeriods:String = APIBaseURL + "listDefaultTrialPeriods.json"
 
-let userListByOrgURL:String = APIBaseURL + "listUsersInOrganization.json"
+var packagesURL:String = APIBaseURL + "listSaleableVerticalPackages.json"
 
-let paymentListURL:String = APIBaseURL + "listPaymentCards.json"
+var userListByOrgURL:String = APIBaseURL + "listUsersInOrganization.json"
 
-let inviteUserURL:String = APIBaseURL + "createEmailInvite.json"
+var paymentListURL:String = APIBaseURL + "listPaymentCards.json"
 
-let deleteEmailInviteURL:String = APIBaseURL + "deleteEmailInvite.json"
+var inviteUserURL:String = APIBaseURL + "createEmailInvite.json"
 
-let listEmailInviteURL:String = APIBaseURL + "listEmailInvites.json"
+var deleteEmailInviteURL:String = APIBaseURL + "deleteEmailInvite.json"
 
-let createPaymentURL:String = APIBaseURL + "createPaymentCard.json"
+var listEmailInviteURL:String = APIBaseURL + "listEmailInvites.json"
 
-let changePasswordURL:String = APIBaseURL + "setPassword.json"
+var createPaymentURL:String = APIBaseURL + "createPaymentCard.json"
 
-let getDefaultPaymentCardURL:String = APIBaseURL + "getDefaultPaymentCard.json"
+var changePasswordURL:String = APIBaseURL + "setPassword.json"
 
-let deletePaymentCardURL:String = APIBaseURL + "deletePaymentCard.json"
+var getDefaultPaymentCardURL:String = APIBaseURL + "getDefaultPaymentCard.json"
 
-let setDefaultCardURL:String = APIBaseURL + "setDefaultPaymentCard.json"
+var deletePaymentCardURL:String = APIBaseURL + "deletePaymentCard.json"
 
-let getUserURL:String = APIBaseURL + "whoAmI.json"
+var setDefaultCardURL:String = APIBaseURL + "setDefaultPaymentCard.json"
 
-let modifyUserURL:String = APIBaseURL + "modifyUser.json"
+var getUserURL:String = APIBaseURL + "whoAmI.json"
 
-let getUserMetaURL:String = APIBaseURL + "getUserMeta.json"
+var modifyUserURL:String = APIBaseURL + "modifyUser.json"
 
-let getContactListURL:String = APIBaseURL + "list.json"
+var getUserMetaURL:String = APIBaseURL + "getUserMeta.json"
 
-let getOrgListURL:String = orgBaseURL + "list.json"
+var getContactListURL:String = APIBaseURL + "list.json"
 
-let deleteContactListURL:String = orgBaseURL + "delete.json"
+var getOrgListURL:String = orgBaseURL + "list.json"
 
-let createContact:String = orgBaseURL + "create.json"
+var deleteContactListURL:String = orgBaseURL + "delete.json"
 
-let searchURL:String = orgBaseURL + "search.json"
+var createContact:String = orgBaseURL + "create.json"
 
-let linkedURL:String = orgBaseURL + "listLinked.json"
+var searchURL:String = orgBaseURL + "search.json"
 
-let linkURL:String = orgBaseURL + "link.json"
+var deleteActivityURL:String = orgBaseURL + "delete.json"
 
-let removeLinkURL:String = orgBaseURL + "removeLink.json"
+var linkedURL:String = orgBaseURL + "listLinked.json"
 
-let modifyURL:String = orgBaseURL + "modify.json"
+var linkURL:String = orgBaseURL + "link.json"
 
-let getIncompleteActivitiesURL:String = calenderBaseURL + "getIncompleteActivities.json"
+var removeLinkURL:String = orgBaseURL + "removeLink.json"
 
-let orgListURL:String = orgBaseURL + "list.json"
+var ListNotes:String = orgBaseURL + "listNotes.json"
 
-let getURL:String = orgBaseURL + "get.json"
+var modifyURL:String = orgBaseURL + "modify.json"
 
-let getActivities:String = calenderBaseURL + "getActivities.json"
+var getIncompleteActivitiesURL:String = calenderBaseURL + "getIncompleteActivities.json"
 
-let getOrganizationStatusInfo:String = APIBaseURL + "getOrganizationStatus.json"
+var orgListURL:String = orgBaseURL + "list.json"
 
-let purchasePackageURL:String = APIBaseURL + "linkVerticalPackageToOrganization.json"
+var getURL:String = orgBaseURL + "get.json"
+
+var getActivities:String = calenderBaseURL + "getActivities.json"
+
+var getOrganizationStatusInfo:String = APIBaseURL + "getOrganizationStatus.json"
+
+var purchasePackageURL:String = APIBaseURL + "linkVerticalPackageToOrganization.json"
 
 

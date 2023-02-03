@@ -8,7 +8,7 @@
 
 @class SSDayNode;
 
-@interface SSCalendarDayViewController : NSObject <UICollectionViewDataSource,UICollectionViewDelegate>
+@interface SSCalendarDayViewController : NSObject <UICollectionViewDataSource>
 {
     NSDate *startDate;
 }
@@ -17,9 +17,8 @@
 @property (nonatomic, copy) NSArray *days;
 @property (nonatomic, strong) NSMutableArray *visibleDays;
 @property (nonatomic, weak) UICollectionView *view;
-@property NSDictionary *listAppointments;
 
-- (id)initWithView:(UICollectionView *)view andDict:(NSDictionary*)result;
+- (id)initWithView:(UICollectionView *)view;
 - (void)scrollToDay:(SSDayNode *)day animated:(BOOL)animated;
 - (void)reloadDay;
 

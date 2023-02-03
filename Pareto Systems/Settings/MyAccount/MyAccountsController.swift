@@ -85,7 +85,7 @@ class MyAccountsController: UIViewController {
                                    "PassKey": passKey
                                   ]
         print(json)
-        APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/organizationStatus.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL:globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/organizationStatus.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(json)
                 print(json["Status"]["ToolKitEnabled"])
@@ -175,11 +175,11 @@ extension MyAccountsController:UITableViewDelegate,UITableViewDataSource {
         tblItems.reloadData()
     }
     @objc func forPayment(_ sender: AnyObject) {
-        let button = sender as? UIButton
-        let eachOrg  = ArrayOrganisationID[(button?.tag)!]
-        let controller:PaymentController = self.storyboard?.instantiateViewController(withIdentifier: "PaymentController") as! PaymentController
-        controller.organizationID = eachOrg
-        self.navigationController?.pushViewController(controller, animated: true)
+//        let button = sender as? UIButton
+//        let eachOrg  = ArrayOrganisationID[(button?.tag)!]
+//        let controller:PaymentController = self.storyboard?.instantiateViewController(withIdentifier: "PaymentController") as! PaymentController
+//        controller.organizationID = eachOrg
+//        self.navigationController?.pushViewController(controller, animated: true)
     }
     
     @objc func forUsers(_ sender: AnyObject) {

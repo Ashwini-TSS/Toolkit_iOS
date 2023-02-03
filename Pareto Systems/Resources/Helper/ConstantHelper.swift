@@ -14,7 +14,14 @@ var currentOrgID:String = ""
 var currentUserName:String = ""
 var currentMasterID:String = ""
 var isFromLogin:Bool = false
+var forAppointmenttest:NSArray = []
+var globalselectedFilterList : [String] = []
+
+
 
 class ConstantHelper: NSObject {
-
+    var APPOINTMENT = "appointment"
+    var TASK = "task"
+    var CONTACT = "contact"
+    var COMPANY = "company"
 }

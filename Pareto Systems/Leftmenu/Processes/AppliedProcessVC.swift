@@ -46,7 +46,7 @@ class AppliedProcessVC: UIViewController, UITableViewDelegate,UITableViewDataSou
     func getAppliedProcessList(){
         let parameters = [
             "OrderBy": "Name",
-            "ResultsPerPage": 500,
+            "ResultsPerPage": 5000,
             "OrganizationId": currentOrgID,
             "PassKey": passKey,
             "PageOffset": 1,

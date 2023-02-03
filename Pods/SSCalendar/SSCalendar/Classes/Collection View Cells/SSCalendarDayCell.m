@@ -35,7 +35,7 @@
     CGRect circleRect = CGRectMake(0, 0, 31.0f, 31.0f);
     circleRect.origin.x = (rect.size.width - circleRect.size.width) / 2;
     circleRect.origin.y = (rect.size.height - circleRect.size.height) / 2;
-        
+    
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextSaveGState(context);
     
@@ -79,7 +79,7 @@
     _label.text = _day != nil ? [NSString stringWithFormat:@"%li", (long)_day.value] : @"";
     separatorView.hidden = _day == nil || _style != SSCalendarDayCellStyleMonthly;
     
-//    if(day.e)
+    //    if(day.e)
     if ([_day isEqualToDate:[NSDate date]])
     {
         self.state = SSCalendarDayCellStateToday;
@@ -125,7 +125,7 @@
 {
     _style = style;
     separatorView.hidden = _day == nil || _style != SSCalendarDayCellStyleMonthly;
-
+    
     if (style == SSCalendarDayCellStyleMonthly)
     {
         separatorView.hidden = NO;
@@ -194,24 +194,24 @@
             CGContextSetFillColorWithColor(context, [[UIColor colorWithHexString:COLOR_SECONDARY] CGColor]);
             CGContextFillPath(context);
             CGContextSetStrokeColorWithColor(context, [UIColor colorWithHexString:COLOR_SECONDARY].CGColor);
-
-//            CGContextSetFillColorWithColor(context, [UIColor cyanColor].CGColor);
-//        
-//            
-//            
-//            
-//            
-//    
-//
-//            CGContextFillPath(context);
-//
-//            
-//            
-//            CGContextSaveGState(context);
-//
-//            CGContextDrawPath(context, kCGPathStroke);
-//            CGContextRestoreGState(context);
-
+            
+            //            CGContextSetFillColorWithColor(context, [UIColor cyanColor].CGColor);
+            //        
+            //            
+            //            
+            //            
+            //            
+            //    
+            //
+            //            CGContextFillPath(context);
+            //
+            //            
+            //            
+            //            CGContextSaveGState(context);
+            //
+            //            CGContextDrawPath(context, kCGPathStroke);
+            //            CGContextRestoreGState(context);
+            
         }
         else if (_state == SSCalendarDayCellStateToday)
         {
@@ -226,7 +226,7 @@
             CGContextSetFillColorWithColor(context, [UIColor colorWithHexString:COLOR_SECONDARY].CGColor);
             CGContextFillPath(context);
             CGContextRestoreGState(context);
-
+            
         }
         else if (_state == SSCalendarDayCellStateHighlight)
         {
@@ -237,19 +237,19 @@
             CGContextSetFillColorWithColor(context, [[UIColor colorWithHexString:COLOR_SECONDARY] CGColor]);
             CGContextFillPath(context);
             CGContextSetStrokeColorWithColor(context, [UIColor colorWithHexString:COLOR_SECONDARY].CGColor);
-//
-//            CGRect circleRect = CGRectMake(24.0f, 31.0f, 3.0f, 3.0f);
-//            CGContextRef context = UIGraphicsGetCurrentContext();
-//            CGContextSaveGState(context);
-//            CGContextAddEllipseInRect(context, circleRect);
-//            CGContextSetStrokeColorWithColor(context, [UIColor colorWithHexString:COLOR_SECONDARY].CGColor);
-//
-//            CGContextSaveGState(context);
-//
-//            CGContextSetFillColorWithColor(context, [UIColor redColor].CGColor);
-//            CGContextFillPath(context);
-//            CGContextRestoreGState(context);
-
+            //
+            //            CGRect circleRect = CGRectMake(24.0f, 31.0f, 3.0f, 3.0f);
+            //            CGContextRef context = UIGraphicsGetCurrentContext();
+            //            CGContextSaveGState(context);
+            //            CGContextAddEllipseInRect(context, circleRect);
+            //            CGContextSetStrokeColorWithColor(context, [UIColor colorWithHexString:COLOR_SECONDARY].CGColor);
+            //
+            //            CGContextSaveGState(context);
+            //
+            //            CGContextSetFillColorWithColor(context, [UIColor redColor].CGColor);
+            //            CGContextFillPath(context);
+            //            CGContextRestoreGState(context);
+            
         }
         
     }
@@ -257,7 +257,7 @@
     [super drawRect:rect];
 }
 
-    
+
 - (void)layoutSubviews
 {
     [super layoutSubviews];

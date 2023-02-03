@@ -58,7 +58,7 @@ class AddCategoryVC: UIViewController {
                                   "OrganizationId":currentOrgID,
                                   "ObjectName":"recreation"]
         print(json)
-        let url:String = "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/create.json"
+        let url:String = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/create.json"
         APIManager.sharedInstance.postRequestCall(postURL: url, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(json)

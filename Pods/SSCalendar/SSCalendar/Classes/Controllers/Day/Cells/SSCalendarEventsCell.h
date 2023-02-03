@@ -16,5 +16,5 @@
 @property (nonatomic, strong) SSDayNode *day;
 @property (nonatomic, strong) IBOutlet UITableView *tableView;
 @property (nonatomic, strong) SSCalendarEventsTableViewController *tableViewController;
-@property NSDictionary *listAppointments;
+
 @end

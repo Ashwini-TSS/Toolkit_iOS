@@ -12,7 +12,6 @@ class APIManager: NSObject {
 
     static let sharedInstance = APIManager()
     
-  
     func postRequestCall(postURL:String,parameters:[String:Any],senderVC:UIViewController, onSuccess: @escaping((_ success:NSDictionary,JSON) -> Void), onFailure: @escaping(Error) -> Void){
         
         OperationQueue.main.addOperation {
@@ -33,7 +32,6 @@ class APIManager: NSObject {
         let task = session.dataTask(with: request){ data, response, error in
             print(response as Any)
             OperationQueue.main.addOperation {
-//                MBProgressHUD.hide(for: senderVC.view, animated: true)
                                 SVProgressHUD.dismiss()
             }
             guard let data = data, error == nil else {
@@ -66,10 +64,8 @@ class APIManager: NSObject {
                 self.checkCookie(httpResponse: response as! HTTPURLResponse,ServiceURL:postURL)
 
                 let result = try JSON(data: data)
+               
                 onSuccess(jsonObj as! NSDictionary, result)
-                
-
-                
 //                self.setCookieStorage(httpResponse: response as! HTTPURLResponse, ServiceURL: postURL)
             }catch {
                 onFailure(error)
@@ -78,6 +74,7 @@ class APIManager: NSObject {
         }
         task.resume()
     }
+    
     func postRequestCalls(postURL:String,parameters:[String:Any],senderVC:UIViewController, onSuccess: @escaping((_ success:NSDictionary,JSON) -> Void), onFailure: @escaping(Error) -> Void){
         
         OperationQueue.main.addOperation {

@@ -13,8 +13,7 @@ class LeftmenuController: UIViewController {
 
     @IBOutlet weak var lblUsername: UILabel!
     @IBOutlet weak var tblItems: UITableView!
-    var mainViewController   : UIViewController!
-    
+    var mainViewController : UIViewController!
     var expandedSectionHeaderNumber: Int = -1
     var expandedSectionHeader: UITableViewHeaderFooterView!
     
@@ -36,21 +35,10 @@ class LeftmenuController: UIViewController {
     
     @IBAction func tappedSettings(_ sender: Any) {
         setupNavigation()
-
         let vc = self.storyboard?.instantiateViewController(withIdentifier: "SettingsContoller") as! SettingsContoller
         let nvc: UINavigationController = UINavigationController(rootViewController: vc)
         self.slideMenuController()?.changeMainViewController(nvc, close: true)
     }
-    
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }
 extension LeftmenuController:UITableViewDelegate,UITableViewDataSource {
@@ -82,9 +70,7 @@ extension LeftmenuController:UITableViewDelegate,UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-//        if (sectionNames.count != 0) {
-//            return sectionNames[section] as? String
-//        }
+
         return ""
     }
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
@@ -168,7 +154,6 @@ extension LeftmenuController:UITableViewDelegate,UITableViewDataSource {
     
     func tableViewCollapeSection(_ section: Int, imageView: UIImageView) {
         let sectionData = sectionItems[section] as! NSArray
-        
         self.expandedSectionHeaderNumber = -1;
         if (sectionData.count == 0) {
             return;

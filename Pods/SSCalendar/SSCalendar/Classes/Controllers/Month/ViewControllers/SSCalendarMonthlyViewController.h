@@ -21,7 +21,7 @@
     IBOutlet UIBarButtonItem *btnList;
     IBOutlet UIBarButtonItem *btnBackTitle;
     IBOutlet UIBarButtonItem *btnBackImage;
-
+    
     NSArray *tableData;
     IBOutlet UITableView *customTbl;
     NSArray *searchResults;
@@ -35,6 +35,7 @@
 @property (nonatomic, strong) NSIndexPath *startingIndexPath;
 @property (nonatomic, strong) IBOutlet UICollectionView *yearView;
 @property (nonatomic, strong) SSCalendarMonthlyDataSource *dataSource;
+
 
 - (id)initWithDataController:(SSDataController *)dataController;
 - (id)initWithEvents:(NSArray *)events;

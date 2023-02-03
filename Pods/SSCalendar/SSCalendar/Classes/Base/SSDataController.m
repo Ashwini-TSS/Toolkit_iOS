@@ -48,50 +48,15 @@
 - (NSArray *)calendarYears
 {
     if (_calendarYears == nil) {
+        NSInteger yyear = [SSCalendarUtils currentYear];
+        NSInteger year = yyear - 1;
+        SSYearNode *yearNode = [[SSYearNode alloc] initWithValue:year];
+        SSYearNode *yearNode1 = [[SSYearNode alloc] initWithValue:year + 1];
+        SSYearNode *yearNode2 = [[SSYearNode alloc] initWithValue:year + 2];
+        SSYearNode *yearNode3 = [[SSYearNode alloc] initWithValue:year + 3];
+        SSYearNode *yearNode4 = [[SSYearNode alloc] initWithValue:year + 4];
         
-        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-        [formatter setDateFormat:@"yyyy"];
-        NSString *yearString = [formatter stringFromDate:[NSDate date]];
-        NSInteger intYear = [yearString integerValue];
-
-        intYear = intYear - 100;
-
-        NSMutableArray *completeYear = [NSMutableArray new];
-
-        for (int i = (int) intYear; i<=[yearString integerValue]; i++) {
-            [completeYear addObject:[NSString stringWithFormat:@"%d",i]];
-        }
-
-        intYear = [yearString integerValue] + 100;
-
-        for (int i = (int) [yearString integerValue]+1; i<=intYear; i++) {
-            [completeYear addObject:[NSString stringWithFormat:@"%d",i]];
-        }
-        
-        
-        
-        //    NSArray *arr = @[@"2000",@"2001",@"2002",@"2003",@"2004",@"2005",@"2006"];
-        //    NSLog(@"arr:%@",arr);
-        //    NSLog(@"arr1:%@",_dataController.calendarYears);
-        //
-        NSMutableArray *addYears = [NSMutableArray new];
-        
-//        NSString *savedValue = [[NSUserDefaults standardUserDefaults]
-//                                stringForKey:@"selectedYear"];
-        for (int i=0; i<completeYear.count; i++) {
-            SSYearNode *yearNode = [[SSYearNode alloc] initWithValue:[[completeYear objectAtIndex:i]integerValue]];
-            [addYears addObject:yearNode];
-        }
-        
-//        NSInteger year = [SSCalendarUtils currentYear];
-//
-//        SSYearNode *yearNode = [[SSYearNode alloc] initWithValue:year];
-//        SSYearNode *yearNode1 = [[SSYearNode alloc] initWithValue:year + 1];
-//        SSYearNode *yearNode2 = [[SSYearNode alloc] initWithValue:year + 2];
-//        SSYearNode *yearNode3 = [[SSYearNode alloc] initWithValue:year + 3];
-//        SSYearNode *yearNode4 = [[SSYearNode alloc] initWithValue:year + 4];
-        
-        self.calendarYears = addYears;
+        self.calendarYears = @[yearNode, yearNode1,  yearNode2, yearNode3, yearNode4];
     }
     return _calendarYears;
 }

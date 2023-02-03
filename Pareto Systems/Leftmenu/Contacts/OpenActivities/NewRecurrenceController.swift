@@ -77,7 +77,7 @@ class NewRecurrenceController: UITableViewController {
         let parameters = [
             "OrderBy": "",
             "ParentId": "",
-            "ResultsPerPage": 500,
+            "ResultsPerPage": 5000,
             "OrganizationId": currentOrgID,
             "PassKey": passKey,
             "ParentObjectName": "",

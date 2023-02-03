@@ -6,20 +6,11 @@
 //  Copyright (c) 2013 Stellar16. All rights reserved.
 //
 
-@interface SSCalendarEventsTableViewController : NSObject  <UITableViewDataSource, UITableViewDelegate,UISearchDisplayDelegate> {
-    NSMutableArray *allEvents;
-    NSMutableArray *normalEvents;
-}
+@interface SSCalendarEventsTableViewController : NSObject  <UITableViewDataSource, UITableViewDelegate>
 
 @property (nonatomic, copy) NSArray *events;
 @property (nonatomic, weak) UITableView *tableView;
 
-@property NSArray *calActivity;
-
-
-- (id)initWithTableView:(UITableView *)tableView andDict:(NSDictionary*)dict;
-
-//- (id)initWithTableView:(UITableView *)tableView;
-@property NSDictionary *listAppointments;
+- (id)initWithTableView:(UITableView *)tableView;
 
 @end

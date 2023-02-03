@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import MobileCoreServices
 
 
 class NewAppointmentsController: UITableViewController {
@@ -14,6 +15,31 @@ class NewAppointmentsController: UITableViewController {
     @IBOutlet weak var Starttimeappointment: ACFloatingTextfield!
     @IBOutlet weak var EndtimeAppointment: ACFloatingTextfield!
     
+    // note values
+    var isNoteCellPresent : Bool = false
+    var  notedata : [NoteList] = []
+    var  noteobj : NoteModel!
+    var  noteregardingData : [Any] = []
+    var  noteattachmentData : [Any] = []
+    var  notecommentData : [Any] = []
+    var allcommentExpandArray : [Int] = []
+    var iscommentapimethod : Bool = false
+    var selectedIndexPath_condition:Int = 0
+    var selectedIndexPath:Int = 1992001
+    var selectedNoteIndx : Int = -1
+    var globalCommentCount : Int = 0
+    var iscommentExpand:Bool = false
+    var taskmodelobj : Taskmodel!
+    var appointmentList : GetAppointmentModelModel!
+    var importaccountList:[GetAccountsListResult] = []
+    var searchCurrNoteid : String!
+    var allregardingname : [ContactListResult] = []
+    var allaccountregardingname : [GetAccountsListResult] = []
+    var allTaskregardingSubject : [TaskResult] = []
+    var allAppointmentregardingSubject : [GetAppointmentModelData] = []
+    var usersList:[UserlistUser] = []
+
+
     var ModifiedOninput : String!
     var ModifiedByinput : String!
     var CreatedOninput : String!
@@ -27,13 +53,14 @@ class NewAppointmentsController: UITableViewController {
     var Locationinput : String!
     var AppointmentTypeIdinput : String!
     var AppliedAdvocateProcessIdinput : String!
-    
     var AlertCondition : String!
-    
+    var isExpand:Bool = false
+
     var getObjectNames:[String] = []
     var getObjectAccount:[String] = []
     var getObjectContact:[String] = []
-    
+    var selectedNoteID : String = ""
+
     
     var getAppointmentModel:[GetPatternAppointmentResult] = []
     
@@ -90,6 +117,9 @@ class NewAppointmentsController: UITableViewController {
     
     var cancelBtn = UIButton()
     var donelBtn = UIButton()
+    
+    var allday : String!
+    var completee : String!
     
     //API
     var contactsIDList:NSMutableArray = []
@@ -189,7 +219,12 @@ class NewAppointmentsController: UITableViewController {
             getAddedAppointmentType()
             fieldLocation.text = openedActivties.activity.location
             fieldSubject.text = openedActivties.activity.subject
+            if(openedActivties.activity.descriptionField.characters.first?.description != "<"){
             fieldComments.text = openedActivties.activity.descriptionField
+            }
+            else{
+                fieldComments.text = ""
+            }
             fieldAppointmentType.text = ""
             print(openedActivties.activity.id!)
             
@@ -198,13 +233,27 @@ class NewAppointmentsController: UITableViewController {
             getLinkedContactsdetail()
             getLinkedAccountsdetail()
             
-            fieldStartTime.text = convertDateMonthString(dateString: openedActivties.activity.startTime)
-            fieldEndtime.text = convertDateMonthString(dateString: openedActivties.activity.endTime)
+           
             
+            var vlue = UserDefaults.standard.string(forKey: "new")
+            if(vlue == "yes"){
+                Starttimeappointment.text = convertTimeString(dateString: UserDefaults.standard.string(forKey: "datestart")!)
+                EndtimeAppointment.text = convertTimeString(dateString: UserDefaults.standard.string(forKey: "dateend")!)
+                fieldStartTime.text = convertDateMonthString(dateString: UserDefaults.standard.string(forKey: "datestart")!)
+                fieldEndtime.text = convertDateMonthString(dateString: UserDefaults.standard.string(forKey:"dateend")!)
+            }
+            else{
+                
+                fieldStartTime.text = convertDateMonthString(dateString: openedActivties.activity.startTime)
+                fieldEndtime.text = convertDateMonthString(dateString: openedActivties.activity.endTime)
+                
             Starttimeappointment.text = convertTimeString(dateString: openedActivties.activity.startTime)
             EndtimeAppointment.text = convertTimeString(dateString: openedActivties.activity.endTime)
+            }
             
-            isAlldayEvent = openedActivties.activity.allDay
+            UserDefaults.standard.removeObject(forKey: "new")
+            
+           // isAlldayEvent = openedActivties.activity.allDay
             isRollOver = openedActivties.activity.rollOver
             isComplete = openedActivties.activity.complete
             startTime = openedActivties.activity.startTime!
@@ -214,6 +263,7 @@ class NewAppointmentsController: UITableViewController {
                 btnAlldayevent.setImage(UIImage.init(named:"ic_check"), for: .normal)
             }
             if openedActivties.activity.allDay {
+                btnAlldayevent.isUserInteractionEnabled = true
                 btnAlldayevent.setImage(UIImage.init(named:"ic_check"), for: .normal)
             }
             if openedActivties.activity.rollOver {
@@ -327,7 +377,7 @@ class NewAppointmentsController: UITableViewController {
                                    "LinkParentId": openedActivties.activity.id!]
         print(json)
         
-        APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(json)
                 var resultsArray : [JSON] = []
@@ -346,7 +396,221 @@ class NewAppointmentsController: UITableViewController {
             NavigationHelper.showSimpleAlert(message:error.localizedDescription)
         })
     }
-    
+    //MARK: - Comment Action
+    @objc func CommentApiMethod(notfication: NSNotification)
+    {
+        let cmtMsg = notfication.userInfo?["msg"] as? String
+        let json: [String: Any] = ["ObjectName":"note_comment",
+                                   "DataObject": [
+                                    "NoteId": self.selectedNoteID,
+                                    "Comment": cmtMsg],
+                                   "OrganizationId":currentOrgID,
+                                   "PassKey": passKey] as [String : Any]
+        
+        APIManager.sharedInstance.postRequestCall(postURL: createContact, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+            DispatchQueue.main.async {
+                self.iscommentapimethod = true
+                self.PullDownAllCommentsFromServer()
+            }
+        },  onFailure: { error in
+            print(error.localizedDescription)
+        })
+    }
+    //MARK: - Get All Note Related Api
+    func pullNotesListFromServerApi()
+    {
+        self.notedata.removeAll()
+        self.allcommentExpandArray.removeAll()
+
+            let json: [String: Any] = ["OrderBy":"CreatedOn",
+                                       "AscendingOrder":false,
+                                       "ResultsPerPage":100,
+                                       "PageOffset":1,
+                                       "ParentId":Id,
+                                       "ObjectName":"appointment",
+                                       "PassKey":passKey,
+                                       "OrganizationId":currentOrgID]
+            OperationQueue.main.addOperation {
+                SVProgressHUD.show()
+            }
+            let url = URL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listNotes.json")!
+            var request = URLRequest(url: url)
+            request.addValue("application/json; charset=UTF-8", forHTTPHeaderField: "Content-Type")
+            request.addValue("en", forHTTPHeaderField: "Accept-Language")
+            request.httpMethod = "POST"
+            
+            if let jsonData = try? JSONSerialization.data(withJSONObject: json, options: []) {
+                request.httpBody = jsonData
+            }
+            let configuration = URLSessionConfiguration.default
+            let session = URLSession(configuration: configuration, delegate: self, delegateQueue:OperationQueue.main)
+            let task = session.dataTask(with: request){ data, response, error in
+                OperationQueue.main.addOperation {
+                    SVProgressHUD.dismiss()
+                }
+                guard let data = data, error == nil else {
+                    return
+                }
+                do{
+                    self.noteobj = try? JSONDecoder().decode(NoteModel.self, from: data)
+                    self.notedata =  self.noteobj.notedata!
+                    for(_,_) in self.notedata.enumerated()
+                    {
+                        self.allcommentExpandArray.append(0)
+                    }
+                    self.PullDownAllNoteRegardingsFromServer()
+                    self.PullDownAllCommentsFromServer()
+                }
+            }
+            task.resume()
+        
+    }
+    //MARK: - PullDownAllNoteRegardingsFromServer
+    func PullDownAllNoteRegardingsFromServer()
+    {
+        self.noteregardingData.removeAll()
+        for(index,element) in self.notedata.enumerated()
+        {
+            let json: [String: Any] = [
+                "ParentId":element.note?.id,
+                "ParentObjectName":"note",
+                "ObjectName": "notes_regarding",
+                "PassKey":passKey,
+                "OrganizationId":currentOrgID,
+                "AscendingOrder":true]
+            
+            OperationQueue.main.addOperation {
+                SVProgressHUD.show()
+            }
+            let url = URL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json")!
+            var request = URLRequest(url: url)
+            request.addValue("application/json; charset=UTF-8", forHTTPHeaderField: "Content-Type")
+            request.addValue("en", forHTTPHeaderField: "Accept-Language")
+            request.httpMethod = "POST"
+            
+            if let jsonData = try? JSONSerialization.data(withJSONObject: json, options: []) {
+                request.httpBody = jsonData
+            }
+            let configuration = URLSessionConfiguration.default
+            let session = URLSession(configuration: configuration, delegate: self, delegateQueue:OperationQueue.main)
+            let task = session.dataTask(with: request){ data, response, error in
+                OperationQueue.main.addOperation {
+                    SVProgressHUD.dismiss()
+                }
+                guard let data = data, error == nil else {
+                    return
+                }
+                do{
+                    let reobj = try? JSONDecoder().decode(NoteRegardingModel.self, from: data)
+                    self.noteregardingData.append(reobj?.regardingobj)
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                    }
+                    if(index == self.notedata.count - 1)
+                    {
+                        self.PullDownAllNoteAttachmentFromServer()
+                    }
+                }
+            }
+            task.resume()
+            
+        }
+    }
+    //MARK: - PullDownAllNoteAttachmentFromServer
+    func PullDownAllNoteAttachmentFromServer()
+    {
+        self.noteattachmentData.removeAll()
+        for(index,element) in self.notedata.enumerated()
+        {
+            let json: [String: Any] = [
+                "ParentId":element.note?.id as? String,
+                "ParentObjectName":"note",
+                "ObjectName": "note_attachment",
+                "PassKey":passKey,
+                "OrganizationId":currentOrgID,
+                "AscendingOrder":true]
+            let url = URL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json")!
+            var request = URLRequest(url: url)
+            request.addValue("application/json; charset=UTF-8", forHTTPHeaderField: "Content-Type")
+            request.addValue("en", forHTTPHeaderField: "Accept-Language")
+            request.httpMethod = "POST"
+            
+            if let jsonData = try? JSONSerialization.data(withJSONObject: json, options: []) {
+                request.httpBody = jsonData
+            }
+            let configuration = URLSessionConfiguration.default
+            let session = URLSession(configuration: configuration, delegate: self, delegateQueue:OperationQueue.main)
+            let task = session.dataTask(with: request){ data, response, error in
+                OperationQueue.main.addOperation {
+                    SVProgressHUD.dismiss()
+                }
+                guard let data = data, error == nil else {
+                    return
+                }
+                do{
+                    let reobj = try? JSONDecoder().decode(NoteRegardingModel.self, from: data)
+                    if((reobj?.regardingobj!.count)! > 0){
+                        self.noteattachmentData.append(reobj?.regardingobj!)
+                    }
+                }
+            }
+            task.resume()
+            
+        }
+    }
+    //MARK: - PullDownAllCommentsFromServer
+    func PullDownAllCommentsFromServer()
+    {
+        self.notecommentData.removeAll()
+        for(index,element) in self.notedata.enumerated()
+        {
+            let json: [String: Any] = [
+                "ParentId":element.note?.id as? String,
+                "ParentObjectName":"note",
+                "ObjectName": "note_comment",
+                "PageOffset":1,
+                "ResultsPerPage":100,
+                "OrderBy":"CreatedOn",
+                "PassKey":passKey,
+                "OrganizationId":currentOrgID,
+                "AscendingOrder":false]
+            let url = URL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json")!
+            var request = URLRequest(url: url)
+            request.addValue("application/json; charset=UTF-8", forHTTPHeaderField: "Content-Type")
+            request.addValue("en", forHTTPHeaderField: "Accept-Language")
+            request.httpMethod = "POST"
+            
+            if let jsonData = try? JSONSerialization.data(withJSONObject: json, options: []) {
+                request.httpBody = jsonData
+            }
+            let configuration = URLSessionConfiguration.default
+            let session = URLSession(configuration: configuration, delegate: self, delegateQueue:OperationQueue.main)
+            let task = session.dataTask(with: request){ data, response, error in
+                OperationQueue.main.addOperation {
+                    SVProgressHUD.dismiss()
+                }
+                guard let data = data, error == nil else {
+                    return
+                }
+                do{
+                    if(index == self.notedata.count - 1){
+                    if(self.iscommentapimethod)
+                    {
+                        self.iscommentapimethod = false
+                        DispatchQueue.main.async {
+                            self.tableView.reloadData()
+                        }
+                    }}
+                    let reobj = try? JSONDecoder().decode(NoteCommentModel.self, from: data)
+                    if((reobj?.commentdata!.count)! > 0){
+                        self.notecommentData.append(reobj?.commentdata!)
+                        self.tableView.reloadData()
+                    }
+                }
+            }
+            task.resume()
+        }
+    }
     func getLinkedAccountsdetail(){
        
         let json: [String: Any] = ["ObjectName":"linker_appointments_companies",
@@ -357,7 +621,7 @@ class NewAppointmentsController: UITableViewController {
                                    "LinkParentId": openedActivties.activity.id!]
         print(json)
         
-        APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(json)
                 var resultsArray : [JSON] = []
@@ -418,6 +682,7 @@ class NewAppointmentsController: UITableViewController {
         bottomView.removeFromSuperview()
     }
     override func viewWillDisappear(_ animated: Bool) {
+        isExpand = false
         UserDefaults.standard.removeObject(forKey: "appointmentTypeID")
         removeBottomView()
     }
@@ -442,7 +707,7 @@ class NewAppointmentsController: UITableViewController {
                                    "OrganizationId": currentOrgID,
                                    "PassKey":passKey]
         print(json)
-        APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(json)
                 if let getValid = jsonResponse["Valid"] as? Bool {
@@ -477,7 +742,167 @@ class NewAppointmentsController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         getContacts()
         getAppointmentType()
+        isExpand = false
+        getTask()
+        self.listOfUsersBasedOnOrganization()
+        self.pullNotesListFromServerApi()
+
+//        let value = UserDefaults.standard.string(forKey: "DAYALL")
+//        if(value == "yes"){
+//            isAlldayEvent = true
+//            btnAlldayevent.setImage(UIImage.init(named:"ic_check"), for: .normal)
+//        }
+//        else{
+//            isAlldayEvent = false
+//            btnAlldayevent.setImage(UIImage.init(named:"ic_uncheck"), for: .normal)
+//        }
+        
+        let notificationCenter3 = NotificationCenter.default
+        notificationCenter3.addObserver(self,
+                                        selector: #selector(complete),
+                                        name: Notification.Name(
+                                            rawValue: "complete"),
+                                        object: nil)
+        
         UINavigationBar.appearance().barTintColor = UIColor.PSNavigaitonBlack()
+    }
+    
+    //MARK:- GET Appiontment
+    func getAppointments()
+    {
+        let param: [String: Any] = ["ObjectName":"appointment",
+                                   "OrganizationId":currentOrgID,
+                                   "IncludeExtendedProperties" :  true,
+                                   "OrderBy" : "Subject",
+                                   "PassKey": passKey,
+                                   "SearchTerm":"",
+                                   "PageOffset": 1,
+                                   "AscendingOrder":true,
+                                   "ResultsPerPage": 5000]
+        
+        do{
+            OperationQueue.main.addOperation {
+                SVProgressHUD.show()
+            }
+        let postData = try JSONSerialization.data(withJSONObject: param, options: [])
+        let request = NSMutableURLRequest(url: URL(string: searchURL)!)
+        let session = URLSession.shared
+        request.httpBody = postData as Data
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue("application/json", forHTTPHeaderField: "Accept")
+        
+        let task = session.dataTask(with: request as URLRequest, completionHandler: {data, response, error -> Void in
+            if (data != nil && error == nil) {
+                do {
+                    OperationQueue.main.addOperation {
+                        SVProgressHUD.dismiss()
+                    }
+                    let decoder = JSONDecoder()
+                    self.appointmentList = try? decoder.decode(GetAppointmentModelModel.self, from: data!)
+                }
+                catch
+                {
+                    
+                }
+     
+                
+            } else {
+                print("Web Service have Error")
+            }
+        })
+        
+        task.resume()
+        }catch
+        {
+            
+        }
+    }
+    func listOfUsersBasedOnOrganization() {
+        
+        let json: [String: Any] = ["OrganizationId": currentOrgID,
+                                   "PassKey": passKey]
+        print(json)
+        APIManager.sharedInstance.postRequestCall(postURL: userListByOrgURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+            DispatchQueue.main.async {
+                print(json)
+                let logModel:UserlistMapping = UserlistMapping.init(fromDictionary: jsonResponse)
+                if logModel.valid {
+                    self.usersList = logModel.users
+                    OperationQueue.main.addOperation {
+                        print(self.usersList.count)
+                     
+                    }
+                }else{
+                }
+            }
+        },  onFailure: { error in
+            print(error.localizedDescription)
+            NavigationHelper.showSimpleAlert(message:error.localizedDescription)
+        })
+    }
+    //MARK:- GET Task
+    func getTask()
+    {
+        
+            let param: [String: Any] = ["ObjectName":"task",
+                                       "OrganizationId":currentOrgID,
+                                       "IncludeExtendedProperties" :  true,
+                                       "OrderBy" : "Subject",
+                                       "PassKey": passKey,
+                                       "SearchTerm":"",
+                                       "PageOffset": 1,
+                                       "AscendingOrder":true,
+                                       "ResultsPerPage": 5000]
+        UserDefaults.standard.set(true, forKey: "tasklist")
+        do{
+            OperationQueue.main.addOperation {
+                SVProgressHUD.show()
+            }
+        let postData = try JSONSerialization.data(withJSONObject: param, options: [])
+        let request = NSMutableURLRequest(url: URL(string: searchURL)!)
+        let session = URLSession.shared
+        request.httpBody = postData as Data
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue("application/json", forHTTPHeaderField: "Accept")
+        
+        let task = session.dataTask(with: request as URLRequest, completionHandler: {data, response, error -> Void in
+            if (data != nil && error == nil) {
+                do {
+                    OperationQueue.main.addOperation {
+                        SVProgressHUD.dismiss()
+                    }
+                    let decoder = JSONDecoder()
+                    self.taskmodelobj = try? decoder.decode(Taskmodel.self, from: data!)
+                }
+                catch
+                {
+                    
+                }
+     
+                
+            } else {
+                print("Web Service have Error")
+            }
+        })
+        
+        task.resume()
+        }catch
+        {
+            
+        }
+    }
+   
+    @objc func complete(notfication: NSNotification) {
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "complete"), object: nil)
+        completee =  notfication.object! as? String
+        if(completee == "true"){
+            isComplete = true
+        }
+        else{
+            isComplete = false
+        }
     }
     
     @IBAction func tappedAlldayEvent(_ sender: Any) {
@@ -527,7 +952,7 @@ class NewAppointmentsController: UITableViewController {
                                    "AscendingOrder":true,
                                    "OrderBy":"Name"]
         print(json)
-        APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             
             DispatchQueue.main.async {
                 print(json)
@@ -608,7 +1033,7 @@ class NewAppointmentsController: UITableViewController {
 //                                   "PageOffset": 1,
 //                                   "ResultsPerPage": 5000]
 //        print(json)
-//        APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+//        APIManager.sharedInstance.postRequestCall(postURL: "https://toolkit.bluesquareapps.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
 //            if self.openedActivties != nil {
 //                DispatchQueue.main.async {
 //                    self.getAppointmentType()
@@ -689,12 +1114,14 @@ class NewAppointmentsController: UITableViewController {
                                    "ResultsPerPage": 5000]
         print(json)
         
-        APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 self.getTeamMembers()
                 print(json)
                 var accountarray : [String] = []
                 let contactModel = TeamMembersModel.init(fromDictionary: jsonResponse)
+                let contactMode1l = GetAccountsListModel.init(fromDictionary: jsonResponse)
+                self.importaccountList = contactMode1l.results
                 self.accountsList = contactModel.results
                 self.accountsList = self.accountsList.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == ComparisonResult.orderedAscending }
             }
@@ -711,7 +1138,7 @@ class NewAppointmentsController: UITableViewController {
                                    "PassKey":passKey]
         print(json)
         
-        APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
               
                 print(json)
@@ -754,7 +1181,7 @@ class NewAppointmentsController: UITableViewController {
             let parameters = [
                 "OrderBy": "",
                 "ParentId": "",
-                "ResultsPerPage": 500,
+                "ResultsPerPage": 5000,
                 "OrganizationId": currentOrgID,
                 "PassKey": passKey,
                 "ParentObjectName": "",
@@ -763,7 +1190,7 @@ class NewAppointmentsController: UITableViewController {
                 "AscendingOrder":true
                 ] as [String : Any]
             
-            let request = NSMutableURLRequest(url: NSURL(string: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json")! as URL,
+            let request = NSMutableURLRequest(url: NSURL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json")! as URL,
                                               cachePolicy: .useProtocolCachePolicy,
                                               timeoutInterval: 10.0)
             request.httpMethod = "POST"
@@ -842,6 +1269,7 @@ class NewAppointmentsController: UITableViewController {
             self.UpdateEditRequest()
         }))
         alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: { (alert) in
+            self.setupBottomView()
         }))
         self.present(alert, animated: true, completion: nil)
     }
@@ -852,6 +1280,7 @@ class NewAppointmentsController: UITableViewController {
             self.updateRequest()
         }))
         alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: { (alert) in
+            self.setupBottomView()
         }))
         self.present(alert, animated: true, completion: nil)
     }
@@ -910,7 +1339,16 @@ class NewAppointmentsController: UITableViewController {
             print("Cancel button tapped")
             self.setupBottomView()
         })
-        
+        let NoteButton = UIAlertAction(title: "Add Note", style: .default, handler: { (action) -> Void in
+            print("Note button tapped")
+            let controller = self.storyboard?.instantiateViewController(withIdentifier: "NoteDetailsVC") as! NoteDetailsVC
+            controller.appoinmentActivities = self.openedActivties
+            controller.passDefaultAppointemntSubject = self.fieldSubject.text!
+            controller.fromviewcontroller = "appointment"
+            controller.editModeON = false
+            self.navigationController?.pushViewController(controller, animated: true)
+        })
+        alertController.addAction(NoteButton)
         alertController.addAction(deleteButton)
         alertController.addAction(sendButton)
         alertController.addAction(closeButton)
@@ -925,6 +1363,7 @@ class NewAppointmentsController: UITableViewController {
             self.DeleteAppointment()
         }))
         alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: { (alert) in
+            self.setupBottomView()
         }))
         self.present(alert, animated: true, completion: nil)
     }
@@ -943,7 +1382,7 @@ class NewAppointmentsController: UITableViewController {
             "Content-Type": "application/json",
             ]
         
-        mainURL = "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/delete.json"
+        mainURL = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/delete.json"
         
         let request = NSMutableURLRequest(url: NSURL(string: mainURL)! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
@@ -971,6 +1410,9 @@ class NewAppointmentsController: UITableViewController {
                 }
                 let result = try JSON(data: data)
                 print(result)
+                print(result["ResponseMessage"])
+                print("success")
+                if(result["ResponseMessage"] == "success"){
                 let alert = UIAlertController(title:"Appointment Deleted Successfully", message: nil, preferredStyle: UIAlertControllerStyle.alert)
                 alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (alert) in
                     if(self.EditCondition == "calendar"){
@@ -980,7 +1422,20 @@ class NewAppointmentsController: UITableViewController {
                         self.navigationController?.popViewController(animated:true)
                     }
                 }))
-                self.present(alert, animated: true, completion: nil)
+                    self.present(alert, animated: true, completion: nil)
+                }else{
+                    let alert = UIAlertController(title:result["ResponseMessage"].stringValue, message: nil, preferredStyle: UIAlertControllerStyle.alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (alert) in
+                        if(self.EditCondition == "calendar"){
+                            NavigationHelper().createMenuView()
+                        }
+                        else{
+                            self.navigationController?.popViewController(animated:true)
+                        }
+                    }))
+                    self.present(alert, animated: true, completion: nil)
+                }
+                
             }
                 catch {
                     print(error.localizedDescription)
@@ -1010,6 +1465,7 @@ class NewAppointmentsController: UITableViewController {
             self.UpdatedNewAppointment(jsonParameter: param)
         }))
         alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: { (alert) in
+            self.setupBottomView()
         }))
         self.present(alert, animated: true, completion: nil)
     }
@@ -1030,7 +1486,8 @@ class NewAppointmentsController: UITableViewController {
             "Content-Type": "application/json",
             ]
         
-        mainURL = "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getActivities.json"
+        mainURL =
+            globalURL+"/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getActivities.json"
         
         let request = NSMutableURLRequest(url: NSURL(string: mainURL)! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
@@ -1070,7 +1527,7 @@ class NewAppointmentsController: UITableViewController {
             ]
         
         
-        mainURL = "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getActivities.json"
+        mainURL = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getActivities.json"
         
         let request = NSMutableURLRequest(url: NSURL(string: mainURL)! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
@@ -1152,7 +1609,7 @@ class NewAppointmentsController: UITableViewController {
                         let headers = [
                             "Content-Type": "application/json",
                             ]
-                        mainURL = "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/modify.json"
+                        mainURL = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/modify.json"
                         
                         let request = NSMutableURLRequest(url: NSURL(string: mainURL)! as URL,
                                                           cachePolicy: .useProtocolCachePolicy,
@@ -1227,7 +1684,7 @@ class NewAppointmentsController: UITableViewController {
             ]
         
         
-        mainURL = "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getActivities.json"
+        mainURL = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.calendar.VCCalendarEndpoint/getActivities.json"
         
         let request = NSMutableURLRequest(url: NSURL(string: mainURL)! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
@@ -1320,7 +1777,7 @@ class NewAppointmentsController: UITableViewController {
                         let headers = [
                             "Content-Type": "application/json",
                             ]
-                        mainURL = "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/modify.json"
+                        mainURL = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/modify.json"
                         
                         let request = NSMutableURLRequest(url: NSURL(string: mainURL)! as URL,
                                                           cachePolicy: .useProtocolCachePolicy,
@@ -1805,7 +2262,7 @@ class NewAppointmentsController: UITableViewController {
         
         
         print(parameters)
-        let request = NSMutableURLRequest(url: NSURL(string: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json")! as URL,
+        let request = NSMutableURLRequest(url: NSURL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json")! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
                                           timeoutInterval: 30.0)
         request.httpMethod = "POST"
@@ -1892,7 +2349,7 @@ class NewAppointmentsController: UITableViewController {
             "PassKey": passKey
             ] as [String : Any]
         print(parameters)
-        let request = NSMutableURLRequest(url: NSURL(string: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json")! as URL,
+        let request = NSMutableURLRequest(url: NSURL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json")! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
                                           timeoutInterval: 30.0)
         request.httpMethod = "POST"
@@ -1975,7 +2432,7 @@ class NewAppointmentsController: UITableViewController {
             "ResultsPerPage":1000
             ] as [String : Any]
         print(parameters)
-        let request = NSMutableURLRequest(url: NSURL(string: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json")! as URL,
+        let request = NSMutableURLRequest(url: NSURL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listLinked.json")! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
                                           timeoutInterval: 30.0)
         request.httpMethod = "POST"
@@ -2053,23 +2510,484 @@ class NewAppointmentsController: UITableViewController {
 
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
-        return 1
+        return 2
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return 14
+        if section == 1 {
+            if(isNoteCellPresent)
+            {
+                return self.notedata.count + 1
+            }else
+            {
+                return 1
+            }
+        }
+        else
+        {
+            return 14
+        }
+    }
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        
+            if(indexPath.section == 1 && isExpand && selectedIndexPath_condition == indexPath.section)
+            {
+                    if(indexPath.row == 0)
+                    {
+                        return 109
+                    }else
+                    {
+                        return UITableViewAutomaticDimension
+                    }
+                }
+            else{
+                return 44
+            }
+            
+        }
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+             if (indexPath.section == 1)
+            {
+                if indexPath.section == selectedIndexPath - 1 {
+                    self.isNoteCellPresent = false
+                    selectedIndexPath = 2123123
+                    self.isExpand = false
+                }else{
+                    selectedIndexPath = indexPath.section + 1
+                    self.isExpand = true
+                    self.isNoteCellPresent = true
+                }
+                self.selectedIndexPath_condition = indexPath.section
+                tableView.reloadSections(IndexSet(integer: 9), with: .bottom)
+                tableView.scrollToRow(at: IndexPath(row: 0, section: 9), at: .bottom, animated: true)
+
+            }
+
+        }
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+
+        if(indexPath.section == 1)
+        {
+                
+                if(indexPath.row == 0)
+                {
+                    let notecell:NoteHeaderCell = tableView.dequeueReusableCell(withIdentifier: "NoteHeaderCell", for: indexPath) as! NoteHeaderCell
+                    
+                    if(isExpand && selectedIndexPath_condition == indexPath.section){
+                        notecell.addnotebtn.isHidden = false
+                    }
+                    else{
+                        notecell.addnotebtn.isHidden = true
+                    }
+                    if selectedIndexPath == 10 {
+                        notecell.imgarrow.transform = CGAffineTransform(rotationAngle: (90.0 * CGFloat(Double.pi)) / 180.0)
+                    }else{
+                        notecell.imgarrow.transform = CGAffineTransform(rotationAngle: (90.0 * CGFloat(Double.pi)))
+                    }
+                    notecell.addnotebtn.tag = indexPath.section
+                    notecell.isUserInteractionEnabled = true
+                    notecell.addnotebtn.addTarget(self, action: #selector(AddNoteButtonTapped(_:)), for: .touchUpInside)
+                    return notecell
+                }else
+                {
+           let notedetailcell:NotesListCell = tableView.dequeueReusableCell(withIdentifier: "NotesListCell", for: indexPath) as! NotesListCell
+                    if !(self.notedata.count > 0){
+                        return notedetailcell
+                    }
+                    let isdraft = (self.notedata[indexPath.row - 1].note?.draft)!
+                    if(isdraft)
+                    {
+                        notedetailcell.draftLblOutlet.isHidden = false
+                        notedetailcell.editWidthConstraint.constant = 22 // displayed edit buttonediting
+                    }else{
+                        notedetailcell.draftLblOutlet.isHidden = true
+                        notedetailcell.editWidthConstraint.constant = 0 // hide edit button
+                    }
+                    
+                    // created on - date
+                    let sdate = (self.notedata[indexPath.row - 1].note?.createdOn)!
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                    let st_date : Date = dateFormatter.date(from: sdate)!
+                    dateFormatter.dateFormat = "MM/dd/yyyy"
+                    let firdate = dateFormatter.string(from: st_date)
+                    dateFormatter.dateFormat = "hh:mm:ss a"
+                    let secdate = dateFormatter.string(from: st_date)
+                   
+                    
+                    //created by - organization name
+                    for(_,elem) in self.usersList.enumerated()
+                    {
+                        if(self.notedata[indexPath.row - 1].note?.createdBy == elem.id)
+                        {
+                            let cname = elem.firstName + " " + elem.lastName
+                            let finalstr =  firdate + ", " + secdate + " by " + cname as NSString
+                            let aattributedString = NSMutableAttributedString(string: finalstr as String, attributes: [NSAttributedStringKey.font:UIFont.systemFont(ofSize: 12.0)])
+                            let boldFontAttribute = [NSAttributedStringKey.font: UIFont.boldSystemFont(ofSize: 12.0)]
+                            aattributedString.addAttributes(boldFontAttribute, range: finalstr.range(of: "by"))
+                            notedetailcell.createOnLbl.attributedText = aattributedString
+                            break
+                        }
+                    }
+                    
+                    // note text
+                    let noteee = self.notedata[indexPath.row - 1].note!.note
+                    if(noteee != nil && noteee != ""){
+                     notedetailcell.noteTxtViewOutlet.isHidden = false
+                        }else
+                    {
+                         notedetailcell.noteTxtViewOutlet.isHidden = false
+                    }
+                    notedetailcell.noteTxtViewOutlet.text = self.notedata[indexPath.row - 1].note!.note
+                    //regarding contact name
+                    var allregardingID : [String] = []
+                    let currNoteid = self.notedata[indexPath.row - 1].note?.id
+                    for(index,_) in self.noteregardingData.enumerated(){
+                        
+                    let valu = self.noteregardingData[index] as? [NoteRegardingList]
+                    
+                        if(currNoteid == valu?.first?.noteID)
+                        {
+                            for(_,ele) in (valu?.enumerated())!
+                            {
+                                allregardingID.append(ele.regardingID!) // add all note - regarding id into array
+                            }
+                            break
+                        }
+                    }
+                    // to fetch contact name
+                    var collectallname : [String] = []
+                    allregardingname.removeAll()
+                    allaccountregardingname.removeAll()
+                    for(_, elem) in allregardingID.enumerated()
+                    {
+                        for(_,ele) in self.contactList.enumerated(){
+                            if(elem == ele.id)
+                            {
+                                allregardingname.append(ele)
+                                collectallname.append(ele.fullName)
+                            }
+                        }
+                        for(_,ele) in self.importaccountList.enumerated(){
+                            if(elem == ele.id)
+                            {
+                                allaccountregardingname.append(ele)
+                                collectallname.append(ele.name)
+                            }
+                        }
+                        for(_,ele) in self.appointmentList.results.enumerated()
+                        {
+                            if(elem == ele.id)
+                            {
+                                allAppointmentregardingSubject.append(ele)
+                                collectallname.append(ele.subject!)
+                            }
+                        }
+                        for(_,ele) in self.taskmodelobj.results.enumerated()
+                        {
+                            if(elem == ele.id)
+                            {
+                                allTaskregardingSubject.append(ele)
+                                collectallname.append(ele.subject!)
+
+                            }
+                        }
+                    }
+                    
+                   // assign regarding name to cell
+                    notedetailcell.regattachlist = allregardingname
+                    notedetailcell.regaccountlist = allaccountregardingname
+                    notedetailcell.regTasklist = allTaskregardingSubject
+                    notedetailcell.regAppointmentlist = allAppointmentregardingSubject
+                    notedetailcell.allnames = collectallname
+                    notedetailcell.noteplace = "appointment"
+                    if(collectallname.count > 0)
+                    {
+                        if(collectallname.count <= 2)
+                        {
+                            notedetailcell.regardingheightConstraint.constant = 48
+                        }else
+                        {
+                            if(collectallname.count % 2 == 0) // if even set height below
+                            {
+                            notedetailcell.regardingheightConstraint.constant = CGFloat((collectallname.count/2) * 48)
+                            }
+                            else // if odd set height below
+                            {
+                                let hght = CGFloat((collectallname.count/2) * 48)
+                                notedetailcell.regardingheightConstraint.constant = hght + 48
+                            }
+                        }
+                    }
+                    notedetailcell.regardingCollectionview.reloadData()
+                    var isvaluepresent : Bool = false
+                    
+                    // attachment collectionview passing values
+                    for(indx,_) in self.noteattachmentData.enumerated()
+                    {
+                        let valu = self.noteattachmentData[indx] as? [NoteRegardingList]
+                        if (currNoteid == valu?.first?.noteID)
+                        {
+                            notedetailcell.attachlblHeight.constant = 18
+                            isvaluepresent = true
+                            notedetailcell.typeattachlist = valu!
+                            if(valu!.count > 0)
+                            {
+                                if(valu!.count <= 2)
+                                {
+                                    notedetailcell.attachCollectionViewHeightConstraint.constant = 48
+                                }else
+                                {
+                                    if(valu!.count % 2 == 0) // if even set height below
+                                    {
+                                        notedetailcell.attachCollectionViewHeightConstraint.constant = CGFloat((valu!.count/2) * 48)
+                                    }else // if odd set height below
+                                    {
+                                        let hght = CGFloat((valu!.count/2) * 48)
+                                        notedetailcell.attachCollectionViewHeightConstraint.constant = hght + 50
+                                    }
+                                }
+                            }
+                            notedetailcell.attachCollectionView.reloadData()
+                        }
+                    }
+                    if(!isvaluepresent) // if no attachment is present for current note
+                    {
+                        notedetailcell.typeattachlist = []
+                        notedetailcell.attachlblHeight.constant = 0
+                        notedetailcell.attachCollectionViewHeightConstraint.constant = 0
+                    }
+                    
+                    // comment tableview passing values
+                    var iscommentpresent : Bool = false
+                    var height : CGFloat = 0.0
+                    if(iscommentExpand){
+                    if(self.allcommentExpandArray[indexPath.row - 1] == 1){
+                    for(indx,_) in self.notecommentData.enumerated()
+                    {
+                        let valu = self.notecommentData[indx] as? [CommnetResults]
+                        if (currNoteid == valu?.first?.noteID)
+                        {
+                            iscommentpresent = true
+                            notedetailcell.cellusersList = self.usersList
+                            notedetailcell.comments = valu!
+                            let font = UIFont(name: "Helvetica", size: 14.0)!
+                            for(indx,_) in (valu?.enumerated())!
+                            {
+                                height += heightForView(text: notedetailcell.comments[indx].comment!, font: font, width: notedetailcell.commentTableview.frame.width) + 40
+                            }
+                            notedetailcell.commentTablHeightConstarint.constant = height
+                            notedetailcell.commentsBtnHeightConstraint.constant =  40
+                            notedetailcell.commentExpandOutlet.isHidden = false
+                            notedetailcell.commentImage.isHidden = false
+                            notedetailcell.commentImage.image = UIImage(named: "ic_down_arrow_black")
+                            notedetailcell.commentTableview.reloadData()
+                        }
+                    }
+                    if(!iscommentpresent) // if no attachment is present for current note
+                    {
+                        notedetailcell.comments = []
+                        notedetailcell.commentExpandOutlet.isHidden = true
+                        notedetailcell.commentImage.isHidden = true
+                        notedetailcell.commentsBtnHeightConstraint.constant =  0
+                        notedetailcell.commentTablHeightConstarint.constant = 0
+                        notedetailcell.commentTableview.reloadData()
+                            }}
+                        else
+                        {
+                            if(self.notecommentData.count > 0){
+                                for(indx,_) in self.notecommentData.enumerated()
+                                {
+                                    let valu = self.notecommentData[indx] as? [CommnetResults]
+                                    if (currNoteid == valu?.first?.noteID)
+                                    {
+                                        iscommentpresent = true
+                                        notedetailcell.comments = []
+                                        notedetailcell.commentImage.image = UIImage(named: "ic_forward")
+                                        notedetailcell.commentExpandOutlet.isHidden = false
+                                        notedetailcell.commentImage.isHidden = false
+                                        notedetailcell.commentsBtnHeightConstraint.constant =  40
+                                        notedetailcell.commentTablHeightConstarint.constant = 0
+                                        notedetailcell.commentTableview.reloadData()
+                                    }
+                                }
+                                if(!iscommentpresent) // if no attachment is present for current note
+                                {
+                                    notedetailcell.comments = []
+                                    notedetailcell.commentExpandOutlet.isHidden = true
+                                    notedetailcell.commentImage.isHidden = true
+                                    notedetailcell.commentsBtnHeightConstraint.constant =  0
+                                    notedetailcell.commentTablHeightConstarint.constant = 0
+                                    notedetailcell.commentTableview.reloadData()
+                                }}else
+                            {
+                                 notedetailcell.comments = []
+                                notedetailcell.commentExpandOutlet.isHidden = true
+                                notedetailcell.commentImage.isHidden = true
+                                notedetailcell.commentsBtnHeightConstraint.constant =  0
+                                notedetailcell.commentTablHeightConstarint.constant = 0
+                                notedetailcell.commentTableview.reloadData()
+                            }
+                         
+                        }
+                    }else
+                    {
+                        if(self.notecommentData.count > 0){
+                            for(indx,_) in self.notecommentData.enumerated()
+                            {
+                                let valu = self.notecommentData[indx] as? [CommnetResults]
+                                if (currNoteid == valu?.first?.noteID)
+                                {
+                                    iscommentpresent = true
+                                    notedetailcell.comments = []
+                                    notedetailcell.commentImage.image = UIImage(named: "ic_forward")
+                                    notedetailcell.commentExpandOutlet.isHidden = false
+                                    notedetailcell.commentImage.isHidden = false
+                                    notedetailcell.commentsBtnHeightConstraint.constant =  40
+                                    notedetailcell.commentTablHeightConstarint.constant = 0
+                                    notedetailcell.commentTableview.reloadData()
+                                }
+                            }
+                            if(!iscommentpresent) // if no attachment is present for current note
+                            {
+                                notedetailcell.comments = []
+                                notedetailcell.commentExpandOutlet.isHidden = true
+                                notedetailcell.commentImage.isHidden = true
+                                notedetailcell.commentsBtnHeightConstraint.constant =  0
+                                notedetailcell.commentTablHeightConstarint.constant = 0
+                                 notedetailcell.commentTableview.reloadData()
+                            }}else
+                        {
+                            notedetailcell.comments = []
+                            notedetailcell.commentExpandOutlet.isHidden = true
+                            notedetailcell.commentImage.isHidden = true
+                            notedetailcell.commentsBtnHeightConstraint.constant =  0
+                            notedetailcell.commentTablHeightConstarint.constant = 0
+                             notedetailcell.commentTableview.reloadData()
+                        }
+                        
+                    }
+                    let contentSizetxt = notedetailcell.noteTxtViewOutlet.sizeThatFits(notedetailcell.noteTxtViewOutlet.bounds.size)
+                    
+                    let txtheight =  contentSizetxt.height
+
+                    if(notedetailcell.commentsBtnHeightConstraint.constant ==  0){
+                      notedetailcell.noteviewHeightConstraint.constant = CGFloat(defaultNoteCellHeight + commentHeight) + notedetailcell.attachCollectionViewHeightConstraint.constant + txtheight +  notedetailcell.regardingheightConstraint.constant + notedetailcell.attachlblHeight.constant + notedetailcell.commentsBtnHeightConstraint.constant + notedetailcell.commentTablHeightConstarint.constant - 20
+                    }
+                    else{
+                         notedetailcell.noteviewHeightConstraint.constant = CGFloat(defaultNoteCellHeight + commentHeight) + notedetailcell.attachCollectionViewHeightConstraint.constant + txtheight +  notedetailcell.regardingheightConstraint.constant + notedetailcell.attachlblHeight.constant + notedetailcell.commentsBtnHeightConstraint.constant + notedetailcell.commentTablHeightConstarint.constant
+                    }
+
+                    // other button action
+                    notedetailcell.commentExpandOutlet.tag = indexPath.row - 1
+                    notedetailcell.commentExpandOutlet.addTarget(self, action: #selector(self.commentTableviewExpandAction(_:)), for: .touchUpInside)
+                    notedetailcell.commentbtnOutlet.tag = indexPath.row - 1
+                    notedetailcell.commentbtnOutlet.addTarget(self, action: #selector(self.commentNoteButtonTapped(_:)), for: .touchUpInside)
+                    notedetailcell.attachBtnOutlet.tag = indexPath.row - 1
+                    notedetailcell.attachBtnOutlet.addTarget(self, action: #selector(self.attachNoteButtonTapped(_:)), for: .touchUpInside)
+                    notedetailcell.searchBtnOutlet.tag = indexPath.row - 1
+                    notedetailcell.searchBtnOutlet.addTarget(self, action: #selector(self.searchNoteButtonTapped(_:)), for: .touchUpInside)
+                    notedetailcell.editbtnOutlet.tag = indexPath.row - 1
+                    notedetailcell.editbtnOutlet.addTarget(self, action: #selector(self.editNoteButtonTapped(_:)), for: .touchUpInside)
+                    return notedetailcell
+        }
+        
+    }else
+        {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
+             return cell
+        }
     }
     
-    /*
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
-
-        // Configure the cell...
-
-        return cell
+    func heightForView(text:String, font:UIFont, width:CGFloat) -> CGFloat{
+        let label:UILabel = UILabel(frame: CGRect(x: 0, y: 0, width: width, height: CGFloat.greatestFiniteMagnitude))
+        label.numberOfLines = 0
+        label.lineBreakMode = NSLineBreakMode.byWordWrapping
+        label.font = font
+        label.text = text
+        
+        label.sizeToFit()
+        return label.frame.height
     }
-    */
+    
+        @objc func searchNoteButtonTapped(_ sender: UIButton)
+        {
+            self.selectedNoteIndx = sender.tag
+            self.selectedNoteID =  self.notedata[sender.tag].note!.id
+            searchCurrNoteid = self.notedata[sender.tag].note?.id
+            self.showContactsPicker()
+        }
+        @objc func attachNoteButtonTapped(_ sender: UIButton)
+        {
+            self.selectedNoteIndx = sender.tag
+            self.selectedNoteID =  self.notedata[sender.tag].note!.id
+            var types = [kUTTypePDF, kUTTypeText, kUTTypeRTF, kUTTypeSpreadsheet,kUTTypeGIF,kUTTypePNG,kUTTypeHTML,kUTTypeJPEG,kUTTypeMPEG,kUTTypeAudio,kUTTypeMP3,kUTTypeMovie,kUTTypeMPEG4,kUTTypeBMP,kUTTypeXML,kUTTypeICO,kUTTypeText,kUTTypeTIFF]
+            types.append("com.microsoft.word.doc" as CFString)
+            let importMenu = UIDocumentPickerViewController(documentTypes: types as [String], in: .import)
+            importMenu.delegate = self
+            UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor:UIColor.blue], for: .normal)
+            self.present(importMenu, animated: true, completion: nil)
+        }
+        @objc func editNoteButtonTapped(_ sender: UIButton)
+        {
+            self.selectedNoteID =  self.notedata[sender.tag].note!.id
+            let controller:NoteDetailsVC = self.storyboard?.instantiateViewController(withIdentifier: "NoteDetailsVC") as! NoteDetailsVC
+            controller.fromviewcontroller = "task"
+            controller.editModeON = true
+            controller.editContactList = self.contactList
+            controller.mainaccountList = self.importaccountList
+            controller.editpassTaskmodel = self.taskmodelobj
+            controller.editpassAppoinementmodel = self.appointmentList
+            controller.editNoteID = self.notedata[sender.tag].note!.id
+            controller.editnotetext = self.notedata[sender.tag].note!.note ?? ""
+            self.navigationController?.pushViewController(controller, animated: true)
+        }
+        @objc func commentTableviewExpandAction(_ sender: UIButton)
+        {
+            iscommentExpand = true
+            if(self.allcommentExpandArray[sender.tag] == 0)
+            {
+                self.allcommentExpandArray.insert(1, at: sender.tag)
+                self.allcommentExpandArray.remove(at: sender.tag + 1)
+            }else
+            {
+                self.allcommentExpandArray.insert(0, at: sender.tag)
+                self.allcommentExpandArray.remove(at: sender.tag + 1)
+            }
+            let currNoteid = self.notedata[sender.tag].note?.id
+            for(indx,_) in self.notecommentData.enumerated()
+            {
+                let valu = self.notecommentData[indx] as? [CommnetResults]
+                if (currNoteid == valu?.first?.noteID)
+                {
+                    self.globalCommentCount = valu!.count
+                }
+            }
+
+            self.tableView.reloadSections(IndexSet(integer: 9), with: .none)
+            let indexPath = IndexPath(row: sender.tag + 1, section: 9)
+            self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: false)
+        }
+        @objc func commentNoteButtonTapped(_ sender: UIButton)
+        {
+            self.selectedNoteID =  self.notedata[sender.tag].note!.id
+            let modalViewController:AddCommentVC = self.storyboard?.instantiateViewController(withIdentifier: "AddCommentVC") as! AddCommentVC
+            modalViewController.modalPresentationStyle = .overCurrentContext
+            modalViewController.istype = "comment"
+            modalViewController.fromviewController = "contact"
+            self.present(modalViewController, animated: true, completion: nil)
+
+        }
+        @objc func AddNoteButtonTapped(_ button: UIButton) {
+            let controller:NoteDetailsVC = self.storyboard?.instantiateViewController(withIdentifier: "NoteDetailsVC") as! NoteDetailsVC
+            controller.appoinmentActivities = self.openedActivties
+            controller.passDefaultAppointemntSubject = self.fieldSubject.text!
+            controller.fromviewcontroller = "appointment"
+            controller.editModeON = false
+            self.navigationController?.pushViewController(controller, animated: true)
+        }
 
     /*
     // Override to support conditional editing of the table view.
@@ -2944,6 +3862,7 @@ extension NewAppointmentsController:UITextFieldDelegate {
                     let formatter = DateFormatter()
                     formatter.dateFormat = "hh:mm a"
                     picker.date = formatter.date(from: self.EndtimeAppointment.text!)!
+                    
                 }
                 //                picker.date = Date()
                
@@ -2955,6 +3874,32 @@ extension NewAppointmentsController:UITextFieldDelegate {
                     let formatter = DateFormatter()
                     formatter.dateFormat = "hh:mm a"
                     self.EndtimeAppointment.text = formatter.string(from: date!)
+                    
+                    if(self.fieldStartTime.text != ""){
+                        let start = self.fieldStartTime.text!
+                        let startdatetime = start + " " + self.Starttimeappointment.text!
+                        print(startdatetime)
+                        let dateFormatter = DateFormatter()
+                        dateFormatter.dateFormat = "yyyy-MM-dd hh:mm a"
+                        let dates = dateFormatter.date(from:startdatetime)!
+                        
+                        formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+                        formatter.dateFormat =  "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                        self.startTime = formatter.string(from: dates)
+                    }
+                    
+                    
+                    
+                    let start = self.fieldEndtime.text!
+                    let startdatetime = start + " " + self.EndtimeAppointment.text!
+                    print(startdatetime)
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "yyyy-MM-dd hh:mm a"
+                    let dates = dateFormatter.date(from:startdatetime)!
+                    
+                    formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+                    formatter.dateFormat =  "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                    self.endTime = formatter.string(from: dates)
                 }
             }
             return true
@@ -3123,3 +4068,159 @@ extension NewAppointmentsController:URLSessionDelegate {
         completionHandler(.useCredential, URLCredential(trust: trust))
     }
 }
+extension NewAppointmentsController: UIDocumentPickerDelegate,UINavigationControllerDelegate
+{
+    public func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let myURL = urls.first else {
+            return
+        }
+        print("import result : \(myURL)")
+        let urlString: String = myURL.absoluteString
+        let fullNameArr = urlString.components(separatedBy: "/")
+        let filename = fullNameArr.last
+        var originalfile = filename?.replacingOccurrences(of: "%20", with: "")
+        
+        let filePath: NSString = myURL.path as NSString
+        let fileSize : UInt64
+        do{
+            let attr:NSDictionary? = try FileManager.default.attributesOfItem(atPath: filePath as String) as NSDictionary
+            if let _attr = attr {
+                fileSize = _attr.fileSize();
+                let formatter = ByteCountFormatter()
+                formatter.allowedUnits = [.useMB]
+                formatter.countStyle = .file
+                let displaySize = formatter.string(fromByteCount: Int64(fileSize))
+                print(displaySize)// prints: 2.6 MB
+                if(displaySize > "50.0 MB")
+                {
+                    NavigationHelper.showSimpleAlert(message:"Your file is \(displaySize) long. we allow size only upto 50 MB.")
+                    return
+                }
+            }
+        }
+        catch{
+            print(error.localizedDescription)
+        }
+        let path = myURL.path
+        let imgdata = FileManager.default.contents(atPath: path)!
+        self.request(withImages: ["X-VCPassKey": passKey], parameters: nil, imageNames: [originalfile!], images: [imgdata]) { (data, error, status) in
+            print(data!)
+            print(status)
+        }
+    }
+    
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+        controller.dismiss(animated: true, completion: nil)
+    }
+    
+    
+    func request(withImages headers:[String:String]?, parameters: [String:Any]?,imageNames : [String], images:[Data], completion: @escaping(Any?, Error?, Bool)->Void) {
+        
+        OperationQueue.main.addOperation {
+            SVProgressHUD.show()
+        }
+        let stringUrl = globalURL+"/note_attachment/\(currentOrgID)/\(self.selectedNoteID)"
+        
+        let boundary = UUID().uuidString
+        let config = URLSessionConfiguration.default
+        let session = URLSession(configuration: config)
+        
+        print("\n\ncomplete Url :-------------- ",stringUrl," \n\n-------------: complete Url")
+        guard let url = URL(string: stringUrl) else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        if headers != nil{
+            print("\n\nHeaders :-------------- ",headers as Any,"\n\n --------------: Headers")
+            for (key, value) in headers! {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
+        }
+        
+        // Set Content-Type Header to multipart/form-data, this is equivalent to submitting form data with file upload in a web browser
+        // And the boundary is also set here
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        
+        var data = Data()
+        if parameters != nil{
+            for(key, value) in parameters!{
+                // Add the reqtype field and its value to the raw http request data
+                data.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+                data.append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n".data(using: .utf8)!)
+                data.append("\(value)".data(using: .utf8)!)
+            }
+        }
+        for (index,imageData) in images.enumerated() {
+            // Add the image data to the raw http request data
+            data.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+            data.append("Content-Disposition: form-data; name=\"\(imageNames[index])\"; filename=\"\(imageNames[index])\"\r\n".data(using: .utf8)!)
+            data.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
+            data.append(imageData)
+        }
+        
+        // End the raw http request data, note that there is 2 extra dash ("-") at the end, this is to indicate the end of the data
+        data.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        
+        // Send a POST request to the URL, with the data we created earlier
+        session.uploadTask(with: request, from: data, completionHandler: { data, response, error in
+            
+            OperationQueue.main.addOperation {
+                SVProgressHUD.dismiss()
+            }
+            
+            if let checkResponse = response as? HTTPURLResponse{
+                if checkResponse.statusCode == 200{
+                    guard let data = data, let json = try? JSONSerialization.jsonObject(with: data, options: [JSONSerialization.ReadingOptions.allowFragments]) else {
+                        completion(nil, error, false)
+                        return
+                    }
+                    do{
+                        DispatchQueue.main.async {
+                            let reobj = try? JSONDecoder().decode(NoteRegardingModel.self, from: data)
+                            var isadded : Bool = false
+                            if((reobj?.regardingobj!.count)! > 0){
+                                for(indx,_) in self.noteattachmentData.enumerated()
+                                {
+                                    var valu = self.noteattachmentData[indx] as? [NoteRegardingList]
+                                    
+                                    if (self.selectedNoteID == valu?.first?.noteID)
+                                    {
+                                        isadded = true
+                                        valu?.append((reobj?.regardingobj!.first)!)
+                                        self.noteattachmentData.append(valu!)
+                                    }
+                                }
+                                if(!isadded)
+                                {
+                                    self.noteattachmentData.append(reobj?.regardingobj!)
+                                }
+                                self.tableView.reloadData()
+                            }
+                        }
+                        }
+                    catch
+                    {
+                        print(error.localizedDescription)
+                    }
+                    completion(json, nil, true)
+                }else{
+                    guard let data = data, let json = try? JSONSerialization.jsonObject(with: data, options: []) else {
+                        completion(nil, error, false)
+                        return
+                    }
+                    let jsonString = String(data: data, encoding: .utf8)!
+                    print("\n\n---------------------------\n\n"+jsonString+"\n\n---------------------------\n\n")
+                   
+                    completion(json, nil, false)
+                }
+            }else{
+                guard let data = data, let json = try? JSONSerialization.jsonObject(with: data, options: []) else {
+                    completion(nil, error, false)
+                    return
+                }
+                completion(json, nil, false)
+            }
+            
+        }).resume()
+    }
+    }

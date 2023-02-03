@@ -1,101 +1,338 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Bucket
+   uuid = "F044686A-FAB8-415E-BC24-EFC7F4D808C5"
    type = "0"
    version = "2.0">
    <Breakpoints>
       <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         BreakpointExtensionID = "Xcode.Breakpoint.ExceptionBreakpoint">
          <BreakpointContent
+            uuid = "A2CE9E8E-A779-4BF8-80ED-87B6678F7077"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Pareto Systems/Leftmenu/Contacts/OpenActivities/NewTaskController.swift"
-            timestampString = "572902714.305341"
+            breakpointStackSelectionBehavior = "1"
+            scope = "1"
+            stopOnStyle = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "1BE8C1CF-7926-4C75-B97D-95CE0660A806"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Pareto Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "370"
-            endingLineNumber = "370"
-            landmarkName = "setupBottomView()"
+            startingLineNumber = "998"
+            endingLineNumber = "998"
+            landmarkName = "createRecurrencePattern(jsonInput:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "1BE8C1CF-7926-4C75-B97D-95CE0660A806 - a86a19880b8b62c1"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Blue_square.CreateRecurrencePattern.createRecurrencePattern(jsonInput: __C.NSDictionary) -&gt; ()"
+                  moduleName = "Blue Square"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ashwinisankar/Projects/Pareto/12DecFinalone-30May/Pareto%20Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "998"
+                  endingLineNumber = "998"
+                  offsetFromSymbolStart = "840">
+               </Location>
+               <Location
+                  uuid = "1BE8C1CF-7926-4C75-B97D-95CE0660A806 - c1146bcd78a3dea4"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (__C.NSDictionary, Blue_square.JSON) -&gt; () in Blue_square.CreateRecurrencePattern.createRecurrencePattern(jsonInput: __C.NSDictionary) -&gt; ()"
+                  moduleName = "Blue Square"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ashwinisankar/Projects/Pareto/12DecFinalone-30May/Pareto%20Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "999"
+                  endingLineNumber = "999"
+                  offsetFromSymbolStart = "196">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "6C9A4383-2496-412E-9DAC-28850989CEE4"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Pareto Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1693"
+            endingLineNumber = "1693"
+            landmarkName = "getPatternUsers()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
+            uuid = "6378C41F-6F0A-4D3E-8816-C7886B5239BD"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Pareto Systems/Leftmenu/Contacts/OpenActivities/NewTaskController.swift"
-            timestampString = "572902714.3054349"
+            filePath = "Pareto Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "368"
-            endingLineNumber = "368"
-            landmarkName = "setupBottomView()"
+            startingLineNumber = "1058"
+            endingLineNumber = "1058"
+            landmarkName = "createServiceWithRecurrenceID(recID:)"
             landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "6378C41F-6F0A-4D3E-8816-C7886B5239BD - 87c5b11f970e2e4"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Blue_square.CreateRecurrencePattern.createServiceWithRecurrenceID(recID: Swift.String) -&gt; ()"
+                  moduleName = "Blue Square"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ashwinisankar/Projects/Pareto/12DecFinalone-30May/Pareto%20Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "1058"
+                  endingLineNumber = "1058"
+                  offsetFromSymbolStart = "7220">
+               </Location>
+               <Location
+                  uuid = "6378C41F-6F0A-4D3E-8816-C7886B5239BD - 443f6bbc1fb29e3d"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (__C.NSDictionary, Blue_square.JSON) -&gt; () in Blue_square.CreateRecurrencePattern.createServiceWithRecurrenceID(recID: Swift.String) -&gt; ()"
+                  moduleName = "Blue Square"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ashwinisankar/Projects/Pareto/12DecFinalone-30May/Pareto%20Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "1059"
+                  endingLineNumber = "1059"
+                  offsetFromSymbolStart = "196">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
+            uuid = "961807C1-8481-4C33-A772-2FDF5D1AEF81"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Pareto Systems/Leftmenu/Contacts/OpenActivities/NewTaskController.swift"
-            timestampString = "572902714.305537"
+            filePath = "Pareto Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "678"
-            endingLineNumber = "678"
-            landmarkName = "profileSaveEditAlert(param:)"
+            startingLineNumber = "1099"
+            endingLineNumber = "1099"
+            landmarkName = "createService(jsonInput:)"
             landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "961807C1-8481-4C33-A772-2FDF5D1AEF81 - 8b7b4fd1c52d0fec"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Blue_square.CreateRecurrencePattern.createService(jsonInput: __C.NSDictionary) -&gt; ()"
+                  moduleName = "Blue Square"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ashwinisankar/Projects/Pareto/12DecFinalone-30May/Pareto%20Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "1099"
+                  endingLineNumber = "1099"
+                  offsetFromSymbolStart = "1112">
+               </Location>
+               <Location
+                  uuid = "961807C1-8481-4C33-A772-2FDF5D1AEF81 - 1828cf080cd4c92f"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (__C.NSDictionary, Blue_square.JSON) -&gt; () in Blue_square.CreateRecurrencePattern.createService(jsonInput: __C.NSDictionary) -&gt; ()"
+                  moduleName = "Blue Square"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ashwinisankar/Projects/Pareto/12DecFinalone-30May/Pareto%20Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "1100"
+                  endingLineNumber = "1100"
+                  offsetFromSymbolStart = "196">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
+            uuid = "3973074D-0C41-4B37-ABC8-FFB6BF8DD37D"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Pareto Systems/Leftmenu/Contacts/OpenActivities/NewTaskController.swift"
-            timestampString = "572902714.305588"
+            filePath = "Pareto Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "686"
-            endingLineNumber = "686"
-            landmarkName = "UpdatedNewTask(jsonParameter:)"
+            startingLineNumber = "1151"
+            endingLineNumber = "1151"
+            landmarkName = "linkAppointmentContacts(rightID:)"
             landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "3973074D-0C41-4B37-ABC8-FFB6BF8DD37D - 8029baf731d60b04"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Blue_square.CreateRecurrencePattern.linkAppointmentContacts(rightID: Swift.String) -&gt; ()"
+                  moduleName = "Blue Square"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ashwinisankar/Projects/Pareto/12DecFinalone-30May/Pareto%20Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "1151"
+                  endingLineNumber = "1151"
+                  offsetFromSymbolStart = "1828">
+               </Location>
+               <Location
+                  uuid = "3973074D-0C41-4B37-ABC8-FFB6BF8DD37D - 90650ff24ef55b2d"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (__C.NSDictionary, Blue_square.JSON) -&gt; () in Blue_square.CreateRecurrencePattern.linkAppointmentContacts(rightID: Swift.String) -&gt; ()"
+                  moduleName = "Blue Square"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ashwinisankar/Projects/Pareto/12DecFinalone-30May/Pareto%20Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "1152"
+                  endingLineNumber = "1152"
+                  offsetFromSymbolStart = "228">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
+            uuid = "01455CE8-8E33-44B5-AAD6-CE3B6318C63B"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Pareto Systems/Leftmenu/Contacts/OpenActivities/NewTaskController.swift"
-            timestampString = "572902714.305637"
+            filePath = "Pareto Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "604"
-            endingLineNumber = "604"
-            landmarkName = "tappedSaveEdit(_:)"
+            startingLineNumber = "1191"
+            endingLineNumber = "1191"
+            landmarkName = "linkAppointmentContacts(rightID:)"
             landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "01455CE8-8E33-44B5-AAD6-CE3B6318C63B - 8029baf731d60b04"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Blue_square.CreateRecurrencePattern.linkAppointmentContacts(rightID: Swift.String) -&gt; ()"
+                  moduleName = "Blue Square"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ashwinisankar/Projects/Pareto/12DecFinalone-30May/Pareto%20Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "1191"
+                  endingLineNumber = "1191"
+                  offsetFromSymbolStart = "3420">
+               </Location>
+               <Location
+                  uuid = "01455CE8-8E33-44B5-AAD6-CE3B6318C63B - df522a2b73602f2f"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #3 (__C.NSDictionary, Blue_square.JSON) -&gt; () in Blue_square.CreateRecurrencePattern.linkAppointmentContacts(rightID: Swift.String) -&gt; ()"
+                  moduleName = "Blue Square"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ashwinisankar/Projects/Pareto/12DecFinalone-30May/Pareto%20Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "1192"
+                  endingLineNumber = "1192"
+                  offsetFromSymbolStart = "228">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
+            uuid = "F859B99D-209E-4A49-BE3F-4833AB3C767E"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Pareto Systems/Leftmenu/Contacts/OpenActivities/NewTaskController.swift"
-            timestampString = "572902714.305683"
+            filePath = "Pareto Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "698"
-            endingLineNumber = "698"
-            landmarkName = "UpdatedNewTask(jsonParameter:)"
+            startingLineNumber = "1382"
+            endingLineNumber = "1382"
+            landmarkName = "linkAppointmentCompanies(rightID:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "F859B99D-209E-4A49-BE3F-4833AB3C767E - 7894aa58d93004a5"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Blue_square.CreateRecurrencePattern.linkAppointmentCompanies(rightID: Swift.String) -&gt; ()"
+                  moduleName = "Blue Square"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ashwinisankar/Projects/Pareto/12DecFinalone-30May/Pareto%20Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "1382"
+                  endingLineNumber = "1382"
+                  offsetFromSymbolStart = "3388">
+               </Location>
+               <Location
+                  uuid = "F859B99D-209E-4A49-BE3F-4833AB3C767E - 68d3fdd5e4ea09fb"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #3 (__C.NSDictionary, Blue_square.JSON) -&gt; () in Blue_square.CreateRecurrencePattern.linkAppointmentCompanies(rightID: Swift.String) -&gt; ()"
+                  moduleName = "Blue Square"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ashwinisankar/Projects/Pareto/12DecFinalone-30May/Pareto%20Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "1383"
+                  endingLineNumber = "1383"
+                  offsetFromSymbolStart = "228">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "757B8161-94AE-4B0D-B8C8-E247A3BA9BD2"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Pareto Systems/Leftmenu/Services/CreateRecurrencePattern.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1101"
+            endingLineNumber = "1101"
+            landmarkName = "createService(jsonInput:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

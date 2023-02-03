@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import Stripe
 
 class AddCardsController: UITableViewController {
 
@@ -39,126 +38,63 @@ class AddCardsController: UITableViewController {
         self.navigationController?.popViewController(animated: true)
     }
     @IBAction func tappedSave(_ sender: Any) {
-        print(cardNumberField.text?.count as Any) //19
-        print(cvcField.text?.count as Any) //3
-        
-        if nameField.text?.count == 0 || cardNumberField.text?.count == 0 || cvcField.text?.count == 0 || expMonthField.text?.count == 0 || expYearField.text?.count == 0 || cityField.text?.count == 0 {
-            NavigationHelper.showSimpleAlert(message: "Please enter the required fields")
-            return
-        }else if cardNumberField.text!.count < 19 {
-            NavigationHelper.showSimpleAlert(message: "Please enter a valid card number")
-            return
-        }else if cvcField.text!.count < 3 {
-            NavigationHelper.showSimpleAlert(message: "Please enter a valid CVC")
-            return
-        }
-        OperationQueue.main.addOperation {
-            SVProgressHUD.show()
-//            MBProgressHUD.showAdded(to: self.view, animated: true)
-
-        }
-        let expMonth = UInt(expMonthField.text!) //here number is of type *optional UInt*
-        let expYear = UInt(expYearField.text!) //here number is of type *optional UInt*
-
-
-//        let expMonth:Int = Int(expMonthField.text!)!
-        let cardParams = STPCardParams()
-        cardParams.number = cardNumberField.text!
-        cardParams.expMonth = expMonth!
-        cardParams.expYear = expYear!
-        cardParams.cvc = cvcField.text!
-        cardParams.name = nameField.text!
-        cardParams.address.line1 = street1Field.text!
-        cardParams.address.line2 = street2Field.text!
-        cardParams.address.city = cityField.text!
-        cardParams.address.state = stateField.text!
-        cardParams.address.postalCode = postalField.text!
-        cardParams.address.country = countryField.text!
-        STPAPIClient.shared().createToken(withCard: cardParams) { (token: STPToken?, error: Error?) in
-            OperationQueue.main.addOperation {
-                SVProgressHUD.dismiss()
-//                MBProgressHUD.hide(for: self.view, animated: true)
-
-            }
-            guard let token = token, error == nil else {
-                // Present error to user...
-                print("error:\(error.debugDescription)")
-                print("error:\(String(describing: error?.localizedDescription))")
-                NavigationHelper.showSimpleAlert(message: (error?.localizedDescription)!)
-
-                return
-            }
-            print(token)
-            self.createCard(token: token)
-        }
+//        print(cardNumberField.text?.count as Any) //19
+//        print(cvcField.text?.count as Any) //3
+//
+//        if nameField.text?.count == 0 || cardNumberField.text?.count == 0 || cvcField.text?.count == 0 || expMonthField.text?.count == 0 || expYearField.text?.count == 0 || cityField.text?.count == 0 {
+//            NavigationHelper.showSimpleAlert(message: "Please enter the required fields")
+//            return
+//        }else if cardNumberField.text!.count < 19 {
+//            NavigationHelper.showSimpleAlert(message: "Please enter a valid card number")
+//            return
+//        }else if cvcField.text!.count < 3 {
+//            NavigationHelper.showSimpleAlert(message: "Please enter a valid CVC")
+//            return
+//        }
+//        OperationQueue.main.addOperation {
+//            SVProgressHUD.show()
+////            MBProgressHUD.showAdded(to: self.view, animated: true)
+//
+//        }
+//        let expMonth = UInt(expMonthField.text!) //here number is of type *optional UInt*
+//        let expYear = UInt(expYearField.text!) //here number is of type *optional UInt*
+//
+//
+////        let expMonth:Int = Int(expMonthField.text!)!
+//        let cardParams = STPCardParams()
+//        cardParams.number = cardNumberField.text!
+//        cardParams.expMonth = expMonth!
+//        cardParams.expYear = expYear!
+//        cardParams.cvc = cvcField.text!
+//        cardParams.name = nameField.text!
+//        cardParams.address.line1 = street1Field.text!
+//        cardParams.address.line2 = street2Field.text!
+//        cardParams.address.city = cityField.text!
+//        cardParams.address.state = stateField.text!
+//        cardParams.address.postalCode = postalField.text!
+//        cardParams.address.country = countryField.text!
+//        STPAPIClient.shared().createToken(withCard: cardParams) { (token: STPToken?, error: Error?) in
+//            OperationQueue.main.addOperation {
+//                SVProgressHUD.dismiss()
+////                MBProgressHUD.hide(for: self.view, animated: true)
+//
+//            }
+//            guard let token = token, error == nil else {
+//                // Present error to user...
+//                print("error:\(error.debugDescription)")
+//                print("error:\(String(describing: error?.localizedDescription))")
+//                NavigationHelper.showSimpleAlert(message: (error?.localizedDescription)!)
+//
+//                return
+//            }
+//            print(token)
+//            self.createCard(token: token)
+//        }
     }
     
-    func createCard(token:STPToken){
-        OperationQueue.main.addOperation {
-            SVProgressHUD.show()
-//            MBProgressHUD.showAdded(to: self.view, animated: true)
-
-        }
-        let headers = [
-            "Content-Type": "application/json",
-            "X-Stripe-Card-Id": "\(token)"
-            ]
-        let parameters = [
-            "OrganizationId": orgID,
-            "PassKey": passKey,
-            ] as [String : Any]
-        
-        let request = NSMutableURLRequest(url: NSURL(string: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.data.VCDataEndpoint/createPaymentCard.json")! as URL,
-                                          cachePolicy: .useProtocolCachePolicy,
-                                          timeoutInterval: 10.0)
-        request.httpMethod = "POST"
-        request.allHTTPHeaderFields = headers
-        if let jsonData = try? JSONSerialization.data(withJSONObject: parameters, options: []) {
-            request.httpBody = jsonData
-        }
-        let configuration = URLSessionConfiguration.default
-        let session = URLSession(configuration: configuration, delegate: self, delegateQueue:OperationQueue.main)
-        let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { data, response, error in
-            OperationQueue.main.addOperation {
-                SVProgressHUD.dismiss()
-//                MBProgressHUD.hide(for: self.view, animated: true)
-
-            }
-            guard let data = data, error == nil else {
-                print(error?.localizedDescription as Any)
-                return
-            }
-            do {
-                let jsonObj = try JSONSerialization.jsonObject(with: data, options: [])
-                print(jsonObj)
-                
-                guard let _:Dictionary = jsonObj as? [String:AnyObject] else{
-                    return
-                }
-                let result = try JSON(data: data)
-                print(result)
-                
-                
-                let jsonResponse:NSDictionary = (jsonObj as? NSDictionary)!
-                print(jsonResponse)
-                
-                if let getValid = jsonResponse["Valid"] as? Bool {
-                    if getValid == true {
-                       self.navigationController?.popViewController(animated: true)
-                    }else{
-                        let responseMessage:String = jsonResponse["ResponseMessage"] as! String
-                        NavigationHelper.showSimpleAlert(message:responseMessage)
-                    }
-                }else{
-                    NavigationHelper.showSimpleAlert(message:"Please try in sometime")
-                }
-            }catch {
-                print(error.localizedDescription)
-            }
-        })
-        
-        dataTask.resume()
-    }
+//    func createCard(token:STPToken){
+//      
+//    }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.

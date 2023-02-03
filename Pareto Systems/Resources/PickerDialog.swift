@@ -163,10 +163,14 @@ class PickerDialog: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
         
         // First, we style the dialog to match the iOS8 UIAlertView >>>
         let gradient: CAGradientLayer = CAGradientLayer(layer: self.layer)
+        
+        let colorTop = UIColor(red: 233.0 / 255.0, green: 233.0 / 255.0, blue: 233.0 / 255.0, alpha: 1.0).cgColor
+        let colorBottom = UIColor(red: 218.0 / 255.0, green: 218.0 / 255.0, blue: 218.0 / 255.0, alpha: 1.0).cgColor
+        
+        gradient.colors = [colorTop, colorBottom]
+        gradient.locations = [0.0, 1.0]
         gradient.frame = dialogContainer.bounds
-        gradient.colors = [UIColor(red: 218/255, green: 218/255, blue: 218/255, alpha: 1).cgColor,
-                           UIColor(red: 233/255, green: 233/255, blue: 233/255, alpha: 1).cgColor,
-                           UIColor(red: 218/255, green: 218/255, blue: 218/255, alpha: 1).cgColor]
+       
         
         let cornerRadius = kPickerDialogCornerRadius
         gradient.cornerRadius = cornerRadius
@@ -183,7 +187,7 @@ class PickerDialog: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
         
         // There is a line above the button
         let lineView = UIView(frame: CGRect(x:0, y:dialogContainer.bounds.size.height - kPickerDialogDefaultButtonHeight - kPickerDialogDefaultButtonSpacerHeight, width:dialogContainer.bounds.size.width, height:kPickerDialogDefaultButtonSpacerHeight))
-        lineView.backgroundColor = UIColor(red: 198/255, green: 198/255, blue: 198/255, alpha: 1)
+        lineView.backgroundColor = UIColor.lightGray
         dialogContainer.addSubview(lineView)
         // ˆˆˆ
         

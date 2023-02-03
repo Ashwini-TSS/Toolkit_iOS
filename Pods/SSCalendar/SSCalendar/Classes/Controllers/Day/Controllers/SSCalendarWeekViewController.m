@@ -124,7 +124,5 @@
     return cell;
 }
 
--(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    NSLog(@"tapped");
-}
+
 @end

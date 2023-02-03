@@ -97,12 +97,12 @@ class CompleteActivitiesControler: UITableViewController {
         
         
         if result.type == "Task" {
-            let controller:NewTaskController = (self.storyboard?.instantiateViewController(withIdentifier: "NewTaskController") as? NewTaskController)!
+            let controller:UpdatenewtaskVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewtaskVC") as? UpdatenewtaskVC)!
             controller.linkParentID = self.linkParentID
             controller.openedActivties = result
             self.navigationController?.pushViewController(controller, animated: true)
         }else if result.type == "Appointment" || result.type == "Appointments" {
-            let controller:NewAppointmentsController = (self.storyboard?.instantiateViewController(withIdentifier: "NewAppointmentsController") as? NewAppointmentsController)!
+            let controller:UpdatenewappointmentVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewappointmentVC") as? UpdatenewappointmentVC)!
             controller.linkParentID = self.linkParentID
             controller.openedActivties = result
             self.navigationController?.pushViewController(controller, animated: true)
@@ -158,7 +158,7 @@ class CompleteActivitiesControler: UITableViewController {
             "PassKey": passKey
             ] as [String : Any]
         
-        let request = NSMutableURLRequest(url: NSURL(string: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/delete.json")! as URL,
+        let request = NSMutableURLRequest(url: NSURL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/delete.json")! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
                                           timeoutInterval: 10.0)
         request.httpMethod = "POST"

@@ -8,24 +8,24 @@
 import CoreData
 import UIKit
 import IQKeyboardManagerSwift
-import Stripe
 var childNames:String = ""
+//import FirebaseAnalytics
+//import Firebase
 
+import FirebaseCrashlytics
+import FirebaseCore
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var window: UIWindow?
-    
-    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         print(UIScreen.main.bounds.width)
         print(UIScreen.main.bounds.height) // 812
-        STPPaymentConfiguration.shared().publishableKey = "pk_test_yP3IdOB0UX7Y42gDRFvjVOjD"
-        
         IQKeyboardManager.shared.enable = true
-        
+         FirebaseApp.configure()
+//        Crashlytics.sharedInstance().delegate = self
+//        Fabric.with([Crashlytics.self])
         IQKeyboardManager.shared.disabledDistanceHandlingClasses.append(ContactViewEditController.self)
-        
         if let countryCode = (Locale.current as NSLocale).object(forKey: .countryCode) as? String {
             print(countryCode)
             let Extensionnumber = getCountryPhonceCode(countryCode)
@@ -37,7 +37,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // SVProgressHUD.setDefaultMaskType(.black)
         // SVProgressHUD.setDefaultAnimationType(.native)
         
-        UINavigationBar.appearance().barTintColor = UIColor.PSNavigaitonBlack()
+        //UINavigationBar.appearance().barTintColor = UIColor.PSNavigaitonTop()
         UINavigationBar.appearance().tintColor = .white
         UINavigationBar.appearance().titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.white]
         UINavigationBar.appearance().isTranslucent = false
@@ -50,12 +50,45 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.white], for: .normal)
         UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.white], for: UIControlState.highlighted)
         UIBarButtonItem.appearance().setBackButtonTitlePositionAdjustment(UIOffsetMake(-1000, 0), for:UIBarMetrics.default)
+        UserDefaults.standard.setValue(false, forKey: "Goday")
+//        guard let logout = UserDefaults.standard.value(forKey: "Logout") as? Bool else
+//        {
+//            return true
+//        }
+//        if(!logout)
+//        {
+//            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+//            NotificationCenter.default.removeObserver(self)
+//
+//            let mainViewController = storyboard.instantiateViewController(withIdentifier: "CalendarController") as! CalendarController
+//            
+//            let leftViewController = storyboard.instantiateViewController(withIdentifier: "MenuController") as! MenuController
+//            
+//            
+//            mainViewController.setNavigationBarItem()
+//            
+//            let nvc: UINavigationController = UINavigationController(rootViewController: mainViewController)
+//            nvc.navigationBar.tintColor = UIColor.white
+//            
+//            leftViewController.mainViewController = nvc
+//            
+//            let slide = ExSlideMenu(mainViewController: nvc, leftMenuViewController: leftViewController)
+//            self.window?.rootViewController = slide
+//            self.window?.makeKeyAndVisible()
+//        }
         
         //    setStatusBarBackgroundColor(color: UIColor.black)
         // Override point for customization after application launch.
+        
         return true
     }
     
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void)
+    {
+        completionHandler([.alert, .badge, .sound])
+    }
+    
+   
     func getCountryPhonceCode (_ country : String) -> String
     {
         var countryDictionary  = ["AF":"+93",
@@ -336,6 +369,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         //        UIApplication.shared.ba
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    }
+    
+    func application(_ application: UIApplication, willContinueUserActivityWithType userActivityType: String) -> Bool {
+        return false
     }
     
     func applicationWillTerminate(_ application: UIApplication) {

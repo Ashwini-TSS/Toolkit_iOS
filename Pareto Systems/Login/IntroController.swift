@@ -14,7 +14,7 @@ class IntroController: UIViewController,UIScrollViewDelegate {
     @IBOutlet weak var btnPrevious: UIButton!
     @IBOutlet weak var scroll: UIScrollView!
     @IBOutlet weak var btnNext: UIButton!
-    var arrTitles:NSArray = ["Calendar","Contacts","Accounts","Processes","Services"]
+    var arrTitles:NSArray = ["Mainmenu","calendarmenu","Calendardetailmenu","Contactmenu","Accountmenu"]
     var currentPage:Int = 0
     
     override func viewDidLoad() {
@@ -29,18 +29,24 @@ class IntroController: UIViewController,UIScrollViewDelegate {
         for index in 0..<arrTitles.count {
             var xAxis:CGFloat = UIScreen.main.bounds.width
             xAxis = xAxis * CGFloat(index)
-            let bgView = UIView()
-            bgView.frame = CGRect(x: xAxis, y: 0.0, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
-            bgView.backgroundColor = UIColor.PSNavigaitonController()
-         
-            let lblTitle = UILabel()
-            lblTitle.frame = CGRect(x: 0.0, y: UIScreen.main.bounds.height / 2 - 20, width: UIScreen.main.bounds.width, height: 40.0)
-            lblTitle.text = arrTitles[index] as? String
-            lblTitle.textAlignment = .center
-            lblTitle.font = UIFont(name: "Raleway-Bold", size: 30.0)!
-            lblTitle.textColor = UIColor.white
-            bgView.addSubview(lblTitle)
+            let bgView1 = UIImageView()
+            bgView1.frame = CGRect(x: xAxis, y: 0.0, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+            bgView1.image = UIImage.init(named:"bgintro")
             
+            let bgView = UIImageView()
+            bgView.frame = CGRect(x: xAxis, y: 0.0, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+            bgView.image = UIImage.init(named: (arrTitles[index] as? String)!)
+            bgView.contentMode = .scaleAspectFit
+         
+//            let lblTitle = UILabel()
+//            lblTitle.frame = CGRect(x: 0.0, y: UIScreen.main.bounds.height / 2 - 20, width: UIScreen.main.bounds.width, height: 40.0)
+//            lblTitle.text = arrTitles[index] as? String
+//            lblTitle.textAlignment = .center
+//            lblTitle.font = UIFont(name: "Raleway-Bold", size: 30.0)!
+//            lblTitle.textColor = UIColor.white
+//            bgView.addSubview(lblTitle)
+            
+            scroll.addSubview(bgView1)
             scroll.addSubview(bgView)
         }
         

@@ -47,7 +47,6 @@
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
     SSYearNode *year = _years[section];
-
     return year.months.count;
 }
 
@@ -68,7 +67,7 @@
     
     static NSString *CellIdentifier = @"AnnualCell";
     SSCalendarAnnualCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:CellIdentifier forIndexPath:indexPath];
-//    cell.
+    
     cell.month = year.months[indexPath.row];
     return cell;
 }

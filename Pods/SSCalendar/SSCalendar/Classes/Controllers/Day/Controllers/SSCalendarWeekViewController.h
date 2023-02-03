@@ -8,7 +8,7 @@
 
 @class SSDayNode;
 
-@interface SSCalendarWeekViewController : NSObject <UICollectionViewDataSource,UICollectionViewDelegate>
+@interface SSCalendarWeekViewController : NSObject <UICollectionViewDataSource>
 {
     NSArray *days;
     NSDate *startDate;

@@ -38,6 +38,7 @@ typedef void (^CZDismissCompletionCallback)(void);
 @property BOOL isFiltered;
 @property NSMutableArray *arrsearchresult ;
 @property NSMutableArray *filterSelectedIndexPath;
+@property NSMutableArray *DummayArray;
 
 @property NSMutableArray *arrfullname;
 
@@ -60,7 +61,8 @@ typedef void (^CZDismissCompletionCallback)(void);
         self.needFooterView = NO;
         self.allowMultipleSelection = NO;
         self.animationDuration = 0.5f;
-        
+        _DummayArray = [[NSMutableArray alloc]init]; //alloc
+
         self.confirmButtonTitle = confirmButtonTitle;
         self.cancelButtonTitle = cancelButtonTitle;
         
@@ -91,7 +93,9 @@ typedef void (^CZDismissCompletionCallback)(void);
     
     self.arrsearchresult = [NSMutableArray new];
     self.arrlocal = [[NSMutableArray alloc]init];
-    
+    _DummayArray = [[NSMutableArray alloc]init]; //alloc
+    [_DummayArray addObject: @""];
+
     self.containerView = [self buildContainerView];
     [self addSubview:self.containerView];
     
@@ -302,7 +306,7 @@ typedef void (^CZDismissCompletionCallback)(void);
     if(_isFiltered) {
         [[NSUserDefaults standardUserDefaults]setObject:@"YES" forKey:@"FilteredObject"];
     }else{
-        [[NSUserDefaults standardUserDefaults]setObject:@"NO" forKey:@"FilteredObject"];
+       [[NSUserDefaults standardUserDefaults]setObject:@"NO" forKey:@"FilteredObject"];
     }
     [[NSUserDefaults standardUserDefaults]synchronize];
     
@@ -339,7 +343,8 @@ typedef void (^CZDismissCompletionCallback)(void);
 - (UISearchBar *)buildSearchView{
     UISearchBar *searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0,CZP_HEADER_HEIGHT, self.tableView.frame.size.width, CZP_HEADER_HEIGHT)]; //give your frame x,y and width and height
     searchBar.placeholder = @"Search";
-    [searchBar setReturnKeyType:UIReturnKeyDone];
+   [searchBar setReturnKeyType:UIReturnKeyDone];
+    searchBar.enablesReturnKeyAutomatically = NO;
     searchBar.delegate = self;
     return searchBar;
 }
@@ -355,10 +360,10 @@ typedef void (^CZDismissCompletionCallback)(void);
     [self.tableView resignFirstResponder];
 }
 
-//-(void) searchBarCancelButtonClicked:(UISearchBar *)searchBar{
-//    searchBar.text = @"";
-//    [searchBar endEditing:YES];
-//}
+-(void) searchBarCancelButtonClicked:(UISearchBar *)searchBar{
+    searchBar.text = @"";
+    [searchBar endEditing:YES];
+}
 
 - (IBAction)cancelButtonPressed:(id)sender{
     [self dismissPicker:^{
@@ -475,7 +480,6 @@ typedef void (^CZDismissCompletionCallback)(void);
 
 
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
-  
 }
 
 - (void) searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText
@@ -541,13 +545,17 @@ typedef void (^CZDismissCompletionCallback)(void);
         
         
     }
+    
+    searchBar.enablesReturnKeyAutomatically = NO;
     [self.tableView reloadData];
 }
 
 
-- (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
-    //[searchBar resignFirstResponder];
-}
+
+
+//- (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
+//    [searchBar resignFirstResponder];
+//}
 
 
 #pragma mark - UITableViewDataSource
@@ -581,16 +589,22 @@ typedef void (^CZDismissCompletionCallback)(void);
         {
             NSString *cellName = [_arrsearchresult objectAtIndex:indexPath.row];
             if ([[self.dataSource czpickerView:self]containsObject:cellName]) {
+              //  NSString *sName = _DummayArray[_DummayArray.count - 1];// ash added
+               // if(sName != cellName){// ash aded
                 NSInteger getIndex = [[self.dataSource czpickerView:self] indexOfObject:cellName];
                 cell.accessoryType = UITableViewCellAccessoryNone;
 
+
                 for(NSIndexPath *ip in self.selectedIndexPaths){
                     if(ip.row == getIndex){
-                        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+                       // [_DummayArray addObject: cellName]; // ashwin added
+                           // cell.accessoryType = UITableViewCellAccessoryCheckmark;
+
                     }
-                }
+               // }
             }
             cell.textLabel.text = [_arrsearchresult objectAtIndex:indexPath.row];
+            }
         }
         else {
             cell.textLabel.text = [self.dataSource czpickerView:self titleForRow:indexPath.row];

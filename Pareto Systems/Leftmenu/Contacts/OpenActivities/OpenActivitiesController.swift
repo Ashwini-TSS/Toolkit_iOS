@@ -65,12 +65,12 @@ class OpenActivitiesController: UITableViewController {
 
 
         if result.type == "Task" {
-            let controller:NewTaskController = (self.storyboard?.instantiateViewController(withIdentifier: "NewTaskController") as? NewTaskController)!
+            let controller:UpdatenewtaskVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewtaskVC") as? UpdatenewtaskVC)!
             controller.linkParentID = self.linkParentID
             controller.openedActivties = result
             self.navigationController?.pushViewController(controller, animated: true)
         }else if result.type == "Appointment" || result.type == "Appointments" {
-            let controller:NewAppointmentsController = (self.storyboard?.instantiateViewController(withIdentifier: "NewAppointmentsController") as? NewAppointmentsController)!
+            let controller:UpdatenewappointmentVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewappointmentVC") as? UpdatenewappointmentVC)!
             controller.linkParentID = self.linkParentID
             controller.openedActivties = result
             self.navigationController?.pushViewController(controller, animated: true)
@@ -109,7 +109,7 @@ class OpenActivitiesController: UITableViewController {
             "PassKey": passKey
             ] as [String : Any]
         
-        let request = NSMutableURLRequest(url: NSURL(string: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/delete.json")! as URL,
+        let request = NSMutableURLRequest(url: NSURL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/delete.json")! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
                                           timeoutInterval: 10.0)
         request.httpMethod = "POST"
@@ -206,7 +206,7 @@ class OpenActivitiesController: UITableViewController {
         alert.addAction(UIAlertAction(title: "Appointment", style: .default , handler:{ (UIAlertAction)in
             print("User click Approve button")
             OperationQueue.main.addOperation {
-                let controller:NewAppointmentsController = (self.storyboard?.instantiateViewController(withIdentifier: "NewAppointmentsController") as? NewAppointmentsController)!
+                let controller:UpdatenewappointmentVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewappointmentVC") as? UpdatenewappointmentVC)!
                 controller.linkParentID = self.linkParentID
                 self.navigationController?.pushViewController(controller, animated: true)
             }
@@ -215,7 +215,7 @@ class OpenActivitiesController: UITableViewController {
         alert.addAction(UIAlertAction(title: "task", style: .default , handler:{ (UIAlertAction)in
             print("User click Edit button")
             OperationQueue.main.addOperation {
-                let controller:NewTaskController = (self.storyboard?.instantiateViewController(withIdentifier: "NewTaskController") as? NewTaskController)!
+                let controller:UpdatenewtaskVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewtaskVC") as? UpdatenewtaskVC)!
                 controller.linkParentID = self.linkParentID
                 self.navigationController?.pushViewController(controller, animated: true)
             }

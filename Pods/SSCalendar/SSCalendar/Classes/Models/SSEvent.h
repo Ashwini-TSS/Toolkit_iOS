@@ -17,5 +17,5 @@
 @property (nonatomic, copy) NSString *location;
 @property (nonatomic, copy) NSString *contact;
 @property (nonatomic, assign) NSInteger day;
-@property (nonatomic, assign) BOOL isAllday;
+
 @end

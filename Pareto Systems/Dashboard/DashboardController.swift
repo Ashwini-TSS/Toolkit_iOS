@@ -32,7 +32,10 @@ class DashboardController: UIViewController {
         tblItems.tableFooterView = UIView()
         tblItems.estimatedRowHeight = 310
         tblItems.rowHeight = UITableViewAutomaticDimension
-        
+        UserDefaults.standard.removeObject(forKey: "filter_team")
+        UserDefaults.standard.removeObject(forKey: "filter_appoin")
+        UserDefaults.standard.removeObject(forKey: "FilterTask")
+        UserDefaults.standard.removeObject(forKey: "UserFilter")        
         // Do any additional setup after loading the view.
     }
     
@@ -152,8 +155,120 @@ class DashboardController: UIViewController {
          
             DispatchQueue.main.async {
                 print(json)
+                var trialID = json["TrialPeriods"].arrayValue
+                print(trialID)
+                var id = trialID[0]["Id"].stringValue
+                print(id)
                 OperationQueue.main.addOperation {
-                    //SVProgressHUD.dismiss()
+                    let json: [String: Any] = [
+                        "OrganizationId":currentOrgID,
+                        "PassKey": passKey,
+                        "TrialPeriodId":id
+                    ]
+                    print(json)
+                    APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.data.VCDataEndpoint/beginTrial.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+                        DispatchQueue.main.async {
+                            print(json)
+                            if(json["Valid"].boolValue){
+                                self.getOrganizationStatus()
+                            }
+                            else{
+                                let alertController = UIAlertController(title: "\n\n", message: "", preferredStyle: UIAlertController.Style.alert)
+                                
+                                let backView = alertController.view.subviews.last?.subviews.last
+                                backView?.layer.cornerRadius = 10.0
+                                backView?.backgroundColor = UIColor.white
+                                
+                                // Change Message With Color and Font
+                                var Totalatt = NSMutableAttributedString()
+                                
+                                
+                                let message  = "\nCurrently your Toolkit Account is not active. Please login to "
+                                var messageMutableString = NSMutableAttributedString()
+                                messageMutableString = NSMutableAttributedString(string: message as String, attributes: [NSAttributedString.Key.font:UIFont(name: "Raleway-Regular", size: 16.0)!])
+                                messageMutableString.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.black
+                                    , range: NSRange(location:0,length:message.count))
+                                
+                                let message1  = "\ntoolkit.bluesquareapps.com"
+                                var messageMutableString1 = NSMutableAttributedString()
+                                messageMutableString1 = NSMutableAttributedString(string: message1 as String, attributes: [NSAttributedString.Key.font:UIFont(name: "Raleway-Regular", size: 16.0)!])
+                                messageMutableString1.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.blue
+                                    , range: NSRange(location:0,length:message1.count))
+                                
+                                //on your computer to activate your account.
+                                
+                                let message0  = "\non your "
+                                var messageMutableString0 = NSMutableAttributedString()
+                                messageMutableString0 = NSMutableAttributedString(string: message0 as String, attributes: [NSAttributedString.Key.font:UIFont(name: "Raleway-Regular", size: 16.0)!])
+                                messageMutableString0.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.black
+                                    , range: NSRange(location:0,length:message0.count))
+                                
+                                let message00  = "computer "
+                                var messageMutableString00 = NSMutableAttributedString()
+                                messageMutableString00 = NSMutableAttributedString(string: message00 as String, attributes: [NSAttributedString.Key.font:UIFont.boldSystemFont(ofSize: 16)])
+                                messageMutableString00.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.black
+                                    , range: NSRange(location:0,length:message00.count))
+                                
+                                let message000  = "to activate your account."
+                                var messageMutableString000 = NSMutableAttributedString()
+                                messageMutableString000 = NSMutableAttributedString(string: message000 as String, attributes: [NSAttributedString.Key.font:UIFont(name: "Raleway-Regular", size: 16.0)!])
+                                messageMutableString000.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.black
+                                    , range: NSRange(location:0,length:message000.count))
+                                
+                                let message2  = "\n\n Contact us if you require assistance:"
+                                var messageMutableString2 = NSMutableAttributedString()
+                                messageMutableString2 = NSMutableAttributedString(string: message2 as String, attributes: [NSAttributedString.Key.font:UIFont(name: "Raleway-Regular", size: 16.0)!])
+                                messageMutableString2.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.black
+                                    , range: NSRange(location:0,length:message2.count))
+                                
+                                let message3  = "\n\n Client Support"
+                                var messageMutableString3 = NSMutableAttributedString()
+                                messageMutableString3 = NSMutableAttributedString(string: message3 as String, attributes: [NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: 16)])
+                                // messageMutableString3 = NSMutableAttributedString(string: message3 as String, attributes: [NSAttributedString.Key.font:UIFont(name: "Georgia", size: 18.0)!])
+                                messageMutableString3.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.black
+                                    , range: NSRange(location:0,length:message3.count))
+                                
+                                let message4  = "\n 1-877-969-8199"
+                                var messageMutableString4 = NSMutableAttributedString()
+                                messageMutableString4 = NSMutableAttributedString(string: message4 as String, attributes: [NSAttributedString.Key.font:UIFont(name: "Raleway-Regular", size: 16.0)!])
+                                messageMutableString4.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.black
+                                    , range: NSRange(location:0,length:message4.count))
+                                
+                                let message5  = "\n support@bluesquareapps.com"
+                                var messageMutableString5 = NSMutableAttributedString()
+                                messageMutableString5 = NSMutableAttributedString(string: message5 as String, attributes: [NSAttributedString.Key.font:UIFont(name: "Raleway-Regular", size: 16.0)!])
+                                messageMutableString5.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.black
+                                    , range: NSRange(location:0,length:message5.count))
+                                
+                                
+                                Totalatt.append(messageMutableString)
+                                Totalatt.append(messageMutableString1)
+                                Totalatt.append(messageMutableString0)
+                                Totalatt.append(messageMutableString00)
+                                Totalatt.append(messageMutableString000)
+                                Totalatt.append(messageMutableString2)
+                                Totalatt.append(messageMutableString3)
+                                Totalatt.append(messageMutableString4)
+                                Totalatt.append(messageMutableString5)
+                                alertController.setValue(Totalatt, forKey: "attributedMessage")
+                                
+                                
+                                var imageView = UIImageView(frame: CGRect(x: 50, y: 20, width: 180, height: 50))
+                                imageView.image = UIImage(named:"Popuplogo")
+                                
+                                alertController.view.addSubview(imageView)
+                                
+                                // Action.
+                                let action = UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: nil)
+                                alertController.addAction(action)
+                                self.present(alertController, animated: true, completion: nil)
+                                alertController.view.layer.zPosition = .greatestFiniteMagnitude
+                            }
+                        }
+                    },  onFailure: { error in
+                        print(error.localizedDescription)
+                        NavigationHelper.showSimpleAlert(message:error.localizedDescription)
+                    })
                 }
             }
         },  onFailure: { error in
@@ -272,7 +387,9 @@ extension DashboardController:UITableViewDelegate,UITableViewDataSource {
         cell.lblDescription.setHtmlText(self.purchaseLists.verticalPackages[indexPath.row].descriptionField)
 
         let url = URL(string: imageLoadURL + self.purchaseLists.verticalPackages[indexPath.row].largeImageUri)
-        cell.productImage.kf.setImage(with: url)
+        
+       // Sankar Update
+        //cell.productImage.kf.setImage(with: url)
         
         cell.lblPlan.text = self.purchaseLists.verticalPackages[indexPath.row].tagLine
 

@@ -8,10 +8,18 @@
 
 import UIKit
 import IQKeyboardManagerSwift
+import MobileCoreServices
 
 class ContactssController: UITableViewController {
     var aryTeglist = [String]()
     var chidrenPaths:[Int] = []
+    var allContactList:[ContactListResult] = []
+    var allmainaccountList:[GetAccountsListResult] = []
+    var passTaskList : Taskmodel!
+    var passAppointmentList : GetAppointmentModelModel!
+    var allregardingObjectID : [String] = []
+    var tappedContact:Bool = true
+
     //    private let KEYBOARD_ANIMATION_DURATION : CGFloat = 0.2
     //    private let MINIMUM_SCROLL_FRACTION : CGFloat = 0.4
     //    private let MAXIMUM_SCROLL_FRACTION : CGFloat = 1.0
@@ -20,29 +28,49 @@ class ContactssController: UITableViewController {
     //    var animatedDistance : CGFloat = 0.0
     @IBOutlet weak var tblChildrens: UITableView!
     @IBOutlet var childrenView: UIView!
+    var selectedContactsList:[String] = []
+    var selectedAppointmentList:[String] = []
+    var selectedTaskList:[String] = []
     var countryCode:String = "+1"
     var constantphone : String?
     var alternate : String?
+    var contactTypes:NSArray = ["Appointments","Contact","Company","Task"]
+    var globalRegType : String!
+    var allcommentExpandArray : [Int] = []
     @IBOutlet weak var tblHistory: UITableView!
     @IBOutlet var historyBG: UIView!
     var contactInfoDetail:ContactListResult!
     var cellCalled:Bool = false
     var isEditable:Bool = false
     var setCategories:Bool = false
-    
+    var  noteobj : NoteModel!
+    var  notedata : [NoteList] = []
+    var  noteregardingData : [Any] = []
+    var  noteattachmentData : [Any] = []
+    var  notecommentData : [Any] = []
     var Spouse : String!
+    var searchCurrNoteid : String!
     var Accountstr : String!
     var Executorstr : String!
     var Attorneystr : String!
-    
+    var selectedNoteID : String = ""
     var leftid : String!
     var linkaccount : String!
     var recreationAdded:Bool = false
     var contactAdd:Bool = false
+    var iscommentExpand:Bool = false
+    var selectedContactIndx:NSMutableArray = []
+    var allcreatedRegardingID  : [String] = []
+    var selectedContactWholeValue:[String] = []
+    var commentselectedindex : Int = 1111111111
+    var globalCommentCount : Int = 0
+    var iscommentapimethod : Bool = false
+    var usersList:[UserlistUser] = []
+
     //Models
     var getAddtionalAddressesModel:[getSearchResultResult] = []
     var getLinkedAccountModel:[getLinkedResultResult] = []
-    
+    var allnotecellHeightConstarint : [CGFloat] = []
     var getClientClassModel:GetClientClassModel!
     var getOwnersListModel:GetOwnersListModel!
     var getSpouseContactListModel:GetSpouseContactModel!
@@ -79,7 +107,7 @@ class ContactssController: UITableViewController {
     var ExecutorString : String!
     var AccountString : String!
     var powerAttroney : String!
-    
+    var isNoteCellPresent : Bool = false
     //API
     var isTappedBack:Bool = false
     var clientClassID:String = ""
@@ -94,19 +122,27 @@ class ContactssController: UITableViewController {
     var selectedIndexPath:Int = 1992001
     
     var selectedIndexPath_condition:Int = 0
-    
-    
+    static let contactssnotify = "contactssnotify"
+    static let regardingnotify = "regardingnotify"
+    static let attachdownnotify = "attachdownnotify"
+    static let accountregardingnotify = "accountregardingnotify"
+    static let taskregardingnotify = "taskregardingnotify"
+    static let appointementregardingnotify = "appointementregardingnotify"
+
     var isExpand:Bool = false
-    var headerTitles:[String] = ["Additional Addresses","Linked Accounts","Open Activities","Completed Activities"]
+    var headerTitles:[String] = ["Additional Addresses","Linked Accounts","Open Activities","Completed Activities","Notes"]
     var bottomView = UIView()
     var editBtn = UIButton()
     var closeBtn = UIButton()
     var actionBtn = UIButton()
-    
+    var allregardingname : [ContactListResult] = []
+    var allaccountregardingname : [GetAccountsListResult] = []
+    var allTaskregardingSubject : [TaskResult] = []
+    var allAppointmentregardingSubject : [GetAppointmentModelData] = []
     var customView = UIView()
     var barButton: UIButton!
+    var selectedNoteIndx : Int = -1
     //    @IBOutlet weak var tagsCollection: TaglistCollection!
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -116,6 +152,11 @@ class ContactssController: UITableViewController {
         IQKeyboardManager.shared.enable = true
         
         
+        tableView.register(UINib(nibName: "NoteHeaderCell", bundle: nil), forCellReuseIdentifier: "NoteHeaderCell")
+        tableView.register(UINib(nibName: "NotesListCell", bundle: nil), forCellReuseIdentifier: "NotesListCell")
+        
+        
+
         //        if UIScreen.main.bounds.height < 812 {
         //            PORTRAIT_KEYBOARD_HEIGHT = 260
         //        }
@@ -143,20 +184,9 @@ class ContactssController: UITableViewController {
         //
         //        childNames = result
         
-        self.title = "New Contact"
-        if contactInfoDetail != nil {
-            self.title = "Edit Contact"
-            getContact()
-        }else{
-            isEditable = true
-        }
-        getAccountname()
-        getPowerofAttorney()
-        getExecutorname()
-        getSpousename()
-        
-    }
+       
     
+    }
     
     
     func setupCustomView(){
@@ -216,8 +246,6 @@ class ContactssController: UITableViewController {
         customView.addSubview(lblCompany)
         
         self.navigationItem.titleView = customView
-        
-        
     }
     func removeCustomView(){
         if contactInfoDetail == nil {
@@ -317,16 +345,34 @@ class ContactssController: UITableViewController {
     func removeRightBarbuttonItem(){
         //        self.navigationItem.rightBarButtonItem = nil
     }
+ 
     override func viewWillAppear(_ animated: Bool) {
-        // super.viewWillAppear(true)
+//        super.viewWillAppear(true)
+        UserDefaults.standard.setValue(false, forKey: "Goday")
+
+        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.estimatedRowHeight = UITableViewAutomaticDimension
         cellCalled = false
         IQKeyboardManager.shared.enable = true
         IQKeyboardManager.shared.enableAutoToolbar = false
         
         selectedIndexPath = 1992001
         isExpand = false
-        
-        
+        isNoteCellPresent = false
+
+        self.title = "New Contact"
+        if contactInfoDetail != nil {
+            self.title = "Edit Contact"
+            getContact()
+        }else{
+            isEditable = true
+        }
+        getAccountname()
+        getPowerofAttorney()
+        getExecutorname()
+        getSpousename()
+        self.pullNotesListFromServerApi()
+        self.listOfUsersBasedOnOrganization()
         if contactInfoDetail == nil {
             editBtn.removeTarget(nil, action: nil, for: .allEvents)
             editBtn.setTitle("Close", for: .normal)
@@ -404,7 +450,6 @@ class ContactssController: UITableViewController {
                 self.actionBtn.backgroundColor = UIColor.white
                 self.actionBtn.setTitleColor(UIColor.init(red: 0.0/255.0, green: 82.0/255.0, blue: 155.0/255.0, alpha: 1.0), for: .normal)
                 self.actionBtn.titleLabel?.font = UIFont(name: "Raleway-Regular", size: 17.0)!
-                
                 if(self.isEditable){
                     self.actionBtn.removeTarget(nil, action: nil, for: .allEvents)
                     self.actionBtn.setTitle("Save", for: .normal)
@@ -420,6 +465,12 @@ class ContactssController: UITableViewController {
             }
             self.navigationController?.view.addSubview(self.bottomView)
         }
+         NotificationCenter.default.addObserver(self, selector: #selector(self.CommentApiMethod(notfication:)), name: NSNotification.Name(rawValue: ContactssController.contactssnotify), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.movetheRegardingConatcts(notfication:)), name: NSNotification.Name(rawValue: ContactssController.regardingnotify), object: nil)
+          NotificationCenter.default.addObserver(self, selector: #selector(self.openContactAttachmentFile(notfication:)), name: NSNotification.Name(rawValue: ContactssController.attachdownnotify), object: nil)
+         NotificationCenter.default.addObserver(self, selector: #selector(self.movetheRegardingAccounts(notfication:)), name: NSNotification.Name(rawValue: ContactssController.accountregardingnotify), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.movetheRegardingTasks(notification:)), name: NSNotification.Name(rawValue: ContactssController.taskregardingnotify), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.movetheRegardingAppointments(notification:)), name: NSNotification.Name(rawValue: ContactssController.appointementregardingnotify), object: nil)
         
     }
     
@@ -433,18 +484,21 @@ class ContactssController: UITableViewController {
         }
         historyBG.removeFromSuperview()
         bottomView.removeFromSuperview()
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: ContactssController.contactssnotify) , object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue:  ContactssController.regardingnotify) , object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue:  ContactssController.attachdownnotify) , object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue:  ContactssController.accountregardingnotify) , object: nil)
     }
-    
     func getAccountname(){
         if contactInfoDetail != nil {
         let json: [String: Any] = ["ObjectId":contactInfoDetail.companyId!,
                                    "ObjectName":"company",
                                    "PassKey":passKey,
                                    "OrganizationId":currentOrgID]
-        print(json)
-        APIManager.sharedInstance.postRequestCall(postURL:"https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        
+        APIManager.sharedInstance.postRequestCall(postURL:globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
-                print(json)
+              
                 self.Accountstr = json["DataObject"]["Name"].stringValue
                 self.tblHistory.reloadData()
                 self.tblChildrens.reloadData()
@@ -461,17 +515,18 @@ class ContactssController: UITableViewController {
                                        "ObjectName":"contact",
                                        "PassKey":passKey,
                                        "OrganizationId":currentOrgID]
-            print(json)
-            APIManager.sharedInstance.postRequestCall(postURL:"https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+            APIManager.sharedInstance.postRequestCall(postURL:globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
-                    print(json)
+                   
                     let fullname : String = json["DataObject"]["FullName"].stringValue
                     if(fullname != ""){
                         self.Attorneystr = json["DataObject"]["FullName"].stringValue
+                        print(self.Attorneystr)
                     }
                     if(self.Attorneystr == "" || self.Attorneystr == nil){
                         self.Attorneystr = json["DataObject"]["LastName"].stringValue
                     }
+                    
                     self.tblHistory.reloadData()
                     self.tblChildrens.reloadData()
                     self.cellCalled = false
@@ -482,17 +537,39 @@ class ContactssController: UITableViewController {
             })
         }
     }
-    
+    func listOfUsersBasedOnOrganization() {
+        
+        let json: [String: Any] = ["OrganizationId": currentOrgID,
+                                   "PassKey": passKey]
+        print(json)
+        APIManager.sharedInstance.postRequestCall(postURL: userListByOrgURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+            DispatchQueue.main.async {
+                print(json)
+                let logModel:UserlistMapping = UserlistMapping.init(fromDictionary: jsonResponse)
+                if logModel.valid {
+                    self.usersList = logModel.users
+                    OperationQueue.main.addOperation {
+                        print(self.usersList.count)
+                     
+                    }
+                }else{
+                }
+            }
+        },  onFailure: { error in
+            print(error.localizedDescription)
+            NavigationHelper.showSimpleAlert(message:error.localizedDescription)
+        })
+    }
     func getSpousename(){
         if contactInfoDetail != nil {
             let json: [String: Any] = ["ObjectId":contactInfoDetail.spousePartnerID!,
                                        "ObjectName":"contact",
                                        "PassKey":passKey,
                                        "OrganizationId":currentOrgID]
-            print(json)
-            APIManager.sharedInstance.postRequestCall(postURL:"https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+          
+            APIManager.sharedInstance.postRequestCall(postURL:globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
-                    print(json)
+                    
                     let fullname : String = json["DataObject"]["FullName"].stringValue
                     if(fullname != ""){
                         self.Spouse = json["DataObject"]["FullName"].stringValue
@@ -516,10 +593,10 @@ class ContactssController: UITableViewController {
                                        "ObjectName":"contact",
                                        "PassKey":passKey,
                                        "OrganizationId":currentOrgID]
-            print(json)
-            APIManager.sharedInstance.postRequestCall(postURL:"https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+           
+            APIManager.sharedInstance.postRequestCall(postURL:globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
-                    print(json)//FullName
+                   
                     let fullname : String = json["DataObject"]["FullName"].stringValue
                     if(fullname != ""){
                      self.Executorstr = json["DataObject"]["FullName"].stringValue
@@ -540,9 +617,398 @@ class ContactssController: UITableViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+    //MARK: - Comment Action
+    @objc func CommentApiMethod(notfication: NSNotification)
+    {
+        let cmtMsg = notfication.userInfo?["msg"] as? String
+        let json: [String: Any] = ["ObjectName":"note_comment",
+                                   "DataObject": [
+                                    "NoteId": self.selectedNoteID,
+                                    "Comment": cmtMsg],
+                                   "OrganizationId":currentOrgID,
+                                   "PassKey": passKey] as [String : Any]
+        
+        APIManager.sharedInstance.postRequestCall(postURL: createContact, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+            DispatchQueue.main.async {
+                self.iscommentapimethod = true
+                self.PullDownAllCommentsFromServer()
+            }
+        },  onFailure: { error in
+            print(error.localizedDescription)
+        })
+    }
+    //MARK: - PullNotesDataFromServer
+    func pullNotesListFromServerApi()
+    {
+        self.notedata.removeAll()
+        self.allcommentExpandArray.removeAll()
+
+        if contactInfoDetail != nil {
+            let json: [String: Any] = ["OrderBy":"CreatedOn",
+                                       "AscendingOrder":false,
+                                       "ResultsPerPage":100,
+                                       "PageOffset":1,
+                                       "ParentId":self.contactInfoDetail.id,
+                                       "ObjectName":"contact",
+                                       "PassKey":passKey,
+                                       "OrganizationId":currentOrgID]
+            OperationQueue.main.addOperation {
+                SVProgressHUD.show()
+            }
+            let url = URL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/listNotes.json")!
+            var request = URLRequest(url: url)
+            request.addValue("application/json; charset=UTF-8", forHTTPHeaderField: "Content-Type")
+            request.addValue("en", forHTTPHeaderField: "Accept-Language")
+            request.httpMethod = "POST"
+            
+            if let jsonData = try? JSONSerialization.data(withJSONObject: json, options: []) {
+                request.httpBody = jsonData
+            }
+            let configuration = URLSessionConfiguration.default
+            let session = URLSession(configuration: configuration, delegate: self, delegateQueue:OperationQueue.main)
+            let task = session.dataTask(with: request){ data, response, error in
+                OperationQueue.main.addOperation {
+                    SVProgressHUD.dismiss()
+                }
+                guard let data = data, error == nil else {
+                    return
+                }
+                do{
+                    self.noteobj = try? JSONDecoder().decode(NoteModel.self, from: data)
+                    self.notedata =  self.noteobj.notedata!
+                    for(_,_) in self.notedata.enumerated()
+                    {
+                        self.allcommentExpandArray.append(0)
+                    }
+                    self.PullDownAllNoteRegardingsFromServer()
+                    self.PullDownAllCommentsFromServer()
+                }
+            }
+            task.resume()
+        }
+    }
+    //MARK: - PullDownAllCommentsFromServer
+    func PullDownAllCommentsFromServer()
+    {
+        self.notecommentData.removeAll()
+        for(index,element) in self.notedata.enumerated()
+        {
+            let json: [String: Any] = [
+                "ParentId":element.note?.id as? String,
+                "ParentObjectName":"note",
+                "ObjectName": "note_comment",
+                "PageOffset":1,
+                "ResultsPerPage":100,
+                "OrderBy":"CreatedOn",
+                "PassKey":passKey,
+                "OrganizationId":currentOrgID,
+                "AscendingOrder":false]
+            let url = URL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json")!
+            var request = URLRequest(url: url)
+            request.addValue("application/json; charset=UTF-8", forHTTPHeaderField: "Content-Type")
+            request.addValue("en", forHTTPHeaderField: "Accept-Language")
+            request.httpMethod = "POST"
+            
+            if let jsonData = try? JSONSerialization.data(withJSONObject: json, options: []) {
+                request.httpBody = jsonData
+            }
+            let configuration = URLSessionConfiguration.default
+            let session = URLSession(configuration: configuration, delegate: self, delegateQueue:OperationQueue.main)
+            let task = session.dataTask(with: request){ data, response, error in
+                OperationQueue.main.addOperation {
+                    SVProgressHUD.dismiss()
+                }
+                guard let data = data, error == nil else {
+                    return
+                }
+                do{
+                    if(index == self.notedata.count - 1){
+                    if(self.iscommentapimethod)
+                    {
+                        self.iscommentapimethod = false
+                        DispatchQueue.main.async {
+                            self.tableView.reloadData()
+                        }
+                    }}
+                    let reobj = try? JSONDecoder().decode(NoteCommentModel.self, from: data)
+                    if((reobj?.commentdata!.count)! > 0){
+                        self.notecommentData.append(reobj?.commentdata!)
+                        self.tableView.reloadData()
+                    }
+                }
+            }
+            task.resume()
+        }
+    }
+    //MARK: - PullDownAllNoteAttachmentFromServer
+    func PullDownAllNoteAttachmentFromServer()
+    {
+        self.noteattachmentData.removeAll()
+        for(index,element) in self.notedata.enumerated()
+        {
+            let json: [String: Any] = [
+                "ParentId":element.note?.id as? String,
+                "ParentObjectName":"note",
+                "ObjectName": "note_attachment",
+                "PassKey":passKey,
+                "OrganizationId":currentOrgID,
+                "AscendingOrder":true]
+            let url = URL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json")!
+            var request = URLRequest(url: url)
+            request.addValue("application/json; charset=UTF-8", forHTTPHeaderField: "Content-Type")
+            request.addValue("en", forHTTPHeaderField: "Accept-Language")
+            request.httpMethod = "POST"
+            
+            if let jsonData = try? JSONSerialization.data(withJSONObject: json, options: []) {
+                request.httpBody = jsonData
+            }
+            let configuration = URLSessionConfiguration.default
+            let session = URLSession(configuration: configuration, delegate: self, delegateQueue:OperationQueue.main)
+            let task = session.dataTask(with: request){ data, response, error in
+                OperationQueue.main.addOperation {
+                    SVProgressHUD.dismiss()
+                }
+                guard let data = data, error == nil else {
+                    return
+                }
+                do{
+                    let reobj = try? JSONDecoder().decode(NoteRegardingModel.self, from: data)
+                    if((reobj?.regardingobj!.count)! > 0){
+                        self.noteattachmentData.append(reobj?.regardingobj!)
+                    }
+                }
+            }
+            task.resume()
+            
+        }
+    }
+    //MARK: - PullDownAllNoteRegardingsFromServer
+    func PullDownAllNoteRegardingsFromServer()
+    {
+        self.noteregardingData.removeAll()
+        for(index,element) in self.notedata.enumerated()
+        {
+            let json: [String: Any] = [
+                "ParentId":element.note?.id,
+                "ParentObjectName":"note",
+                "ObjectName": "notes_regarding",
+                "PassKey":passKey,
+                "OrganizationId":currentOrgID,
+                "AscendingOrder":true]
+            
+            OperationQueue.main.addOperation {
+                SVProgressHUD.show()
+            }
+            let url = URL(string: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json")!
+            var request = URLRequest(url: url)
+            request.addValue("application/json; charset=UTF-8", forHTTPHeaderField: "Content-Type")
+            request.addValue("en", forHTTPHeaderField: "Accept-Language")
+            request.httpMethod = "POST"
+            
+            if let jsonData = try? JSONSerialization.data(withJSONObject: json, options: []) {
+                request.httpBody = jsonData
+            }
+            let configuration = URLSessionConfiguration.default
+            let session = URLSession(configuration: configuration, delegate: self, delegateQueue:OperationQueue.main)
+            let task = session.dataTask(with: request){ data, response, error in
+                OperationQueue.main.addOperation {
+                    SVProgressHUD.dismiss()
+                }
+                guard let data = data, error == nil else {
+                    return
+                }
+                do{
+                    let reobj = try? JSONDecoder().decode(NoteRegardingModel.self, from: data)
+                    self.noteregardingData.append(reobj?.regardingobj)
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                    }
+                    if(index == self.notedata.count - 1)
+                    {
+                        self.PullDownAllNoteAttachmentFromServer()
+                    }
+                }
+            }
+            task.resume()
+            
+        }
+    }
+
+    // Mark:- selected cells of regarding
+    @objc func movetheRegardingConatcts(notfication : NSNotification)
+    {
+        guard let selecteditem = notfication.userInfo?["item"] as? ContactListResult else
+        {
+            return
+        }
+        if(contactInfoDetail.id == selecteditem.id){
+            return
+        }else{
+        let controller:ContactssController = self.storyboard?.instantiateViewController(withIdentifier:"ContactssController") as! ContactssController
+        controller.contactInfoDetail = selecteditem
+        controller.allContactList = allContactList
+            controller.allmainaccountList = self.allmainaccountList
+            controller.passTaskList = self.passTaskList
+            controller.passAppointmentList = self.passAppointmentList
+        self.navigationController?.pushViewController(controller, animated: true)}
+    }
+    @objc func movetheRegardingTasks(notification : NSNotification)
+    {
+        
+    }
+    @objc func movetheRegardingAppointments(notification : NSNotification)
+    {
+        guard let selecteditem = notification.userInfo?["item"] as? GetAppointmentModelData else
+        {
+            return
+        }
+        
+        var gDict = [String : Any]()
+        gDict["RecurringActivityId"] = selecteditem.recurringActivityID
+        gDict["DueTime"] = ""
+        gDict["Priority"] = 0
+        gDict["AdvocateProcessIndex"] = selecteditem.advocateProcessIndex
+        gDict["PercentComplete"] = 0
+        gDict["AppointmentTypeId"] = selecteditem.appointmentTypeID
+        gDict["AllDay"] = selecteditem.allDay
+        gDict["AppliedAdvocateProcessId"] = selecteditem.appliedAdvocateProcessID
+        gDict["Complete"] = selecteditem.complete
+        gDict["CreatedBy"] = selecteditem.createdBy
+        gDict["CreatedOn"] = selecteditem.createdOn
+        gDict["Description"] = selecteditem.resultDescription
+        gDict["EndTime"] = selecteditem.endTime
+        gDict["Id"] = selecteditem.id
+        gDict["Location"] = selecteditem.location
+        gDict["ModifiedBy"] = selecteditem.modifiedBy
+        gDict["ModifiedOn"] = selecteditem.modifiedOn
+        gDict["RecurrenceIndex"] = selecteditem.recurrenceIndex
+        gDict["RollOver"] = selecteditem.rollOver
+        gDict["StartTime"] = selecteditem.startTime
+        gDict["Subject"] = selecteditem.subject
+        gDict["Activity"] = nil
+        gDict["Type"] = ""
+
+        
+        
+        
+        var cDict = [String : Any]()
+        cDict["RecurringActivityId"] = selecteditem.recurringActivityID
+        cDict["DueTime"] = ""
+        cDict["Priority"] = 0
+        cDict["AdvocateProcessIndex"] = selecteditem.advocateProcessIndex
+        cDict["PercentComplete"] = 0
+        cDict["AppointmentTypeId"] = selecteditem.appointmentTypeID
+        cDict["AllDay"] = selecteditem.allDay
+        cDict["AppliedAdvocateProcessId"] = selecteditem.appliedAdvocateProcessID
+        cDict["Complete"] = selecteditem.complete
+        cDict["CreatedBy"] = selecteditem.createdBy
+        cDict["CreatedOn"] = selecteditem.createdOn
+        cDict["Description"] = selecteditem.resultDescription
+        cDict["EndTime"] = selecteditem.endTime
+        cDict["Id"] = selecteditem.id
+        cDict["Location"] = selecteditem.location
+        cDict["ModifiedBy"] = selecteditem.modifiedBy
+        cDict["ModifiedOn"] = selecteditem.modifiedOn
+        cDict["RecurrenceIndex"] = selecteditem.recurrenceIndex
+        cDict["RollOver"] = selecteditem.rollOver
+        cDict["StartTime"] = selecteditem.startTime
+        cDict["Subject"] = selecteditem.subject
+        cDict["Activity"] = gDict
+        cDict["Type"] = ""
+        
+    let getAddress:OpenActivityActivity = OpenActivityActivity.init(fromDictionary: cDict )
+    let controller:UpdatenewappointmentVC = self.storyboard?.instantiateViewController(withIdentifier:"UpdatenewappointmentVC") as! UpdatenewappointmentVC
+        controller.openedActivties = getAddress
+        controller.contactList = self.allContactList
+        controller.importaccountList = self.allmainaccountList
+        controller.appointmentList = self.passAppointmentList
+        controller.taskmodelobj = self.passTaskList
+    self.navigationController?.pushViewController(controller, animated: true)
+    }
+    // Mark:- selected cells of regarding
+    @objc func movetheRegardingAccounts(notfication : NSNotification)
+    {
+        guard let selecteditem = notfication.userInfo?["item"] as? GetAccountsListResult else
+        {
+            return
+        }
+            let controller:NewAccountsController = self.storyboard?.instantiateViewController(withIdentifier:"NewAccountsController") as! NewAccountsController
+            controller.contactInfoDetail = selecteditem
+        controller.allContactList = allContactList
+            controller.allmainaccountList = allmainaccountList
+        controller.passTaskList = self.passTaskList
+        controller.passAppointmentList = self.passAppointmentList
+            self.navigationController?.pushViewController(controller, animated: true)
+    }
+    @objc func openContactAttachmentFile(notfication : NSNotification)
+    {
+
+        guard let noteid = notfication.userInfo?["noteid"] as? String else
+        {
+            return
+        }
+        guard let attachid = notfication.userInfo?["attachid"] as? String else
+        {
+            return
+        }
+        guard let filename = notfication.userInfo?["filename"] as? String else
+        {
+            return
+        }
+        let currentTime = String(Date().toMillis())
+        OperationQueue.main.addOperation {
+            SVProgressHUD.show()
+        }
+         let urlString = globalURL+"/note_attachment/\(currentOrgID)/\(noteid)/\(attachid)"
+         let separr = filename.components(separatedBy: ".")
+        let firststr = separr.first! + currentTime
+        let secstr = firststr + "." + (separr.last?.lowercased())!
+        // Create destination URL
+        let documentsUrl:URL =  FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first as URL!
+        let destinationFileUrl = documentsUrl.appendingPathComponent("\(secstr)")
+        //Create URL to the source file you want to download
+        let fileURL = URL(string: urlString)
+        let sessionConfig = URLSessionConfiguration.default
+        let session = URLSession(configuration: sessionConfig)
+        var request = URLRequest(url:fileURL!)
+        request.setValue(passKey, forHTTPHeaderField: "X-VCPassKey")
+        let task = session.downloadTask(with: request) { (tempLocalUrl, response, error) in
+            if let tempLocalUrl = tempLocalUrl, error == nil {
+                // Success
+                if let statusCode = (response as? HTTPURLResponse)?.statusCode {
+                    print("Successfully downloaded. Status code: \(statusCode)")
+                }
+                do {
+                    OperationQueue.main.addOperation {
+                        SVProgressHUD.dismiss()
+                    }
+                    try FileManager.default.copyItem(at: tempLocalUrl, to: destinationFileUrl)
+                    do {
+                        //Show UIActivityViewController to save the downloaded file
+                        let contents  = try FileManager.default.contentsOfDirectory(at: documentsUrl, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
+                        for indexx in 0..<contents.count {
+                            if contents[indexx].lastPathComponent == destinationFileUrl.lastPathComponent {
+                                OperationQueue.main.addOperation {
+                                let activityViewController = UIActivityViewController(activityItems: [contents[indexx]], applicationActivities: nil)
+                                self.present(activityViewController, animated: true, completion: nil)
+                                }
+                            }
+                        }
+                    }
+                    catch (let err) {
+                        print("error: \(err)")
+                    }
+                } catch (let writeError) {
+                    print("Error creating a file \(destinationFileUrl) : \(writeError)")
+                }
+            } else {
+                print("Error took place while downloading a file. Error description: \(error?.localizedDescription ?? "")")
+            }
+        }
+        task.resume()
+    }
+
     // MARK: - Table view data source
-    
     override func numberOfSections(in tableView: UITableView) -> Int {
         if tableView.tag == 10 || tableView.tag == 20 {
             return 1
@@ -554,7 +1020,7 @@ class ContactssController: UITableViewController {
         if contactAdd {
             return 1
         }
-        return 9
+        return 10
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -592,6 +1058,16 @@ class ContactssController: UITableViewController {
         if section == 8 {
             return 1
         }
+        if section == 9 {
+           
+            if(isNoteCellPresent)
+            {
+                return self.notedata.count + 1
+            }else
+            {
+                return 1
+            }
+        }
         return 1
     }
     
@@ -628,7 +1104,17 @@ class ContactssController: UITableViewController {
             }
             return 130
         }
-        else if indexPath.section == 1 || indexPath.section == 3 || indexPath.section == 5 || indexPath.section == 7 {
+        else if indexPath.section == 9 && isExpand && selectedIndexPath_condition == indexPath.section {
+
+            if(indexPath.row == 0)
+            {
+                return 109
+            }else
+            {
+                return UITableViewAutomaticDimension
+            }
+        }
+        else if indexPath.section == 1 || indexPath.section == 3 || indexPath.section == 5 || indexPath.section == 7 || indexPath.section == 9 {
             return 65
         }else if indexPath.section == 4 && isExpand && selectedIndexPath == indexPath.section || indexPath.section == 6 && isExpand && selectedIndexPath == indexPath.section || indexPath.section == 8 && isExpand && selectedIndexPath == indexPath.section {
             return 50
@@ -642,9 +1128,7 @@ class ContactssController: UITableViewController {
         
     }
     
-    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
         if tableView.tag == 10 {
             let cell:ContactHistoryCell = tableView.dequeueReusableCell(withIdentifier: "ContactHistoryCell", for: indexPath) as! ContactHistoryCell
             let tapGR = UITapGestureRecognizer(target: self, action: #selector(ContactssController.handleTap(_:)))
@@ -747,11 +1231,6 @@ class ContactssController: UITableViewController {
             }
             if !cellCalled && contactInfoDetail != nil {
                 cellCalled = true
-                
-                //                dispatch
-                
-                
-                //                cell.tagsCollection.removeAllTags()
                 
                 if contactInfoDetail.clientClassId != nil && !isTappedBack{
                     self.clientClassID = contactInfoDetail.clientClassId
@@ -1031,17 +1510,13 @@ class ContactssController: UITableViewController {
                 cell.lblItem1.text = "Subject"
                 cell.lblItem2.text = "Start Time"
                 cell.lblItem3.text = "Type"
-                
-                //                cell.AddTopConstraint.constant = 5
-                //                cell.AddHeightConstraint.constant = 0
-                //                cell.SearchHeightConstraint.constant = 0
-                //                cell.searchTopConstraint.constant = 5
-                
+             
                 cell.lblItem1.isHidden = false
                 cell.lblItem2.isHidden = false
                 cell.lblItem3.isHidden = false
             }
             if indexPath.section == 1 {
+                cell.btnAdd.setTitle("", for: .normal)
                 if(isExpand && selectedIndexPath_condition == indexPath.section){
                     cell.AdditionalView.isHidden = false
                 }
@@ -1076,6 +1551,7 @@ class ContactssController: UITableViewController {
                 }
                 return cell
             }else if indexPath.section == 3 {
+                cell.btnAdd.setTitle("", for: .normal)
                 if(isExpand && selectedIndexPath_condition == indexPath.section){
                     cell.AdditionalView.isHidden = false
                 }
@@ -1110,6 +1586,7 @@ class ContactssController: UITableViewController {
                 }
                 return cell
             }else if indexPath.section == 5 {
+                cell.btnAdd.setTitle("", for: .normal)
                 if(isExpand && selectedIndexPath_condition == indexPath.section){
                     cell.AdditionalView.isHidden = false
                 }
@@ -1139,6 +1616,7 @@ class ContactssController: UITableViewController {
                 }
                 return cell
             }else if indexPath.section == 7 {
+                cell.btnAdd.setTitle("", for: .normal)
                 
                 cell.btnAdd.removeTarget(nil, action: nil, for: .allEvents)
                 cell.btnSearch.removeTarget(nil, action: nil, for: .allEvents)
@@ -1163,7 +1641,336 @@ class ContactssController: UITableViewController {
                 }
                 return cell
             }
+           
             return cell
+        } else if indexPath.section == 9 {
+            
+            if(indexPath.row == 0)
+            {
+                let notecell:NoteHeaderCell = tableView.dequeueReusableCell(withIdentifier: "NoteHeaderCell", for: indexPath) as! NoteHeaderCell
+                
+                if(isExpand && selectedIndexPath_condition == indexPath.section){
+                    notecell.addnotebtn.isHidden = false
+                }
+                else{
+                    notecell.addnotebtn.isHidden = true
+                }
+                if selectedIndexPath == 10 {
+                    notecell.imgarrow.transform = CGAffineTransform(rotationAngle: (90.0 * CGFloat(Double.pi)) / 180.0)
+                }else{
+                    notecell.imgarrow.transform = CGAffineTransform(rotationAngle: (90.0 * CGFloat(Double.pi)))
+                }
+                notecell.addnotebtn.tag = indexPath.section
+                notecell.isUserInteractionEnabled = true
+                notecell.addnotebtn.addTarget(self, action: #selector(AddNoteButtonTapped(_:)), for: .touchUpInside)
+                return notecell
+            }else
+            {
+       let notedetailcell:NotesListCell = tableView.dequeueReusableCell(withIdentifier: "NotesListCell", for: indexPath) as! NotesListCell
+                if !(self.notedata.count > 0){
+                    return notedetailcell
+                }
+                let isdraft = (self.notedata[indexPath.row - 1].note?.draft)!
+                if(isdraft)
+                {
+                    notedetailcell.draftLblOutlet.isHidden = false
+                    notedetailcell.editWidthConstraint.constant = 22 // displayed edit buttonediting
+                }else{
+                    notedetailcell.draftLblOutlet.isHidden = true
+                    notedetailcell.editWidthConstraint.constant = 0 // hide edit button
+                }
+                
+                // created on - date
+                let sdate = (self.notedata[indexPath.row - 1].note?.createdOn)!
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                let st_date : Date = dateFormatter.date(from: sdate)!
+                dateFormatter.dateFormat = "MM/dd/yyyy"
+                let firdate = dateFormatter.string(from: st_date)
+                dateFormatter.dateFormat = "hh:mm:ss a"
+                let secdate = dateFormatter.string(from: st_date)
+               
+                
+                //created by - organization name
+                for(_,elem) in self.usersList.enumerated()
+                {
+                    if(self.notedata[indexPath.row - 1].note?.createdBy == elem.id)
+                    {
+                        let cname = elem.firstName + " " + elem.lastName
+                        let finalstr =  firdate + ", " + secdate + " by " + cname as NSString
+                        let aattributedString = NSMutableAttributedString(string: finalstr as String, attributes: [NSAttributedStringKey.font:UIFont.systemFont(ofSize: 12.0)])
+                        let boldFontAttribute = [NSAttributedStringKey.font: UIFont.boldSystemFont(ofSize: 12.0)]
+                        aattributedString.addAttributes(boldFontAttribute, range: finalstr.range(of: "by"))
+                        notedetailcell.createOnLbl.attributedText = aattributedString
+                        break
+                    }
+                }
+                
+                // note text
+                let noteee = self.notedata[indexPath.row - 1].note!.note
+                if(noteee != nil && noteee != ""){
+                 notedetailcell.noteTxtViewOutlet.isHidden = false
+                    }else
+                {
+                     notedetailcell.noteTxtViewOutlet.isHidden = false
+                }
+                notedetailcell.noteTxtViewOutlet.text = self.notedata[indexPath.row - 1].note!.note
+                //regarding contact name
+                var allregardingID : [String] = []
+                let currNoteid = self.notedata[indexPath.row - 1].note?.id
+                for(index,_) in self.noteregardingData.enumerated(){
+                    
+                let valu = self.noteregardingData[index] as? [NoteRegardingList]
+                
+                    if(currNoteid == valu?.first?.noteID)
+                    {
+                        for(_,ele) in (valu?.enumerated())!
+                        {
+                            allregardingID.append(ele.regardingID!) // add all note - regarding id into array
+                        }
+                        break
+                    }
+                }
+                // to fetch contact name
+                var collectallname : [String] = []
+                allregardingname.removeAll()
+                allaccountregardingname.removeAll()
+                for(_, elem) in allregardingID.enumerated()
+                {
+                    for(_,ele) in self.allContactList.enumerated(){
+                        if(elem == ele.id)
+                        {
+                            allregardingname.append(ele)
+                            collectallname.append(ele.fullName)
+                        }
+                    }
+                    for(_,ele) in self.allmainaccountList.enumerated(){
+                        if(elem == ele.id)
+                        {
+                            allaccountregardingname.append(ele)
+                            collectallname.append(ele.name)
+                        }
+                    }
+                    if(self.passAppointmentList != nil){
+                    for(_,ele) in self.passAppointmentList.results.enumerated()
+                    {
+                        if(elem == ele.id)
+                        {
+                            allAppointmentregardingSubject.append(ele)
+                            collectallname.append(ele.subject!)
+                        }
+                    }
+                    }
+                    if(self.passTaskList != nil){
+                    for(_,ele) in self.passTaskList.results.enumerated()
+                    {
+                        if(elem == ele.id)
+                        {
+                            allTaskregardingSubject.append(ele)
+                            collectallname.append(ele.subject!)
+
+                        }
+                    }
+                    }
+                }
+                
+               // assign regarding name to cell
+                notedetailcell.regattachlist = allregardingname
+                notedetailcell.regaccountlist = allaccountregardingname
+                notedetailcell.regTasklist = allTaskregardingSubject
+                notedetailcell.regAppointmentlist = allAppointmentregardingSubject
+                notedetailcell.allnames = collectallname
+                notedetailcell.noteplace = "contact"
+                if(collectallname.count > 0)
+                {
+                    if(collectallname.count <= 2)
+                    {
+                        notedetailcell.regardingheightConstraint.constant = 48
+                    }else
+                    {
+                        if(collectallname.count % 2 == 0) // if even set height below
+                        {
+                        notedetailcell.regardingheightConstraint.constant = CGFloat((collectallname.count/2) * 48)
+                        }
+                        else // if odd set height below
+                        {
+                            let hght = CGFloat((collectallname.count/2) * 48)
+                            notedetailcell.regardingheightConstraint.constant = hght + 48
+                        }
+                    }
+                }
+                notedetailcell.regardingCollectionview.reloadData()
+                var isvaluepresent : Bool = false
+                
+                // attachment collectionview passing values
+                for(indx,_) in self.noteattachmentData.enumerated()
+                {
+                    let valu = self.noteattachmentData[indx] as? [NoteRegardingList]
+                    if (currNoteid == valu?.first?.noteID)
+                    {
+                        notedetailcell.attachlblHeight.constant = 18
+                        isvaluepresent = true
+                        notedetailcell.typeattachlist = valu!
+                        if(valu!.count > 0)
+                        {
+                            if(valu!.count <= 2)
+                            {
+                                notedetailcell.attachCollectionViewHeightConstraint.constant = 48
+                            }else
+                            {
+                                if(valu!.count % 2 == 0) // if even set height below
+                                {
+                                    notedetailcell.attachCollectionViewHeightConstraint.constant = CGFloat((valu!.count/2) * 48)
+                                }else // if odd set height below
+                                {
+                                    let hght = CGFloat((valu!.count/2) * 48)
+                                    notedetailcell.attachCollectionViewHeightConstraint.constant = hght + 50
+                                }
+                            }
+                        }
+                        notedetailcell.attachCollectionView.reloadData()
+                    }
+                }
+                if(!isvaluepresent) // if no attachment is present for current note
+                {
+                    notedetailcell.typeattachlist = []
+                    notedetailcell.attachlblHeight.constant = 0
+                    notedetailcell.attachCollectionViewHeightConstraint.constant = 0
+                }
+                
+                // comment tableview passing values
+                var iscommentpresent : Bool = false
+                var height : CGFloat = 0.0
+                if(iscommentExpand){
+                if(self.allcommentExpandArray[indexPath.row - 1] == 1){
+                for(indx,_) in self.notecommentData.enumerated()
+                {
+                    let valu = self.notecommentData[indx] as? [CommnetResults]
+                    if (currNoteid == valu?.first?.noteID)
+                    {
+                        iscommentpresent = true
+                        notedetailcell.cellusersList = self.usersList
+                        notedetailcell.comments = valu!
+                        let font = UIFont(name: "Helvetica", size: 14.0)!
+                        for(indx,_) in (valu?.enumerated())!
+                        {
+                            height += heightForView(text: notedetailcell.comments[indx].comment!, font: font, width: notedetailcell.commentTableview.frame.width) + 40
+                        }
+                        notedetailcell.commentTablHeightConstarint.constant = height
+                        notedetailcell.commentsBtnHeightConstraint.constant =  40
+                        notedetailcell.commentExpandOutlet.isHidden = false
+                        notedetailcell.commentImage.isHidden = false
+                        notedetailcell.commentImage.image = UIImage(named: "ic_down_arrow_black")
+                        notedetailcell.commentTableview.reloadData()
+                    }
+                }
+                if(!iscommentpresent) // if no attachment is present for current note
+                {
+                    notedetailcell.comments = []
+                    notedetailcell.commentExpandOutlet.isHidden = true
+                    notedetailcell.commentImage.isHidden = true
+                    notedetailcell.commentsBtnHeightConstraint.constant =  0
+                    notedetailcell.commentTablHeightConstarint.constant = 0
+                    notedetailcell.commentTableview.reloadData()
+                        }}
+                    else
+                    {
+                        if(self.notecommentData.count > 0){
+                            for(indx,_) in self.notecommentData.enumerated()
+                            {
+                                let valu = self.notecommentData[indx] as? [CommnetResults]
+                                if (currNoteid == valu?.first?.noteID)
+                                {
+                                    iscommentpresent = true
+                                    notedetailcell.comments = []
+                                    notedetailcell.commentImage.image = UIImage(named: "ic_forward")
+                                    notedetailcell.commentExpandOutlet.isHidden = false
+                                    notedetailcell.commentImage.isHidden = false
+                                    notedetailcell.commentsBtnHeightConstraint.constant =  40
+                                    notedetailcell.commentTablHeightConstarint.constant = 0
+                                    notedetailcell.commentTableview.reloadData()
+                                }
+                            }
+                            if(!iscommentpresent) // if no attachment is present for current note
+                            {
+                                notedetailcell.comments = []
+                                notedetailcell.commentExpandOutlet.isHidden = true
+                                notedetailcell.commentImage.isHidden = true
+                                notedetailcell.commentsBtnHeightConstraint.constant =  0
+                                notedetailcell.commentTablHeightConstarint.constant = 0
+                                notedetailcell.commentTableview.reloadData()
+                            }}else
+                        {
+                             notedetailcell.comments = []
+                            notedetailcell.commentExpandOutlet.isHidden = true
+                            notedetailcell.commentImage.isHidden = true
+                            notedetailcell.commentsBtnHeightConstraint.constant =  0
+                            notedetailcell.commentTablHeightConstarint.constant = 0
+                            notedetailcell.commentTableview.reloadData()
+                        }
+                     
+                    }
+                }else
+                {
+                    if(self.notecommentData.count > 0){
+                        for(indx,_) in self.notecommentData.enumerated()
+                        {
+                            let valu = self.notecommentData[indx] as? [CommnetResults]
+                            if (currNoteid == valu?.first?.noteID)
+                            {
+                                iscommentpresent = true
+                                notedetailcell.comments = []
+                                notedetailcell.commentImage.image = UIImage(named: "ic_forward")
+                                notedetailcell.commentExpandOutlet.isHidden = false
+                                notedetailcell.commentImage.isHidden = false
+                                notedetailcell.commentsBtnHeightConstraint.constant =  40
+                                notedetailcell.commentTablHeightConstarint.constant = 0
+                                notedetailcell.commentTableview.reloadData()
+                            }
+                        }
+                        if(!iscommentpresent) // if no attachment is present for current note
+                        {
+                            notedetailcell.comments = []
+                            notedetailcell.commentExpandOutlet.isHidden = true
+                            notedetailcell.commentImage.isHidden = true
+                            notedetailcell.commentsBtnHeightConstraint.constant =  0
+                            notedetailcell.commentTablHeightConstarint.constant = 0
+                             notedetailcell.commentTableview.reloadData()
+                        }}else
+                    {
+                        notedetailcell.comments = []
+                        notedetailcell.commentExpandOutlet.isHidden = true
+                        notedetailcell.commentImage.isHidden = true
+                        notedetailcell.commentsBtnHeightConstraint.constant =  0
+                        notedetailcell.commentTablHeightConstarint.constant = 0
+                         notedetailcell.commentTableview.reloadData()
+                    }
+                    
+                }
+                let contentSizetxt = notedetailcell.noteTxtViewOutlet.sizeThatFits(notedetailcell.noteTxtViewOutlet.bounds.size)
+                
+                let txtheight =  contentSizetxt.height
+
+                if(notedetailcell.commentsBtnHeightConstraint.constant ==  0){
+                  notedetailcell.noteviewHeightConstraint.constant = CGFloat(defaultNoteCellHeight + commentHeight) + notedetailcell.attachCollectionViewHeightConstraint.constant + txtheight +  notedetailcell.regardingheightConstraint.constant + notedetailcell.attachlblHeight.constant + notedetailcell.commentsBtnHeightConstraint.constant + notedetailcell.commentTablHeightConstarint.constant - 20
+                }
+                else{
+                     notedetailcell.noteviewHeightConstraint.constant = CGFloat(defaultNoteCellHeight + commentHeight) + notedetailcell.attachCollectionViewHeightConstraint.constant + txtheight +  notedetailcell.regardingheightConstraint.constant + notedetailcell.attachlblHeight.constant + notedetailcell.commentsBtnHeightConstraint.constant + notedetailcell.commentTablHeightConstarint.constant
+                }
+
+                // other button action
+                notedetailcell.commentExpandOutlet.tag = indexPath.row - 1
+                notedetailcell.commentExpandOutlet.addTarget(self, action: #selector(self.commentTableviewExpandAction(_:)), for: .touchUpInside)
+                notedetailcell.commentbtnOutlet.tag = indexPath.row - 1
+                notedetailcell.commentbtnOutlet.addTarget(self, action: #selector(self.commentNoteButtonTapped(_:)), for: .touchUpInside)
+                notedetailcell.attachBtnOutlet.tag = indexPath.row - 1
+                notedetailcell.attachBtnOutlet.addTarget(self, action: #selector(self.attachNoteButtonTapped(_:)), for: .touchUpInside)
+                notedetailcell.searchBtnOutlet.tag = indexPath.row - 1
+                notedetailcell.searchBtnOutlet.addTarget(self, action: #selector(self.searchNoteButtonTapped(_:)), for: .touchUpInside)
+                notedetailcell.editbtnOutlet.tag = indexPath.row - 1
+                notedetailcell.editbtnOutlet.addTarget(self, action: #selector(self.editNoteButtonTapped(_:)), for: .touchUpInside)
+                return notedetailcell
+            }
         }else{
             if indexPath.section == 2 {
                 //                let cell:AdditionalAddressCell = tableView.dequeueReusableCell(withIdentifier: "AdditionalAddressCell") as! AdditionalAddressCell
@@ -1192,20 +1999,19 @@ class ContactssController: UITableViewController {
                 cell.lblName2.textAlignment = .center
                 cell.lblName1.text = getLinkedAccountsResult[indexPath.row].name
                 cell.lblName2.text = getLinkedAccountsResult[indexPath.row].telephone1
-                
                 return cell
             }else if indexPath.section == 6 {
+                
                 let cell:AdditionalAddressCell = tableView.dequeueReusableCell(withIdentifier: "AdditionalAddressCell") as! AdditionalAddressCell
                 
                 cell.lblName.text = getOpenedActivitiesResult[indexPath.row].activity.subject
-                
                 cell.lblAddress.text = getOpenedActivitiesResult[indexPath.row].activity.startTime.convertYearMonthDatehourMin()
                 cell.lblCity.text = getOpenedActivitiesResult[indexPath.row].type
                 
                 return cell
             }else {
-                let cell:AdditionalAddressCell = tableView.dequeueReusableCell(withIdentifier: "AdditionalAddressCell") as! AdditionalAddressCell
                 
+                let cell:AdditionalAddressCell = tableView.dequeueReusableCell(withIdentifier: "AdditionalAddressCell") as! AdditionalAddressCell
                 cell.lblName.text = getCompleteActivitiesResult[indexPath.row].activity.subject
                 cell.lblAddress.text = getCompleteActivitiesResult[indexPath.row].activity.startTime.convertYearMonthDatehourMin()
                 cell.lblCity.text = getCompleteActivitiesResult[indexPath.row].type
@@ -1226,12 +2032,14 @@ class ContactssController: UITableViewController {
         if contactInfoDetail == nil {
             return 45
         }else {
-            if section == 8 {
-                return 45
+            if section == 9{
+                return 50
             }
         }
         return 0
     }
+    
+    
     
     //
     //    override func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
@@ -1288,8 +2096,8 @@ class ContactssController: UITableViewController {
             //            self.tblChildrens.reloadData()
             return
         }
-        print(indexPath.section)
-        if indexPath.section == 1 || indexPath.section == 3 || indexPath.section == 5 || indexPath.section == 7  {
+    
+        if indexPath.section == 1 || indexPath.section == 3 || indexPath.section == 5 || indexPath.section == 7 {
             if indexPath.section == selectedIndexPath - 1 {
                 selectedIndexPath = 2123123
                 isExpand = false
@@ -1298,6 +2106,11 @@ class ContactssController: UITableViewController {
                 isExpand = true
             }
             selectedIndexPath_condition = indexPath.section
+            if(self.isNoteCellPresent)
+            {
+                isNoteCellPresent = false
+                tableView.reloadSections(IndexSet(integer: 9), with: .bottom)
+            }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 let indexPath = IndexPath(item: 0, section: 1)
                 let indexPath1 = IndexPath(item: 0, section: 3)
@@ -1305,7 +2118,23 @@ class ContactssController: UITableViewController {
                 let indexPath3 = IndexPath(item: 0, section: 7)
                 tableView.reloadRows(at: [indexPath,indexPath1,indexPath2,indexPath3], with: .bottom)
             }
-        }else if indexPath.section == 2 || indexPath.section == 4 || indexPath.section == 6 || indexPath.section == 8 {
+        }else if (indexPath.section == 9)
+        {
+            if indexPath.section == selectedIndexPath - 1 {
+                isNoteCellPresent = false
+                selectedIndexPath = 2123123
+                isExpand = false
+            }else{
+                selectedIndexPath = indexPath.section + 1
+                isExpand = true
+                isNoteCellPresent = true
+            }
+            selectedIndexPath_condition = indexPath.section
+            tableView.reloadSections(IndexSet(integer: 9), with: .bottom)
+            tableView.scrollToRow(at: IndexPath(row: 0, section: 9), at: .bottom, animated: true)
+
+        }
+        else if indexPath.section == 2 || indexPath.section == 4 || indexPath.section == 6 || indexPath.section == 8 {
             //            if !isEditable {
             //                return
             //            }
@@ -1330,7 +2159,7 @@ class ContactssController: UITableViewController {
                 let getActivty = getOpenedActivitiesResult[indexPath.row]
                 let getAddress:OpenActivityActivity = OpenActivityActivity.init(fromDictionary: getActivty.toDictionary())
                 if getAddress.type == "Task" {
-                    let controller:NewTaskController = (self.storyboard?.instantiateViewController(withIdentifier: "NewTaskController") as? NewTaskController)!
+                    let controller:UpdatenewtaskVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewtaskVC") as? UpdatenewtaskVC)!
                     controller.linkParentID = contactInfoDetail.id!
                     controller.Editvalue = "edit"
                     controller.openedActivties = getAddress
@@ -1341,10 +2170,9 @@ class ContactssController: UITableViewController {
                     controller.StrAccount = "Accounts"
                     self.navigationController?.pushViewController(controller, animated: true)
                 }else if getAddress.type == "Appointment" || getAddress.type == "Appointments" {
-                    let controller:NewAppointmentsController = (self.storyboard?.instantiateViewController(withIdentifier: "NewAppointmentsController") as? NewAppointmentsController)!
+                    let controller:UpdatenewappointmentVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewappointmentVC") as? UpdatenewappointmentVC)!
                     controller.Editvalue = "edit"
                     controller.linkParentID = contactInfoDetail.id!
-                    print(getAddress.activity.AppointmentTypeId)
                     UserDefaults.standard.set(getAddress.activity.AppointmentTypeId, forKey: "appointmentTypeID")
                     controller.openedActivties = getAddress
                     self.navigationController?.pushViewController(controller, animated: true)
@@ -1352,14 +2180,14 @@ class ContactssController: UITableViewController {
             }else if indexPath.section == 8 {
                 let getAddress:OpenActivityActivity = OpenActivityActivity.init(fromDictionary: getCompleteActivitiesResult[indexPath.row].toDictionary())
                 if getAddress.type == "Task" {
-                    let controller:NewTaskController = (self.storyboard?.instantiateViewController(withIdentifier: "NewTaskController") as? NewTaskController)!
+                    let controller:UpdatenewtaskVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewtaskVC") as? UpdatenewtaskVC)!
                     controller.linkParentID = contactInfoDetail.id!
                     controller.Editvalue = "edit"
                     controller.IsEdit = true
                     controller.openedActivties = getAddress
                     self.navigationController?.pushViewController(controller, animated: true)
                 }else if getAddress.type == "Appointment" || getAddress.type == "Appointments" {
-                    let controller:NewAppointmentsController = (self.storyboard?.instantiateViewController(withIdentifier: "NewAppointmentsController") as? NewAppointmentsController)!
+                    let controller:UpdatenewappointmentVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewappointmentVC") as? UpdatenewappointmentVC)!
                     controller.Editvalue = "edit"
                     controller.linkParentID = contactInfoDetail.id!
                     UserDefaults.standard.set(getAddress.activity.id, forKey: "appointmentTypeID")
@@ -1420,7 +2248,16 @@ class ContactssController: UITableViewController {
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         hmPopup?.show(in: appDelegate.window)
     }
-    
+    func heightForView(text:String, font:UIFont, width:CGFloat) -> CGFloat{
+        let label:UILabel = UILabel(frame: CGRect(x: 0, y: 0, width: width, height: CGFloat.greatestFiniteMagnitude))
+        label.numberOfLines = 0
+        label.lineBreakMode = NSLineBreakMode.byWordWrapping
+        label.font = font
+        label.text = text
+        
+        label.sizeToFit()
+        return label.frame.height
+    }
     @objc func tblSearchCategory(_ button: UIButton) {
         let btnTag = button.tag
         if btnTag == 1 {
@@ -1448,10 +2285,10 @@ class ContactssController: UITableViewController {
                                       "OrganizationId":currentOrgID,
                                       "PageOffset":1,
                                       "ResultsPerPage":1000]
-            print(json)
-            APIManager.sharedInstance.postRequestCall(postURL:"https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+         
+            APIManager.sharedInstance.postRequestCall(postURL:globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
-                    print(json)
+                  
                     self.resultsaddressArray = []
                     self.linkaddressArray = []
                     self.resultsArray = json["Results"].arrayValue
@@ -1478,10 +2315,10 @@ class ContactssController: UITableViewController {
                         //                                                     "PassKey":passKey,
                         //                                                     "OrganizationId":currentOrgID,
                         //                                                     "RightObjectName":"company"]
-                        //                            print(json)
-                        //                            APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/link.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+                        //
+                        //                            APIManager.sharedInstance.postRequestCall(postURL: "https://toolkit.bluesquareapps.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/link.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                         //                                DispatchQueue.main.async {
-                        //                                    print(json)
+                        //
                         //                                    OperationQueue.main.addOperation {
                         //                                        let response = json["ResponseMessage"].string
                         //                                        if(response == "Unable to add accounts"){
@@ -1507,6 +2344,255 @@ class ContactssController: UITableViewController {
         }
         
     }
+    func deleteRegardingContactAction(ObjectId : String)
+    {
+        let json: [String: Any] = ["ObjectName":"notes_regarding",
+                                   "OrganizationId":currentOrgID,
+                                   "PassKey": passKey,
+                                   "ObjectId":ObjectId
+        ]
+        APIManager.sharedInstance.postRequestCall(postURL: deleteContactListURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+            DispatchQueue.main.async {
+               
+            }
+        },  onFailure: { error in
+            print(error.localizedDescription)
+            NavigationHelper.showSimpleAlert(message:error.localizedDescription)
+        })
+    }
+    func secondCreateAPi(noteID : String, RegardingId : String){
+        var regtype : String = ""
+        if(self.globalRegType == "contact")
+        {
+            regtype = "contact"
+        }else if(self.globalRegType == "appointment")
+        {
+            regtype = "appointment"
+        }
+        else if(self.globalRegType == "task")
+        {
+            regtype = "task"
+        }
+        else
+        {
+             regtype = "company"
+        }
+        let json: [String: Any] = ["ObjectName":"notes_regarding",
+                                   "DataObject": [
+                                    "NoteId" : noteID,
+                                    "RegardingId": RegardingId,
+                                    "RegardingType":regtype],
+                                   "OrganizationId":currentOrgID,
+                                   "PassKey": passKey] as [String : Any]
+        APIManager.sharedInstance.postRequestCall(postURL: createContact, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+            DispatchQueue.main.async {
+               
+                self.allcreatedRegardingID.append(RegardingId)
+                self.allregardingObjectID.append( json["DataObject"]["Id"].stringValue)
+            }
+        },  onFailure: { error in
+            print(error.localizedDescription)
+            NavigationHelper.showSimpleAlert(message:error.localizedDescription)
+        })
+    }
+    //MARK: - Show Appointment Picker
+    func showChooseAppointmentPicker(){
+        self.selectedContactIndx = []
+        let picker = CZPickerView(headerTitle: "Choose Appointment", cancelButtonTitle: "Cancel", confirmButtonTitle: "Confirm")
+        picker?.delegate = self
+        if(self.passAppointmentList != nil){
+        for (index,elemnt) in self.passAppointmentList.results.enumerated() {
+            
+            if (self.selectedContactsList.contains(elemnt.id!))
+            {
+                self.selectedContactIndx.add(index)
+            }
+        }
+        }
+        if(self.selectedContactIndx.count > 0)
+        {
+            picker?.setSelectedRows(selectedContactIndx as? [Any])
+        }
+        picker?.dataSource = self
+        picker?.needFooterView = true
+        picker?.allowMultipleSelection = true
+        picker?.tag = 1114
+        picker?.show()
+    }
+    //MARK: - Show Task Picker
+    func showChooseTaskPicker(){
+        self.selectedContactIndx = []
+        let picker = CZPickerView(headerTitle: "Choose Task", cancelButtonTitle: "Cancel", confirmButtonTitle: "Confirm")
+        picker?.delegate = self
+        for (index,elemnt) in self.passTaskList.results.enumerated() {
+            
+            if (self.selectedContactsList.contains(elemnt.id!))
+            {
+                self.selectedContactIndx.add(index)
+            }
+        }
+        if(self.selectedContactIndx.count > 0)
+        {
+            picker?.setSelectedRows(selectedContactIndx as? [Any])
+        }
+        picker?.dataSource = self
+        picker?.needFooterView = true
+        picker?.allowMultipleSelection = true
+        picker?.tag = 1116
+        picker?.show()
+    }
+    //MARK: - Show Company Picker
+    func showChooseCompanysPicker(){
+        self.selectedContactIndx = []
+        let picker = CZPickerView(headerTitle: "Choose Company", cancelButtonTitle: "Cancel", confirmButtonTitle: "Confirm")
+        picker?.delegate = self
+        
+        for (index,elemnt) in self.allmainaccountList.enumerated() {
+            
+            if (self.selectedContactsList.contains(elemnt.id))
+            {
+                self.selectedContactIndx.add(index)
+            }
+        }
+        if(self.selectedContactIndx.count > 0)
+        {
+            picker?.setSelectedRows(selectedContactIndx as? [Any])
+        }
+        picker?.dataSource = self
+        picker?.needFooterView = true
+        picker?.allowMultipleSelection = true
+        picker?.tag = 1112
+        picker?.show()
+    }
+    //MARK: - Show Conatcts Picker
+    func showChooseContactsPicker(){
+        self.selectedContactIndx = []
+        let picker = CZPickerView(headerTitle: "Choose Contact", cancelButtonTitle: "Cancel", confirmButtonTitle: "Confirm")
+        picker?.delegate = self
+        for (index,elemnt) in self.allContactList.enumerated() {
+            
+            if (self.selectedContactsList.contains(elemnt.id))
+            {
+                self.selectedContactIndx.add(index)
+            }
+        }
+        if(self.selectedContactIndx.count > 0)
+        {
+            picker?.setSelectedRows(selectedContactIndx as? [Any])
+        }
+        picker?.dataSource = self
+        picker?.needFooterView = true
+        picker?.allowMultipleSelection = true
+        picker?.tag = 1002
+        picker?.show()
+    }
+    func showContactsPicker(){
+        let selecttypeindx:NSMutableArray = []
+        let picker = CZPickerView(headerTitle: "Apply To Type", cancelButtonTitle: "Cancel", confirmButtonTitle: "Confirm")
+        picker?.delegate = self
+        selecttypeindx.add(1)
+        picker?.setSelectedRows(selecttypeindx as? [Any])
+        picker?.dataSource = self
+        picker?.needFooterView = true
+        picker?.allowMultipleSelection = false
+        picker?.tag = 0
+        picker?.show()
+    }
+    @objc func searchNoteButtonTapped(_ sender: UIButton)
+    {
+        self.selectedNoteIndx = sender.tag
+        self.selectedNoteID =  self.notedata[sender.tag].note!.id
+        searchCurrNoteid = self.notedata[sender.tag].note?.id
+        self.showContactsPicker()
+    }
+    @objc func attachNoteButtonTapped(_ sender: UIButton)
+    {
+        self.selectedNoteIndx = sender.tag
+        self.selectedNoteID =  self.notedata[sender.tag].note!.id
+        var types = [kUTTypePDF, kUTTypeText, kUTTypeRTF, kUTTypeSpreadsheet,kUTTypeGIF,kUTTypePNG,kUTTypeHTML,kUTTypeJPEG,kUTTypeMPEG,kUTTypeAudio,kUTTypeMP3,kUTTypeMovie,kUTTypeMPEG4,kUTTypeBMP,kUTTypeXML,kUTTypeICO,kUTTypeText,kUTTypeTIFF]
+        types.append("com.microsoft.word.doc" as CFString)
+        types.append("com.apple.iwork.pages.pages" as CFString)
+        types.append("com.apple.iwork.keynote.key" as CFString)
+        types.append("com.apple.application" as CFString)
+        types.append("public.item" as CFString)
+        types.append("public.data" as CFString)
+        types.append("public.content" as CFString)
+        types.append("public.audiovisual-content" as CFString)
+        types.append("public.movie" as CFString)
+        types.append("public.audio" as CFString)
+        types.append("public.text" as CFString)
+        types.append("public.data" as CFString)
+        types.append("public.zip-archive" as CFString)
+        types.append("public.composite-content" as CFString)
+        types.append("public.text" as CFString)
+        let importMenu = UIDocumentPickerViewController(documentTypes: types as [String], in: .import)
+        importMenu.delegate = self
+        UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor:UIColor.blue], for: .normal)
+        self.present(importMenu, animated: true, completion: nil)
+    }
+    @objc func editNoteButtonTapped(_ sender: UIButton)
+    {
+        self.selectedNoteID =  self.notedata[sender.tag].note!.id
+        let controller:NoteDetailsVC = self.storyboard?.instantiateViewController(withIdentifier: "NoteDetailsVC") as! NoteDetailsVC
+        controller.fromviewcontroller = "contact"
+        controller.contactListResult = self.contactInfoDetail
+        controller.editModeON = true
+        controller.editContactList = self.allContactList
+        controller.mainaccountList = self.allmainaccountList
+        controller.editpassTaskmodel = self.passTaskList
+        controller.editpassAppoinementmodel = self.passAppointmentList
+        controller.editNoteID = self.notedata[sender.tag].note!.id
+        controller.editnotetext = self.notedata[sender.tag].note!.note ?? ""
+        self.navigationController?.pushViewController(controller, animated: true)
+    }
+    @objc func commentTableviewExpandAction(_ sender: UIButton)
+    {
+        iscommentExpand = true
+        if(self.allcommentExpandArray[sender.tag] == 0)
+        {
+            self.allcommentExpandArray.insert(1, at: sender.tag)
+            self.allcommentExpandArray.remove(at: sender.tag + 1)
+        }else
+        {
+            self.allcommentExpandArray.insert(0, at: sender.tag)
+            self.allcommentExpandArray.remove(at: sender.tag + 1)
+        }
+        let currNoteid = self.notedata[sender.tag].note?.id
+        for(indx,_) in self.notecommentData.enumerated()
+        {
+            let valu = self.notecommentData[indx] as? [CommnetResults]
+            if (currNoteid == valu?.first?.noteID)
+            {
+                self.globalCommentCount = valu!.count
+            }
+        }
+
+        self.tableView.reloadSections(IndexSet(integer: 9), with: .none)
+        let indexPath = IndexPath(row: sender.tag + 1, section: 9)
+        self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: false)
+    }
+    @objc func commentNoteButtonTapped(_ sender: UIButton)
+    {
+        self.selectedNoteID =  self.notedata[sender.tag].note!.id
+        let modalViewController:AddCommentVC = self.storyboard?.instantiateViewController(withIdentifier: "AddCommentVC") as! AddCommentVC
+        modalViewController.modalPresentationStyle = .overCurrentContext
+        modalViewController.istype = "comment"
+        modalViewController.fromviewController = "contact"
+        self.present(modalViewController, animated: true, completion: nil)
+
+    }
+    @objc func AddNoteButtonTapped(_ button: UIButton) {
+        let controller:NoteDetailsVC = self.storyboard?.instantiateViewController(withIdentifier: "NoteDetailsVC") as! NoteDetailsVC
+        controller.contactListResult = self.contactInfoDetail
+        controller.passDefaultContactname = contactInfoDetail.fullName
+        controller.editContactList = self.allContactList
+        controller.mainaccountList = self.allmainaccountList
+        controller.editpassTaskmodel = self.passTaskList
+        controller.editpassAppoinementmodel = self.passAppointmentList
+        controller.fromviewcontroller = "contact"
+        controller.editModeON = false
+        self.navigationController?.pushViewController(controller, animated: true)
+    }
     
     @objc func tblSearchAddressButtonTapped(_ button: UIButton) {
         if(button.tag == 1){
@@ -1517,10 +2603,10 @@ class ContactssController: UITableViewController {
                                       "OrganizationId":currentOrgID,
                                       "PageOffset":1,
                                       "ResultsPerPage":1000]
-            print(json)
-            APIManager.sharedInstance.postRequestCall(postURL:"https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+            
+            APIManager.sharedInstance.postRequestCall(postURL:globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
-                    print(json)
+                  
                     self.resultsaddressArray = []
                     self.linkaddressArray = []
                     self.resultsaddressArray = json["Results"].arrayValue
@@ -1545,10 +2631,10 @@ class ContactssController: UITableViewController {
                          "PassKey":passKey,
                          "OrganizationId":currentOrgID,
                          "RightObjectName":"address"]
-                         print(json)
-                         APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/link.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+                         
+                         APIManager.sharedInstance.postRequestCall(postURL: "https://toolkit.bluesquareapps.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/link.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                          DispatchQueue.main.async {
-                         print(json)
+                       
                          OperationQueue.main.addOperation {
                          let response = json["ResponseMessage"].string
                          if(response == "success"){
@@ -1577,7 +2663,6 @@ class ContactssController: UITableViewController {
         
     }
     
-    
     func getSearchAPI(objectName:String){
         
         let json:[String: Any] = ["SearchTerm": "",
@@ -1585,11 +2670,11 @@ class ContactssController: UITableViewController {
                                   "PassKey":passKey,
                                   "OrganizationId":currentOrgID,
                                   "PageOffset":1,
-                                  "ResultsPerPage":1000]
-        print(json)
+                                  "ResultsPerPage":2000]
+      
         APIManager.sharedInstance.postRequestCall(postURL: searchURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
-                print(json)
+               
                 if objectName == "address" {
                     let getModel = getSearchResultRootClass.init(fromDictionary: jsonResponse)
                     if getModel.valid {
@@ -1603,7 +2688,6 @@ class ContactssController: UITableViewController {
                         self.showPicker(pickerTag: 344, textField: UITextField())
                     }
                 }
-                
             }
         },  onFailure: { error in
             print(error.localizedDescription)
@@ -1613,7 +2697,7 @@ class ContactssController: UITableViewController {
         print("Butto pressed 👍")
         
         let btnTag = button.tag
-        print(btnTag)
+      
         
         if btnTag == 1 {
             let controller:AdditionalNewAddressVC = self.storyboard?.instantiateViewController(withIdentifier: "AdditionalNewAddressVC") as! AdditionalNewAddressVC
@@ -1629,25 +2713,22 @@ class ContactssController: UITableViewController {
             let alert = UIAlertController(title: " ", message: "Please Select an Option", preferredStyle: .actionSheet)
             
             alert.addAction(UIAlertAction(title: "Appointment", style: .default , handler:{ (UIAlertAction)in
-                print("User click Approve button")
                 OperationQueue.main.addOperation {
-                    let controller:NewAppointmentsController = (self.storyboard?.instantiateViewController(withIdentifier: "NewAppointmentsController") as? NewAppointmentsController)!
+                    let controller:UpdatenewappointmentVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewappointmentVC") as? UpdatenewappointmentVC)!
                     controller.linkParentID = self.contactInfoDetail.id!
                     self.navigationController?.pushViewController(controller, animated: true)
                 }
             }))
             
             alert.addAction(UIAlertAction(title: "Task", style: .default , handler:{ (UIAlertAction)in
-                print("User click Edit button")
                 OperationQueue.main.addOperation {
-                    let controller:NewTaskController = (self.storyboard?.instantiateViewController(withIdentifier: "NewTaskController") as? NewTaskController)!
+                    let controller:UpdatenewtaskVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewtaskVC") as? UpdatenewtaskVC)!
                     controller.linkParentID = self.contactInfoDetail.id!
                     self.navigationController?.pushViewController(controller, animated: true)
                 }
             }))
             
             alert.addAction(UIAlertAction(title: "Recurrence", style: .default , handler:{ (UIAlertAction)in
-                print("User click Delete button")
                 OperationQueue.main.addOperation {
                     let controller:CreateRecurrencePattern = (self.storyboard?.instantiateViewController(withIdentifier: "CreateRecurrencePattern") as? CreateRecurrencePattern)!
                     controller.linkParentID = self.contactInfoDetail.id!
@@ -1656,10 +2737,9 @@ class ContactssController: UITableViewController {
             }))
             
             alert.addAction(UIAlertAction(title: "cancel", style: .destructive , handler:{ (UIAlertAction)in
-                print("User click Delete button")
             }))
             self.present(alert, animated: true, completion: {
-                print("completion block")
+               
             })
         }
         
@@ -1675,7 +2755,6 @@ class ContactssController: UITableViewController {
                 
                 DispatchQueue.main.async(execute: {
                     AJAlertController.initialization().showAlert(aStrMessage: "Would you like to delete this?", aCancelBtnTitle: "Yes", aOtherBtnTitle: "No", completion: { (index, title) in
-                        print(index,title)
                         if title == "Yes" {
                             let parameters = [
                                 "ObjectName": "address",
@@ -1699,7 +2778,6 @@ class ContactssController: UITableViewController {
                 
                 DispatchQueue.main.async(execute: {
                     AJAlertController.initialization().showAlert(aStrMessage: "Would you like to delete this?", aCancelBtnTitle: "Yes", aOtherBtnTitle: "No", completion: { (index, title) in
-                        print(index,title)
                         if title == "Yes" {
                             let parameters = [
                                 "ObjectName": "company",
@@ -1723,7 +2801,6 @@ class ContactssController: UITableViewController {
                 
                 DispatchQueue.main.async(execute: {
                     AJAlertController.initialization().showAlert(aStrMessage: "Would you like to delete this?", aCancelBtnTitle: "Yes", aOtherBtnTitle: "No", completion: { (index, title) in
-                        print(index,title)
                         if title == "Yes" {
                             let parameters = [
                                 "ObjectName": "appointment",
@@ -1747,7 +2824,6 @@ class ContactssController: UITableViewController {
                 
                 DispatchQueue.main.async(execute: {
                     AJAlertController.initialization().showAlert(aStrMessage: "Would you like to delete this?", aCancelBtnTitle: "Yes", aOtherBtnTitle: "No", completion: { (index, title) in
-                        print(index,title)
                         if title == "Yes" {
                             let parameters = [
                                 "ObjectName": "appointment",
@@ -1755,7 +2831,6 @@ class ContactssController: UITableViewController {
                                 "ObjectId": getAddress.id!,
                                 "PassKey": passKey
                                 ] as [String : Any]
-                            
                             self.deleteInviteUser(parameter: parameters)
                         }
                     })
@@ -1769,7 +2844,6 @@ class ContactssController: UITableViewController {
     func deleteInviteUser(parameter:[String : Any]){
         APIManager.sharedInstance.postRequestCall(postURL: deleteContactListURL, parameters: parameter, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
-                print(json)
                 DispatchQueue.main.async(execute: {
                     AJAlertController.initialization().showAlertWithOkButton(aStrMessage: "Successfully Deleted") { (index, title) in
                         OperationQueue.main.addOperation {
@@ -1825,12 +2899,12 @@ class ContactssController: UITableViewController {
         let Reload = UIAlertAction(title: "Add Activity", style: .default, handler: { (action) -> Void in
             let alertController1 = UIAlertController(title: "Actions", message: nil, preferredStyle: .actionSheet)
             let Appointment = UIAlertAction(title: "New Appointment", style: .default, handler: { (action) -> Void in
-                let controller:NewAppointmentsController = (self.storyboard?.instantiateViewController(withIdentifier: "NewAppointmentsController") as? NewAppointmentsController)!
+                let controller:UpdatenewappointmentVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewappointmentVC") as? UpdatenewappointmentVC)!
                 controller.linkParentID = self.contactInfoDetail.id!
                 self.navigationController?.pushViewController(controller, animated: true)
             })
             let Task = UIAlertAction(title: "New Task", style: .default, handler: { (action) -> Void in
-                let controller:NewTaskController = (self.storyboard?.instantiateViewController(withIdentifier: "NewTaskController") as? NewTaskController)!
+                let controller:UpdatenewtaskVC = (self.storyboard?.instantiateViewController(withIdentifier: "UpdatenewtaskVC") as? UpdatenewtaskVC)!
                 controller.linkParentID = self.contactInfoDetail.id!
                 self.navigationController?.pushViewController(controller, animated: true)
             })
@@ -1869,6 +2943,15 @@ class ContactssController: UITableViewController {
             self.tblChildrens.reloadData()
         })
         
+        let addnote = UIAlertAction(title: "Add Note", style: .default, handler: { (action) -> Void in
+            let controller = self.storyboard?.instantiateViewController(withIdentifier: "NoteDetailsVC") as! NoteDetailsVC
+            controller.contactListResult = self.contactInfoDetail
+            controller.passDefaultContactname = self.contactInfoDetail.fullName
+            controller.fromviewcontroller = "contact"
+            controller.editModeON = false
+            self.navigationController?.pushViewController(controller, animated: true)
+        })
+        
         let deleteButton = UIAlertAction(title: "Delete", style: .default, handler: { (action) -> Void in
             DispatchQueue.main.async(execute: {
                 AJAlertController.initialization().showAlert(aStrMessage: "Would you like to delete this?", aCancelBtnTitle: "Yes", aOtherBtnTitle: "No", completion: { (index, title) in
@@ -1883,6 +2966,7 @@ class ContactssController: UITableViewController {
             print("Cancel button tapped")
         })
         
+        alertController.addAction(addnote)
         alertController.addAction(Reload)
         alertController.addAction(sendButton)
         alertController.addAction(ReloadButton)
@@ -1898,12 +2982,12 @@ class ContactssController: UITableViewController {
                                    "ObjectId": contactInfoDetail.id!,
                                    "OrganizationId": currentOrgID,
                                    "PassKey":passKey]
-        print(json)
+       
         
-        APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 
-                print(json)
+              
                 let contactModel = ContactListResult.init(fromDictiary: jsonResponse["DataObject"] as! NSDictionary)
                 print(contactModel.fullName!)
                 
@@ -1934,10 +3018,9 @@ class ContactssController: UITableViewController {
         let json: [String: Any] = ["OrganizationId": currentOrgID,
                                    "PassKey": passKey,
                                    "ObjectIds":objectID]
-        print(json)
+        
         APIManager.sharedInstance.postRequestCall(postURL: getHistoryURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
-                print(json)
                 
                 let contactModel = getHistoryModel.init(fromDictionary: jsonResponse)
                 print(contactModel.responseMessage)
@@ -2063,10 +3146,17 @@ class ContactssController: UITableViewController {
     }
     
     func saveContact(){
-        
         //Contact
         let indexPath = IndexPath(row: 0, section: 0)
-        let cell:ContactssCell = tableView.cellForRow(at: indexPath) as! ContactssCell
+        print(indexPath)
+        print(ContactssCell.self)
+        var cell : ContactssCell
+        if(isEditable && contactInfoDetail != nil){
+            cell = self.tableView.cellForRow(at: indexPath) as! ContactssCell
+        }
+        else {
+            cell = tableView.dequeueReusableCell(withIdentifier:"ContactssCell", for: indexPath) as! ContactssCell
+        }
         if (cell.fieldChildrenname.text?.count)! > 0 {
             //ChildrensNames
             let result = cell.fieldChildrenname.text!.replacingOccurrences(of: ", ", with: "\n",
@@ -2169,12 +3259,26 @@ class ContactssController: UITableViewController {
         dataObject.setValue(cell.fieldGender.text!, forKey: "Gender")
         
         if (cell.fieldAnniversary.text?.count)! > 0 {
-            dataObject.setValue(cell.fieldAnniversary.text! + "T06:30:00.000Z", forKey: "Anniversary")
+            //dataObject.setValue(cell.fieldAnniversary.text! + "T06:30:00.000Z", forKey: "Anniversary")
+            let dateFormatter = DateFormatter()
+                       dateFormatter.dateFormat = "yyyy-MM-dd"
+                       let dates = dateFormatter.date(from:cell.fieldAnniversary.text!)!
+                       dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+                       dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                       let birthdate = dateFormatter.string(from: dates)
+                       dataObject.setValue(birthdate, forKey: "Anniversary")
         }else{
             dataObject.setValue("", forKey: "Anniversary")
         }
         if (cell.fieldClientSince.text?.count)! > 0 {
-            dataObject.setValue(cell.fieldClientSince.text! + "T06:30:00.000Z", forKey: "ClientSince")
+            //dataObject.setValue(cell.fieldClientSince.text! + "T06:30:00.000Z", forKey: "ClientSince")
+            let dateFormatter = DateFormatter()
+                                  dateFormatter.dateFormat = "yyyy-MM-dd"
+                                  let dates = dateFormatter.date(from:cell.fieldClientSince.text!)!
+                                  dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+                                  dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                                  let birthdate = dateFormatter.string(from: dates)
+                                  dataObject.setValue(birthdate, forKey: "ClientSince")
         }else{
             dataObject.setValue("", forKey: "ClientSince")
         }
@@ -2183,19 +3287,40 @@ class ContactssController: UITableViewController {
         
         
         if (cell.fieldBirthDate.text?.count)! > 0 {
-            dataObject.setValue(cell.fieldBirthDate.text! + "T06:30:00.000Z", forKey: "BirthDate")
+           // dataObject.setValue(cell.fieldBirthDate.text! + "T06:30:00.000Z", forKey: "BirthDate")
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let dates = dateFormatter.date(from:cell.fieldBirthDate.text!)!
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            let birthdate = dateFormatter.string(from: dates)
+            dataObject.setValue(birthdate, forKey: "BirthDate")
         }else{
             dataObject.setValue("", forKey: "BirthDate")
         }
         
         if (cell.fieldReviewDate.text?.count)! > 0 {
-            dataObject.setValue(cell.fieldReviewDate.text! + "T06:30:00.000Z", forKey: "ReviewDate")
+            //dataObject.setValue(cell.fieldReviewDate.text! + "T06:30:00.000Z", forKey: "ReviewDate")
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let dates = dateFormatter.date(from:cell.fieldReviewDate.text!)!
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            let birthdate = dateFormatter.string(from: dates)
+            dataObject.setValue(birthdate, forKey: "ReviewDate")
         }else{
             dataObject.setValue("", forKey: "ReviewDate")
         }
         
         if (cell.fieldLicenseExpiry.text?.count)! > 0 {
-            dataObject.setValue(cell.fieldLicenseExpiry.text! + "T06:30:00.000Z", forKey: "DriversLicenseExpiry")
+           // dataObject.setValue(cell.fieldLicenseExpiry.text! + "T06:30:00.000Z", forKey: "DriversLicenseExpiry")
+            let dateFormatter = DateFormatter()
+                      dateFormatter.dateFormat = "yyyy-MM-dd"
+                      let dates = dateFormatter.date(from:cell.fieldLicenseExpiry.text!)!
+                      dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+                      dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                      let birthdate = dateFormatter.string(from: dates)
+                      dataObject.setValue(birthdate, forKey: "DriversLicenseExpiry")
         }else{
             dataObject.setValue("", forKey: "DriversLicenseExpiry")
         }
@@ -2284,10 +3409,10 @@ class ContactssController: UITableViewController {
                                    "PassKey": passKey,
                                    "OrganizationId":currentOrgID,
                                    "DataObject":dataObject]
-        print(json)
+      
         APIManager.sharedInstance.postRequestCall(postURL: mainURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
-                print(json)
+             
                 self.actionBtn.isUserInteractionEnabled = true
                 self.editBtn.isUserInteractionEnabled = true
                 if self.contactAdd {
@@ -2305,10 +3430,10 @@ class ContactssController: UITableViewController {
                                              "PassKey":passKey,
                                              "OrganizationId":currentOrgID,
                                              "RightObjectName":"company"]
-                    print(json)
-                    APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/link.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+                    
+                    APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/link.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                         DispatchQueue.main.async {
-                            print(json)
+                          
                             OperationQueue.main.addOperation {
                                 let response = json["ResponseMessage"].string
                                 if(response == "success"){
@@ -2376,25 +3501,7 @@ class ContactssController: UITableViewController {
         })
         
     }
-    //    func linkRecreationCategories(leftid:String,rightid:String){
-    //        let json: [String: Any] = ["ObjectName": "linker_contacts_recreations",
-    //                                   "PassKey": passKey,
-    //                                   "OrganizationId":currentOrgID,
-    //                                   "LeftId":leftid,
-    //                                   "LeftObjectName":"contact",
-    //                                   "RightId":rightid,
-    //                                   "RightObjectName":"recreation"]
-    //        print(json)
-    //        APIManager.sharedInstance.postRequestCall(postURL: linkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
-    //            DispatchQueue.main.async {
-    //                print(json)
-    //
-    //            }
-    //        },  onFailure: { error in
-    //            print(error.localizedDescription)
-    //            NavigationHelper.showSimpleAlert(message:error.localizedDescription)
-    //        })
-    //    }
+ 
     func deleteInviteUser(contactID:String){
         
         let headers = [
@@ -2407,7 +3514,7 @@ class ContactssController: UITableViewController {
             "PassKey": passKey
             ] as [String : Any]
         
-        let request = NSMutableURLRequest(url: NSURL(string: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/delete.json")! as URL,
+        let request = NSMutableURLRequest(url: NSURL(string:globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/delete.json")! as URL,
                                           cachePolicy: .useProtocolCachePolicy,
                                           timeoutInterval: 10.0)
         request.httpMethod = "POST"
@@ -2493,7 +3600,7 @@ class ContactssController: UITableViewController {
         }
         let json: [String: Any] = ["UserName": userEmail,
                                    "Password": userPwd]
-        print(json)
+      
         APIManager.sharedInstance.postRequestCall(postURL: loginURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 let logModel:LoginModel = LoginModel.init(fromDictionary: jsonResponse)
@@ -2592,7 +3699,7 @@ extension ContactssController {
                                        "LinkParentId": contactInfoDetail.id!,
                                        "PassKey": passKey,
                                        "OrganizationId": currentOrgID]
-            print(json)
+            
             self.requestAPI(input: json, tag: 4)
         }
     }
@@ -2604,7 +3711,7 @@ extension ContactssController {
                                        "PassKey": passKey,
                                        "OrganizationId": currentOrgID,
                                        "AscendingOrder":true]
-            print(json)
+          
             self.requestAPI(input: json, tag: 232)
         }
     }
@@ -2615,7 +3722,7 @@ extension ContactssController {
                                        "LinkParentId": contactInfoDetail.id!,
                                        "PassKey": passKey,
                                        "OrganizationId": currentOrgID]
-            print(json)
+         
             self.requestAPI(input: json, tag: 5)
         }
     }
@@ -2624,7 +3731,7 @@ extension ContactssController {
             return
         }
         let json: [String: Any] = ["PageOffset": 1,
-                                   "ResultsPerPage": 500,
+                                   "ResultsPerPage": 5000,
                                    "IncludeAppointments": true,
                                    "IncludeTasks": true,
                                    "Invert": false,
@@ -2632,7 +3739,7 @@ extension ContactssController {
                                    "ForContacts":[contactInfoDetail.id!],
                                    "PassKey":passKey,
                                    "OrganizationId":currentOrgID]
-        print(json)
+       
         
         self.requestAPI(input: json, tag: 6)
         
@@ -2643,7 +3750,7 @@ extension ContactssController {
             return
         }
         let json: [String: Any] = ["PageOffset": 1,
-                                   "ResultsPerPage": 500,
+                                   "ResultsPerPage": 5000,
                                    "IncludeAppointments": true,
                                    "IncludeTasks": true,
                                    "Invert": true,
@@ -2651,7 +3758,7 @@ extension ContactssController {
                                    "ForContacts":[contactInfoDetail.id!],
                                    "PassKey":passKey,
                                    "OrganizationId":currentOrgID]
-        print(json)
+        
         
         self.requestAPI(input: json, tag: 7)
     }
@@ -2660,9 +3767,9 @@ extension ContactssController {
                                    "ObjectId": contactInfoDetail.id!,
                                    "OrganizationId": currentOrgID,
                                    "PassKey":passKey]
-        print(json)
         
-        APIManager.sharedInstance.postRequestCall(postURL: "https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+        
+        APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 let contactModel = ContactListResult.init(fromDictiary: jsonResponse["DataObject"] as! NSDictionary)
                 if self.contactInfoDetail != nil {
@@ -2693,9 +3800,8 @@ extension ContactssController {
         
         APIManager.sharedInstance.postRequestCall(postURL: mainURL, parameters: input, senderVC: self, onSuccess: { (jsonResponse, json) in
             
-            
             DispatchQueue.main.async {
-                print(json)
+               
                 if tag == 0 {
                     let clientClassModel = GetClientClassModel.init(fromDictionary: jsonResponse)
                     if clientClassModel.valid {
@@ -2751,7 +3857,10 @@ extension ContactssController {
                             let model = clientClassModel.results[index]
                             if model.id == self.contactInfoDetail.companyId {
                                 let indexPath = IndexPath(row: 0, section: 0)
-                                let cell:ContactssCell = self.tableView.cellForRow(at: indexPath) as! ContactssCell
+                                guard let cell:ContactssCell = self.tableView.cellForRow(at: indexPath) as? ContactssCell else
+                                {
+                                    return
+                                }
                                 cell.fieldCompany.text = model.name
                             }
                         }
@@ -2784,8 +3893,43 @@ extension ContactssController {
                     let model = GetIncompleteModel.init(fromDictionary: jsonResponse)
                     self.getOpenedActivitiesResult = []
                     if model.valid {
+//                        var abc : GetIncompleteActivity!
+//                        var sample : GetIncompleteActivity!
+//                        var dateString : String!
+//                        for (index,element) in model.activities.enumerated()
+//                        {
+//                            var appoinid = element.activity.AppliedAdvocateProcessId as? String
+//                            if(appoinid != nil){
+//                            }
+//                            else{
+//                                appoinid = ""
+//                            }
+//                            let start : String = model.activities[index].activity.startTime
+//                            var end : String = model.activities[index].activity.endTime
+//                            if(end == ""){
+//                                 end = model.activities[index].activity.DueTime
+//                            }
+//                            let dateFormatter = DateFormatter()
+//                            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+//                            var st_date : Date = dateFormatter.date(from: start)!
+//                            let en_date : Date = dateFormatter.date(from: end)!
+//                            let diff = Calendar.current.dateComponents([.day], from: st_date, to: en_date)
+//                            if diff.day == 0 {
+//                            } else {
+//                                for i in stride(from: diff.day!, to: 0, by: -1) {
+//                                    let tomorrow = Calendar.current.date(byAdding:.day,value: 1,to: st_date)
+//                                    dateString = dateFormatter.string(from: tomorrow!)
+//                                    st_date = tomorrow!
+//                                    sample = element.copy() as? GetIncompleteActivity
+//                                    abc = element.activity.copy() as? GetIncompleteActivity
+//                                    abc.startTime = dateString
+//                                    sample.activity = abc
+//                                    model.activities.append(sample)
+//                                }
+//                            }
+//                        }
                         self.getOpenedActivitiesResult = model.activities
-                    }
+                   }
                     self.tableView.reloadData()
                 }else if tag == 7 {
                     let model = GetCompleteModel.init(fromDictionary: jsonResponse)
@@ -3157,7 +4301,6 @@ extension ContactssController: UITextFieldDelegate {
                     showAttorneyDetails()
                 }
             }
-            
         }else{
             let parameter:[String:Any] = ["SearchTerm":"",
                                           "ObjectName":"contact",
@@ -3213,7 +4356,7 @@ extension ContactssController: UITextFieldDelegate {
         self.view.endEditing(true)
         APIManager.sharedInstance.postRequestCall(postURL: searchURL, parameters: input, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
-                print(json)
+             
                 if tag == 0 {
                     self.getClientClassModel = GetClientClassModel.init(fromDictionary: jsonResponse)
                     self.showPicker(pickerTag: tag, textField: textField)
@@ -3276,7 +4419,23 @@ extension ContactssController: UITextFieldDelegate {
                         }
                     }
                     self.showAttorneyDetails()
-                }else if tag == 144 {
+                }
+                else if tag == 1001 {
+                    self.getSpouseContactListModel = GetSpouseContactModel.init(fromDictionary: jsonResponse)
+                    if self.getSpouseContactListModel.valid {
+                        self.linkedSpouseArray = []
+                        self.linkedAttronyIDArray = []
+                        let result:[GetSpouseContactResult] = self.getSpouseContactListModel.results
+                        if(self.linkedSpouseArray.count == 0){
+                            for index in 0..<result.count {
+                                self.linkedSpouseArray.append(result[index].fullName!)
+                                self.linkedAttronyIDArray.append(result[index].id!)
+                            }
+                        }
+                    }
+                    self.showChooseContactsPicker()
+                }
+                else if tag == 144 {
                     self.getRecreationCategoriesList = getRecreationCategories.init(fromDictionary: jsonResponse)
                     //                    self.showPicker(pickerTag: tag, textField: textField)
                     self.showCategoriesPicker()
@@ -3321,9 +4480,9 @@ extension ContactssController {
                                       "PageOffset": 1,
                                       "ResultsPerPage": 5000]
         print(parameter)
-        APIManager.sharedInstance.postRequestCall(postURL:"https://beta.paretoacademy.com/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: parameter, senderVC: self, onSuccess: { (jsonResponse, json) in
+        APIManager.sharedInstance.postRequestCall(postURL:globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/list.json", parameters: parameter, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
-                print(json)
+               
                 var responseArray : [String] = []
                 let response = json["ResponseMessage"]
                 if(response == "success"){
@@ -3523,11 +4682,11 @@ extension ContactssController {
                                    "RightObjectName": rightObjectName,
                                    "PassKey": passKey,
                                    "OrganizationId": currentOrgID]
-        print(json)
+       
         
         APIManager.sharedInstance.postRequestCall(postURL: linkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
-                print(json)
+              
                 OperationQueue.main.addOperation {
                     if !isLinkedContactAddress {
                         self.getLinkedAccounts()
@@ -3607,6 +4766,163 @@ extension String {
         return formatter.string(from: number)!
     }
 }
+extension ContactssController: UIDocumentPickerDelegate,UINavigationControllerDelegate
+{
+    public func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let myURL = urls.first else {
+            return
+        }
+        print("import result : \(myURL)")
+        let urlString: String = myURL.absoluteString
+        let fullNameArr = urlString.components(separatedBy: "/")
+        let filename = fullNameArr.last
+        var originalfile = filename?.replacingOccurrences(of: "%20", with: "")
+        
+        let filePath: NSString = myURL.path as NSString
+        let fileSize : UInt64
+        do{
+            let attr:NSDictionary? = try FileManager.default.attributesOfItem(atPath: filePath as String) as NSDictionary
+            if let _attr = attr {
+                fileSize = _attr.fileSize();
+                let formatter = ByteCountFormatter()
+                formatter.allowedUnits = [.useMB]
+                formatter.countStyle = .file
+                let displaySize = formatter.string(fromByteCount: Int64(fileSize))
+                print(displaySize)// prints: 2.6 MB
+                if(displaySize > "50.0 MB")
+                {
+                    NavigationHelper.showSimpleAlert(message:"Your file is \(displaySize) long. we allow size only upto 50 MB.")
+                    return
+                }
+            }
+        }
+        catch{
+            print(error.localizedDescription)
+        }
+        let path = myURL.path
+        let imgdata = FileManager.default.contents(atPath: path)!
+        self.request(withImages: ["X-VCPassKey": passKey], parameters: nil, imageNames: [originalfile!], images: [imgdata]) { (data, error, status) in
+            print(data!)
+            print(status)
+        }
+    }
+    
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+        controller.dismiss(animated: true, completion: nil)
+    }
+    
+    
+    func request(withImages headers:[String:String]?, parameters: [String:Any]?,imageNames : [String], images:[Data], completion: @escaping(Any?, Error?, Bool)->Void) {
+        
+        OperationQueue.main.addOperation {
+            SVProgressHUD.show()
+        }
+        let stringUrl = globalURL+"/note_attachment/\(currentOrgID)/\(self.selectedNoteID)"
+        
+        let boundary = UUID().uuidString
+        let config = URLSessionConfiguration.default
+        let session = URLSession(configuration: config)
+        
+        print("\n\ncomplete Url :-------------- ",stringUrl," \n\n-------------: complete Url")
+        guard let url = URL(string: stringUrl) else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        if headers != nil{
+            print("\n\nHeaders :-------------- ",headers as Any,"\n\n --------------: Headers")
+            for (key, value) in headers! {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
+        }
+        
+        // Set Content-Type Header to multipart/form-data, this is equivalent to submitting form data with file upload in a web browser
+        // And the boundary is also set here
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        
+        var data = Data()
+        if parameters != nil{
+            for(key, value) in parameters!{
+                // Add the reqtype field and its value to the raw http request data
+                data.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+                data.append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n".data(using: .utf8)!)
+                data.append("\(value)".data(using: .utf8)!)
+            }
+        }
+        for (index,imageData) in images.enumerated() {
+            // Add the image data to the raw http request data
+            data.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+            data.append("Content-Disposition: form-data; name=\"\(imageNames[index])\"; filename=\"\(imageNames[index])\"\r\n".data(using: .utf8)!)
+            data.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
+            data.append(imageData)
+        }
+        
+        // End the raw http request data, note that there is 2 extra dash ("-") at the end, this is to indicate the end of the data
+        data.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        
+        // Send a POST request to the URL, with the data we created earlier
+        session.uploadTask(with: request, from: data, completionHandler: { data, response, error in
+            
+            OperationQueue.main.addOperation {
+                SVProgressHUD.dismiss()
+            }
+            
+            if let checkResponse = response as? HTTPURLResponse{
+                if checkResponse.statusCode == 200{
+                    guard let data = data, let json = try? JSONSerialization.jsonObject(with: data, options: [JSONSerialization.ReadingOptions.allowFragments]) else {
+                        completion(nil, error, false)
+                        return
+                    }
+                    do{
+                        DispatchQueue.main.async {
+                            let reobj = try? JSONDecoder().decode(NoteRegardingModel.self, from: data)
+                            var isadded : Bool = false
+                            if((reobj?.regardingobj!.count)! > 0){
+                                for(indx,_) in self.noteattachmentData.enumerated()
+                                {
+                                    var valu = self.noteattachmentData[indx] as? [NoteRegardingList]
+                                    
+                                    if (self.selectedNoteID == valu?.first?.noteID)
+                                    {
+                                        isadded = true
+                                        valu?.append((reobj?.regardingobj!.first)!)
+                                        self.noteattachmentData.append(valu!)
+                                    }
+                                }
+                                if(!isadded)
+                                {
+                                    self.noteattachmentData.append(reobj?.regardingobj!)
+                                }
+                                self.tableView.reloadData()
+                            }
+                        }
+                        }
+                    catch
+                    {
+                        print(error.localizedDescription)
+                    }
+                    completion(json, nil, true)
+                }else{
+                    guard let data = data, let json = try? JSONSerialization.jsonObject(with: data, options: []) else {
+                        completion(nil, error, false)
+                        return
+                    }
+                    let jsonString = String(data: data, encoding: .utf8)!
+                    print("\n\n---------------------------\n\n"+jsonString+"\n\n---------------------------\n\n")
+                   
+                    completion(json, nil, false)
+                }
+            }else{
+                guard let data = data, let json = try? JSONSerialization.jsonObject(with: data, options: []) else {
+                    completion(nil, error, false)
+                    return
+                }
+                completion(json, nil, false)
+            }
+            
+        }).resume()
+    }
+    }
+
 extension String {
     func removeFormatAmount() -> Double {
         let formatter = NumberFormatter()
@@ -3783,7 +5099,10 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
     //    pickerData.add(result[index].name!)
     //    }
     func numberOfRows(in pickerView: CZPickerView!) -> Int {
-        if pickerView.tag == 12 {
+        if pickerView.tag == 0 {
+            return contactTypes.count
+        }
+        else if pickerView.tag == 12 {
             return linkaddressArray.count
         }else if pickerView.tag == 13 {
             return linkaddressArray.count
@@ -3801,6 +5120,30 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
         if pickerView.tag == 098 {
             return linkedSpouseArray.count
         }
+        if pickerView.tag == 1002 {
+            return allContactList.count
+        }
+        if pickerView.tag == 1112 {
+            return self.allmainaccountList.count
+        }
+        if pickerView.tag == 1114 {
+            if(self.passAppointmentList != nil)
+            {
+            return self.passAppointmentList.results.count
+            }else
+            {
+                return 0
+            }
+        }
+        if pickerView.tag == 1116 {
+            if(self.passTaskList != nil)
+            {
+            return self.passTaskList.results.count
+            }else
+            {
+                return 0
+            }
+        }
         if getRecreationCategoriesList.valid {
             let result:[getRecreationResult] = getRecreationCategoriesList.results
             return result.count
@@ -3813,7 +5156,10 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
     }
     
     func numberOfRowsInPickerView(pickerView: CZPickerView!) -> Int {
-        if pickerView.tag == 12 || pickerView.tag == 13 {
+        if pickerView.tag == 0 {
+            return contactTypes.count
+        }
+        else if pickerView.tag == 12 || pickerView.tag == 13 {
             return linkaddressArray.count
         }
         if pickerView.tag == 321 {
@@ -3828,6 +5174,30 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
         if pickerView.tag == 098 {
             return linkedSpouseArray.count
         }
+        if pickerView.tag == 1002 {
+            return allContactList.count
+        }
+        if pickerView.tag == 1112 {
+            return self.allmainaccountList.count
+        }
+        if pickerView.tag == 1114 {
+            if(self.passAppointmentList != nil)
+            {
+            return self.passAppointmentList.results.count
+            }else
+            {
+                return 0
+            }
+        }
+        if pickerView.tag == 1116 {
+            if(self.passTaskList != nil)
+            {
+            return self.passTaskList.results.count
+            }else
+            {
+                return 0
+            }
+        }
         if getRecreationCategoriesList.valid {
             let result:[getRecreationResult] = getRecreationCategoriesList.results
             return result.count
@@ -3836,7 +5206,10 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
     }
     
     func czpickerView(_ pickerView: CZPickerView!, titleForRow row: Int) -> String! {
-        if pickerView.tag == 12 || pickerView.tag == 13 {
+        if pickerView.tag == 0 {
+            return contactTypes[row] as? String
+        }
+        else if pickerView.tag == 12 || pickerView.tag == 13 {
             return linkaddressArray[row]
         }
         if pickerView.tag == 321{
@@ -3851,6 +5224,18 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
         if pickerView.tag == 098 {
             return linkedSpouseArray[row]
         }
+        if pickerView.tag == 1002 {
+            return allContactList[row].fullName
+        }
+        if pickerView.tag == 1112 {
+            return self.allmainaccountList[row].name
+        }
+        if pickerView.tag == 1114 {
+            return self.passAppointmentList.results[row].subject
+        }
+        if pickerView.tag == 1116 {
+            return self.passTaskList.results[row].subject
+        }
         if getRecreationCategoriesList.valid {
             let result:[getRecreationResult] = getRecreationCategoriesList.results
             return result[row].name!
@@ -3860,6 +5245,14 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
     
     
     func czpickerView(_ pickerView: CZPickerView!) -> NSMutableArray{
+        if pickerView.tag == 0 {
+            let Arrayname : NSMutableArray = []
+            for i in 0 ..< contactTypes.count {
+                let getContact = contactTypes[i]
+                Arrayname.add(getContact)
+            }
+            return Arrayname
+        }
         if pickerView.tag == 12 {
             let arr:NSMutableArray = []
             for index in 0..<linkaddressArray.count {
@@ -3885,6 +5278,33 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
             
             return arr
         }
+        else if pickerView.tag == 1112 {
+            //linkaddressArray
+            //getLinkedAccountsResult
+            let arr:NSMutableArray = []
+            for index in 0..<self.allmainaccountList.count {
+                arr.add(allmainaccountList[index].name)
+            }
+            return arr
+        }
+        else if pickerView.tag == 1114 {
+            //linkaddressArray
+            //getLinkedAccountsResult
+            let arr:NSMutableArray = []
+            for index in 0..<self.passAppointmentList.results.count {
+                arr.add(self.passAppointmentList.results[index].subject)
+            }
+            return arr
+        }
+        else if pickerView.tag == 1116 {
+            //linkaddressArray
+            //getLinkedAccountsResult
+            let arr:NSMutableArray = []
+            for index in 0..<self.passTaskList.results.count {
+                arr.add(self.passTaskList.results[index].subject)
+            }
+            return arr
+        }
         else if pickerView.tag == 654 {
             let arr:NSMutableArray = []
             for index in 0..<linkedSpouseArray.count {
@@ -3906,6 +5326,13 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
             }
             return arr
         }
+        else if pickerView.tag == 1002 {
+            let arr:NSMutableArray = []
+            for index in 0..<allContactList.count {
+                arr.add(allContactList[index].fullName)
+            }
+            return arr
+        }
         let Arrayname : NSMutableArray = []
         if getRecreationCategoriesList.valid {
             let result:[getRecreationResult] = getRecreationCategoriesList.results
@@ -3919,7 +5346,108 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
     
     func czpickerView(_ pickerView: CZPickerView!, didConfirmWithItemAtRow row: Int) {
         //        self.selectedContacts = []
-        if (pickerView.tag == 321)
+        if pickerView.tag == 0 {
+                if row == 0 {
+                    self.tappedContact = true
+                    self.globalRegType = "appointment"
+                    self.selectedContactsList = []
+                    self.allcreatedRegardingID.removeAll()
+                    self.allregardingObjectID.removeAll()
+                    for(index,_) in self.noteregardingData.enumerated(){
+                        let valu = self.noteregardingData[index] as? [NoteRegardingList]
+                        
+                        if(searchCurrNoteid == valu?.first?.noteID)
+                        {
+                            for(_,ele) in (valu?.enumerated())!
+                            {
+                                if(ele.regardingType == "appointment"){
+                                self.selectedContactsList.append(ele.regardingID!)
+                                self.allcreatedRegardingID.append(ele.regardingID!)
+                                self.allregardingObjectID.append(ele.id!)
+                                // add all note - regarding id into array
+                                }
+                            }
+                            break
+                        }
+                    }
+                    self.showChooseAppointmentPicker()
+                }
+            if row == 1 {
+                self.tappedContact = true
+                self.globalRegType = "contact"
+                self.selectedContactsList = []
+                self.allcreatedRegardingID.removeAll()
+                self.allregardingObjectID.removeAll()
+                for(index,_) in self.noteregardingData.enumerated(){
+                    let valu = self.noteregardingData[index] as? [NoteRegardingList]
+                    
+                    if(searchCurrNoteid == valu?.first?.noteID)
+                    {
+                        for(_,ele) in (valu?.enumerated())!
+                        {
+                            if(ele.regardingType == "contact"){
+                            self.selectedContactsList.append(ele.regardingID!)
+                            self.allcreatedRegardingID.append(ele.regardingID!)
+                            self.allregardingObjectID.append(ele.id!)
+                            // add all note - regarding id into array
+                            }
+                        }
+                        break
+                    }
+                }
+                self.showChooseContactsPicker()
+            }else if row == 2 {
+                self.tappedContact = false
+                self.globalRegType = "company"
+                self.selectedContactsList = []
+                self.allcreatedRegardingID.removeAll()
+                self.allregardingObjectID.removeAll()
+                for(index,_) in self.noteregardingData.enumerated(){
+                    let valu = self.noteregardingData[index] as? [NoteRegardingList]
+                    
+                    if(searchCurrNoteid == valu?.first?.noteID)
+                    {
+                        for(_,ele) in (valu?.enumerated())!
+                        {
+                              if(ele.regardingType == "company"){
+                            self.selectedContactsList.append(ele.regardingID!)
+                            self.allcreatedRegardingID.append(ele.regardingID!)
+                            self.allregardingObjectID.append(ele.id!)
+                            // add all note - regarding id into array
+                            }
+                        }
+                        break
+                    }
+                }
+               self.showChooseCompanysPicker()
+            }
+            if row == 3 {
+                self.tappedContact = true
+                self.globalRegType = "task"
+                self.selectedContactsList = []
+                self.allcreatedRegardingID.removeAll()
+                self.allregardingObjectID.removeAll()
+                for(index,_) in self.noteregardingData.enumerated(){
+                    let valu = self.noteregardingData[index] as? [NoteRegardingList]
+                    
+                    if(searchCurrNoteid == valu?.first?.noteID)
+                    {
+                        for(_,ele) in (valu?.enumerated())!
+                        {
+                            if(ele.regardingType == "task"){
+                            self.selectedContactsList.append(ele.regardingID!)
+                            self.allcreatedRegardingID.append(ele.regardingID!)
+                            self.allregardingObjectID.append(ele.id!)
+                            // add all note - regarding id into array
+                            }
+                        }
+                        break
+                    }
+                }
+                self.showChooseTaskPicker()
+            }
+        }
+        else if (pickerView.tag == 321)
         {
             
             let indexPath = IndexPath(row: 0, section: 0)
@@ -3930,7 +5458,7 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
             }
             companyID = linkedAccountIDArray[row]
         }
-        if (pickerView.tag == 654)
+        else if (pickerView.tag == 654)
         {
             
             let indexPath = IndexPath(row: 0, section: 0)
@@ -3941,7 +5469,7 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
             }
             executorID = linkedExecutorIDArray[row]
         }
-        if (pickerView.tag == 987)
+        else if (pickerView.tag == 987)
         {
             
             let indexPath = IndexPath(row: 0, section: 0)
@@ -3952,9 +5480,19 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
             }
             spouseID = linkedspouseIDArray[row]
         }
-        if (pickerView.tag == 098)
+        else if (pickerView.tag == 098)
         {
             
+            let indexPath = IndexPath(row: 0, section: 0)
+            let cell:ContactssCell = tableView.cellForRow(at: indexPath) as! ContactssCell
+            cell.fieldPowerAtroney.text = linkedSpouseArray[row]
+            if(cell.fieldPowerName.text == ""){
+                cell.fieldPowerName.text = linkedSpouseArray[row]
+            }
+            powerAttroneyID = linkedAttronyIDArray[row]
+        }
+       else if (pickerView.tag == 1002)
+        {
             let indexPath = IndexPath(row: 0, section: 0)
             let cell:ContactssCell = tableView.cellForRow(at: indexPath) as! ContactssCell
             cell.fieldPowerAtroney.text = linkedSpouseArray[row]
@@ -3968,7 +5506,161 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
     func czpickerViewDidClickCancelButton(_ pickerView: CZPickerView!) {
         //        self.navigationController?.setNavigationBarHidden(true, animated: true)        setupBottomView()
     }
+    func czpickerView(_ pickerView: CZPickerView!, didConfirmWithItemsAtRows rows: [Any]!, with value: Bool, arrayvalue array: NSMutableArray!) {
+        if(value) {
+      if pickerView.tag == 1002
+        {
+          self.selectedContactWholeValue.removeAll()
+          self.selectedContactsList.removeAll()
+          for row in rows {
+              if let row = row as? Int {
+                let getContact = array[row] as? String ?? ""
+                for index in 0..<allContactList.count {
+                    let getContacts = allContactList[index]
+                    if getContacts.fullName == getContact {
+                        self.selectedContactsList.append(getContacts.fullName)
+                        self.selectedContactWholeValue.append(getContacts.id)
+                    }
+                }
+                 
+              }
+          }
+          for(index, element) in self.allcreatedRegardingID.enumerated()
+          {
+              if(!self.selectedContactWholeValue.contains(element))
+              {
+                  self.deleteRegardingContactAction(ObjectId: self.allregardingObjectID[index])
+              }
+          }
+          for(_,element) in self.selectedContactWholeValue.enumerated(){
+              if(!self.allcreatedRegardingID.contains(element))
+              {
+                  self.secondCreateAPi(noteID:self.selectedNoteID, RegardingId: element)
+              }
+          }
+        
+          self.isExpand = false
+          self.isNoteCellPresent = false
+          self.selectedIndexPath = 111111111
+        self.tableView.reloadData()
+          self.pullNotesListFromServerApi()
+          return
+        }
+        else if pickerView.tag == 1112
+        {
+          self.selectedContactWholeValue.removeAll()
+          self.selectedContactsList.removeAll()
+          for row in rows {
+              if let row = row as? Int {
+                let getContact = array[row] as? String ?? ""
+                for index in 0..<allmainaccountList.count {
+                    let getContacts = allmainaccountList[index]
+                    if getContacts.name == getContact {
+                        self.selectedContactsList.append(getContacts.name)
+                        self.selectedContactWholeValue.append(getContacts.id)
+                    }
+                
+                }
+                  
+              }
+          }
+          for(index, element) in self.allcreatedRegardingID.enumerated()
+          {
+              if(!self.selectedContactWholeValue.contains(element))
+              {
+                  self.deleteRegardingContactAction(ObjectId: self.allregardingObjectID[index])
+              }
+          }
+          for(_,element) in self.selectedContactWholeValue.enumerated(){
+              if(!self.allcreatedRegardingID.contains(element))
+              {
+                  self.secondCreateAPi(noteID:self.selectedNoteID, RegardingId: element)
+              }
+          }
+          self.isExpand = false
+          self.isNoteCellPresent = false
+          self.selectedIndexPath = 111111111
+            self.tableView.reloadData()
+          self.pullNotesListFromServerApi()
+          return
+        }
+        else if pickerView.tag == 1114 {
+            self.selectedContactWholeValue = []
+            self.selectedContactsList = []
+            for row in rows {
+                if let row = row as? Int {
+                    let getContact = self.passAppointmentList.results[row].id ?? ""
+                    for index in 0..<self.passAppointmentList.results.count {
+                        let getContacts = self.passAppointmentList.results[index]
+                        if getContacts.id == getContact {
+                            self.selectedContactsList.append(getContacts.subject!)
+                            self.selectedContactWholeValue.append(getContacts.id!)
+                        }
+                    }
+                }
+            }
+            for(index, element) in self.allcreatedRegardingID.enumerated()
+            {
+                if(!self.selectedContactWholeValue.contains(element))
+                {
+                    self.deleteRegardingContactAction(ObjectId: self.allregardingObjectID[index])
+                }
+            }
+            for(_,element) in self.selectedContactWholeValue.enumerated(){
+                if(!self.allcreatedRegardingID.contains(element))
+                {
+                    self.secondCreateAPi(noteID:self.selectedNoteID, RegardingId: element)
+                }
+            }
+            self.isExpand = false
+            self.isNoteCellPresent = false
+//            self.Viewheightconstant.constant = 950
+            self.selectedIndexPath = 111111111
+            self.tableView.reloadData()
+            self.pullNotesListFromServerApi()
+            return
+        }
+        else if pickerView.tag == 1116 {
+            self.selectedContactWholeValue = []
+            self.selectedContactsList = []
+            for row in rows {
+                if let row = row as? Int {
+                    let getContact = self.passTaskList.results[row].id ?? ""
+                    for index in 0..<self.passTaskList.results.count {
+                        let getContacts = self.passTaskList.results[index]
+                        if getContacts.id == getContact {
+                            self.selectedContactsList.append(getContacts.subject!)
+                            self.selectedContactWholeValue.append(getContacts.id!)
+                        }
+                    }
+                 
+                }
+            }
+            for(index, element) in self.allcreatedRegardingID.enumerated()
+            {
+                if(!self.selectedContactWholeValue.contains(element))
+                {
+                    self.deleteRegardingContactAction(ObjectId: self.allregardingObjectID[index])
+                }
+            }
+            for(_,element) in self.selectedContactWholeValue.enumerated(){
+                if(!self.allcreatedRegardingID.contains(element))
+                {
+                    self.secondCreateAPi(noteID:self.selectedNoteID, RegardingId: element)
+                }
+            }
+            self.isExpand = false
+            self.isNoteCellPresent = false
+//            self.Viewheightconstant.constant = 950
+            self.selectedIndexPath = 111111111
+            self.tableView.reloadData()
+            self.pullNotesListFromServerApi()
+            return
+        }
+        }
+    }
     func czpickerView(_ pickerView: CZPickerView!, didConfirmWithItemsAtRows rows: [Any]!, withoutBool value: Bool) {
+        if(!value){
         if pickerView.tag == 12 {
             var idsList:[String] = []
             var tempRemoveIdLists:[String] = []
@@ -4049,10 +5741,126 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
         else if pickerView.tag == 098 {
             return
         }
+        else if pickerView.tag == 1112
+        {
+            self.selectedContactWholeValue = []
+            self.selectedContactsList = []
+            for row in rows {
+                if let row = row as? Int {
+                    self.selectedContactsList.append(self.allmainaccountList[row].name)
+                    self.selectedContactWholeValue.append(self.allmainaccountList[row].id)
+                }
+            }
+            for(index, element) in self.allcreatedRegardingID.enumerated()
+            {
+                if(!self.selectedContactWholeValue.contains(element))
+                {
+                    self.deleteRegardingContactAction(ObjectId: self.allregardingObjectID[index])
+                }
+            }
+            for(_,element) in self.selectedContactWholeValue.enumerated(){
+                if(!self.allcreatedRegardingID.contains(element))
+                {
+                    self.secondCreateAPi(noteID:self.selectedNoteID, RegardingId: element)
+                }
+            }
+            self.isExpand = false
+            self.isNoteCellPresent = false
+            self.selectedIndexPath = 111111111
+            self.tableView.reloadData()
+            self.pullNotesListFromServerApi()
+            return
+        }
+        else if pickerView.tag == 1002 {
+            self.selectedContactWholeValue = []
+            self.selectedContactsList = []
+            for row in rows {
+                if let row = row as? Int {
+                    self.selectedContactsList.append(self.allContactList[row].fullName)
+                    self.selectedContactWholeValue.append(self.allContactList[row].id)
+                }
+            }
+            for(index, element) in self.allcreatedRegardingID.enumerated()
+            {
+                if(!self.selectedContactWholeValue.contains(element))
+                {
+                    self.deleteRegardingContactAction(ObjectId: self.allregardingObjectID[index])
+                }
+            }
+            for(_,element) in self.selectedContactWholeValue.enumerated(){
+                if(!self.allcreatedRegardingID.contains(element))
+                {
+                    self.secondCreateAPi(noteID:self.selectedNoteID, RegardingId: element)
+                }
+            }
+            self.isExpand = false
+            self.isNoteCellPresent = false
+            self.selectedIndexPath = 111111111
+            self.tableView.reloadData()
+            self.pullNotesListFromServerApi()
+            return
+        }
+        else if pickerView.tag == 1114 {
+            self.selectedContactWholeValue = []
+            self.selectedContactsList = []
+            for row in rows {
+                if let row = row as? Int {
+                    self.selectedContactsList.append(self.passAppointmentList.results[row].subject!)
+                    self.selectedContactWholeValue.append(self.passAppointmentList.results[row].id!)
+                }
+            }
+            for(index, element) in self.allcreatedRegardingID.enumerated()
+            {
+                if(!self.selectedContactWholeValue.contains(element))
+                {
+                    self.deleteRegardingContactAction(ObjectId: self.allregardingObjectID[index])
+                }
+            }
+            for(_,element) in self.selectedContactWholeValue.enumerated(){
+                if(!self.allcreatedRegardingID.contains(element))
+                {
+                    self.secondCreateAPi(noteID:self.selectedNoteID, RegardingId: element)
+                }
+            }
+            self.isExpand = false
+            self.isNoteCellPresent = false
+            self.selectedIndexPath = 111111111
+            self.tableView.reloadData()
+            self.pullNotesListFromServerApi()
+            return
+        }
+        else if pickerView.tag == 1116 {
+            self.selectedContactWholeValue = []
+            self.selectedContactsList = []
+            for row in rows {
+                if let row = row as? Int {
+                    self.selectedContactsList.append(self.passTaskList.results[row].subject!)
+                    self.selectedContactWholeValue.append(self.passTaskList.results[row].id!)
+                }
+            }
+            for(index, element) in self.allcreatedRegardingID.enumerated()
+            {
+                if(!self.selectedContactWholeValue.contains(element))
+                {
+                    self.deleteRegardingContactAction(ObjectId: self.allregardingObjectID[index])
+                }
+            }
+            for(_,element) in self.selectedContactWholeValue.enumerated(){
+                if(!self.allcreatedRegardingID.contains(element))
+                {
+                    self.secondCreateAPi(noteID:self.selectedNoteID, RegardingId: element)
+                }
+            }
+            self.isExpand = false
+            self.isNoteCellPresent = false
+            self.selectedIndexPath = 111111111
+            self.tableView.reloadData()
+            self.pullNotesListFromServerApi()
+            return
+        }
         var idsList:[String] = []
         //selectedRecreationIDList
         var tempRemoveIdLists:[String] = []
-        
         var selectedContacts:[String] = []
         for row in rows {
             if let row = row as? Int {
@@ -4079,6 +5887,7 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
         
         setCategories = true
         self.tableView.reloadData()
+        }
     }
     func refreshLinkedAccounts(){
         if contactInfoDetail != nil {
@@ -4087,10 +5896,10 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
                                        "LinkParentId": contactInfoDetail.id!,
                                        "PassKey": passKey,
                                        "OrganizationId": currentOrgID]
-            print(json)
+         
             APIManager.sharedInstance.postRequestCall(postURL: linkedURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
-                    print(json)
+                    
                     let model = GetLinkedAccountsModel.init(fromDictionary: jsonResponse)
                     self.getLinkedAccountsResult = []
                     if model.valid {
@@ -4122,10 +5931,10 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
                                    "LeftObjectName":"company",
                                    "RightId":rightid,
                                    "RightObjectName":"address"]
-        print(json)
+        
         APIManager.sharedInstance.postRequestCall(postURL: linkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
-                print(json)
+              
                 
                 let getIndex = index + 1
                 
@@ -4152,10 +5961,10 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
                                    "LeftObjectName":"contact",
                                    "RightId":rightid,
                                    "RightObjectName":"company"]
-        print(json)
+    
         APIManager.sharedInstance.postRequestCall(postURL: removeLinkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
-                print(json)
+        
                 let getIndex = index + 1
                 if getIndex <= removeList.count {
                     self.removeLinkAccountCategorie(leftid: leftid, rightid: removeList[index], idList: idList, index: getIndex, removeList: removeList)
@@ -4176,10 +5985,10 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
                                    "LeftObjectName":"contact",
                                    "RightId":rightid,
                                    "RightObjectName":"address"]
-        print(json)
+      
         APIManager.sharedInstance.postRequestCall(postURL: linkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
-                print(json)
+              
                 
                 let getIndex = index + 1
                 
@@ -4205,10 +6014,10 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
                                        "LinkParentId": contactInfoDetail.id!,
                                        "PassKey": passKey,
                                        "OrganizationId": currentOrgID]
-            print(json)
+           
             APIManager.sharedInstance.postRequestCall(postURL: linkedURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
                 DispatchQueue.main.async {
-                    print(json)
+                  
                     let model = GetAdditionalAddressModel.init(fromDictionary: jsonResponse)
                     self.additionalResult = []
                     if model.valid {
@@ -4240,10 +6049,10 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
                                    "LeftObjectName":"contact",
                                    "RightId":rightid,
                                    "RightObjectName":"address"]
-        print(json)
+       
         APIManager.sharedInstance.postRequestCall(postURL: removeLinkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
-                print(json)
+               
                 let getIndex = index + 1
                 if getIndex <= removeList.count {
                     self.removeLinkContactCategorie(leftid: leftid, rightid: removeList[index], idList: idList, index: getIndex, removeList: removeList)
@@ -4269,10 +6078,10 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
                                    "LeftObjectName":"contact",
                                    "RightId":rightid,
                                    "RightObjectName":"recreation"]
-        print(json)
+      
         APIManager.sharedInstance.postRequestCall(postURL: linkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
-                print(json)
+               
                 
                 let getIndex = index + 1
                 
@@ -4297,10 +6106,10 @@ extension ContactssController: CZPickerViewDelegate, CZPickerViewDataSource {
                                    "LeftObjectName":"contact",
                                    "RightId":rightid,
                                    "RightObjectName":"recreation"]
-        print(json)
+       
         APIManager.sharedInstance.postRequestCall(postURL: removeLinkURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
-                print(json)
+               
                 let getIndex = index + 1
                 if getIndex <= removeList.count {
                     self.removeLinkRecreationCategorie(leftid: leftid, rightid: removeList[index], idList: idList, index: getIndex, removeList: removeList)
@@ -4354,7 +6163,7 @@ extension UITextView{
             }
         }
     }
-    
+  
     func addDoneButtonOnKeyboard()
     {
         let doneToolbar: UIToolbar = UIToolbar(frame: CGRect.init(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 50))
@@ -4407,7 +6216,6 @@ extension ContactssController : TagViewDelegate {
     func didTaponTag(_ indexPath: IndexPath) {
         print("Tag tapped: \(self.aryTeglist[indexPath.item])")
     }
-    
 }
 
 extension ContactssController: UIGestureRecognizerDelegate {
@@ -4427,6 +6235,10 @@ extension ContactssController: UIGestureRecognizerDelegate {
             self.title = "Edit Contact"
             self.removeCustomView()
         }
-        
+    }
+}
+extension Date {
+    func toMillis() -> Int64! {
+        return Int64(self.timeIntervalSince1970 * 1000)
     }
 }
