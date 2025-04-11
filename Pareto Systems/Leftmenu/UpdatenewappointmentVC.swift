@@ -270,6 +270,7 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
             else{
                 fieldComments.text = ""
             }
+            
             fieldAppointmentType.text = ""
             print(openedActivties.activity.id!)
             
@@ -289,8 +290,8 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
             }
             else{
                 
-                fieldStartTime.text = convertDateMonthString(dateString: openedActivties.activity.startTime)
-                fieldEndtime.text = convertDateMonthString(dateString: openedActivties.activity.endTime)
+            fieldStartTime.text = convertDateMonthString(dateString: openedActivties.activity.startTime)
+            fieldEndtime.text = convertDateMonthString(dateString: openedActivties.activity.endTime)
                 
             Starttimeappointment.text = convertTimeString(dateString: openedActivties.activity.startTime)
             EndtimeAppointment.text = convertTimeString(dateString: openedActivties.activity.endTime)
@@ -327,7 +328,6 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                     let gtStartTime:String = formatter1.string(from: Date())
                     Starttimeappointment.text = gtStartTime
                     
-                    
                     let vals = UserDefaults.standard.bool(forKey: "Goday")
                     if(vals)
                     {
@@ -356,13 +356,10 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                         formatter.dateFormat = "yyyy-MM-dd"
                         let getStartTime:String = formatter.string(from:Date())
                         fieldStartTime.text = getStartTime
-                        
-                    
-                        
+                                                
                         formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
                         formatter.dateFormat =  "yyyy-MM-dd'T'HH:00:ss.SSSZ"
                         self.startTime = formatter.string(from: Date())
-                        
                         
                         let calendar = Calendar.current
                         let date = calendar.date(byAdding: .hour, value: 1, to: Date())
@@ -444,8 +441,6 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                     self.endTime = formatter.string(from: date!)
                 }
 }
-           
-            
         }
         // Do any additional setup after loading the view.
     }
@@ -2377,7 +2372,6 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                                 "ModifiedBy": self.ModifiedByinput!,
                                 "ModifiedOn": self.ModifiedOninput!,
                                 "RecurrenceIndex": self.RecurrenceIndex!,
-                                "RecurringActivityId":self.RecurrenceID!,
                                 "RollOver": self.isRollOver,
                                 "StartTime": self.startTime,
                                 "Subject": self.fieldSubject.text!
@@ -2405,7 +2399,7 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                             "Description":self.fieldComments.text!,
                             "EndTime": self.endTime,
                             "Id": self.Id,
-                            "ModifiedBy": self.ModifiedByinput!,
+                            "ModifiedBy":  self.ModifiedByinput!,
                             "ModifiedOn": self.ModifiedOninput!,
                             "RecurrenceIndex": self.RecurrenceIndex!,
                             "RollOver": self.isRollOver,
@@ -3551,6 +3545,7 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
             let sdate = (self.notedata[indexPath.row - 1].note?.createdOn)!
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX") //added by ashwini
             let st_date : Date = dateFormatter.date(from: sdate)!
             dateFormatter.dateFormat = "MM/dd/yyyy"
             let firdate = dateFormatter.string(from: st_date)

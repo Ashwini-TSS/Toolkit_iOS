@@ -2713,6 +2713,12 @@ extension CreateRecurrencePattern {
             }
         }
     }
+    
+    func daysBetweenTwoDate(fromdate : Date, toDate: Date) -> Int {
+        let components = Calendar.current.dateComponents([.day], from: fromdate, to: toDate)
+        return components.day ?? 0
+    }
+    
     func showStartEndDatePicker(textField:UITextField){
         var minimumDate = Date()
         var pickTitle:String = "Recurrence Start"
@@ -2770,6 +2776,18 @@ extension CreateRecurrencePattern {
                     formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
                     if textField == self.filedRecurrenceEnd {
                         self.lblRecurrenceEndTime = formatter.string(from: date!)
+                        let startdate = self.convertStringToDate(dateString: self.lblRecurrenceStartTime)
+                        print(startdate)
+                        let diffdate = self.daysBetweenTwoDate(fromdate: startdate, toDate: date!)
+                        print("diffdate\(diffdate)")
+                        if(diffdate <= 0)
+                        {
+                            let calendar = Calendar.current
+                            let date = calendar.date(byAdding: .day, value: -1, to: date!)
+                            formatter.dateFormat = "YYYY-MM-dd"
+                            self.lblRecurrenceStartTime = formatter.string(from: date!)
+                            self.filedRecurrenceStart.text = formatter.string(from: date!)
+                        }
                         
                     }else{
                         

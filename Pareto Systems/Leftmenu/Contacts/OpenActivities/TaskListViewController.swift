@@ -434,9 +434,7 @@ class TaskListViewController: UIViewController{
             print(error.localizedDescription)
         })
         
-    }
-    
-    
+    }    
 }
 
 extension TaskListViewController : UITableViewDelegate,UITableViewDataSource{
@@ -460,10 +458,10 @@ extension TaskListViewController : UITableViewDelegate,UITableViewDataSource{
         cell.selectionStyle = UITableViewCellSelectionStyle.none
         let date1 = ArrayDueToday[indexPath.row]
         let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
         let responsedate = dateFormatter.date(from: date1 as! String)
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-        
         let resudate = dateFormatter.string(from: responsedate!)
         let date = dateFormatter.date(from: resudate)
         

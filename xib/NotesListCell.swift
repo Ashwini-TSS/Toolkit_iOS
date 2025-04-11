@@ -77,6 +77,7 @@ class NotesListCell: UITableViewCell, UICollectionViewDelegate, UICollectionView
             let sdate = (self.comments[indexPath.section].createdOn)!
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX") // added by ashwini
             let st_date : Date = dateFormatter.date(from: sdate)!
             dateFormatter.dateFormat = "dd/MM/yyyy"
             let firdate = dateFormatter.string(from: st_date)

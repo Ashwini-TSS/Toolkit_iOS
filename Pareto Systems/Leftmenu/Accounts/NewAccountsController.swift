@@ -2432,6 +2432,7 @@ extension NewAccountsController:UITableViewDelegate,UITableViewDataSource {
                 let sdate = (self.companynotedata[indexPath.row - 1].note?.createdOn)!
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                dateFormatter.locale = Locale(identifier: "en_US_POSIX") // added by ashwini
                 let st_date : Date = dateFormatter.date(from: sdate)!
                 dateFormatter.dateFormat = "MM/dd/yyyy"
                 let firdate = dateFormatter.string(from: st_date)

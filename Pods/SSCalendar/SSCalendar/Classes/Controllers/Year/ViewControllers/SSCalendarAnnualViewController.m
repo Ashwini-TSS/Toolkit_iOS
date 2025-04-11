@@ -23,6 +23,7 @@
 @interface SSCalendarAnnualViewController()<UISearchDisplayDelegate,UISearchBarDelegate,UIScrollViewDelegate>
 
 @property (nonatomic, strong) SSDataController *dataController;
+@property (nonatomic, strong) SSDataController *monthlydataController;
 @property NSArray *calActivity;
 
 @end
@@ -32,24 +33,28 @@
 - (id)initWithEvents:(NSArray *)events
 {
     addEvents = events;
-    NSLog(@"%lu",(unsigned long)addEvents.count);
+    NSLog(@"%lu eevents count-->",(unsigned long)addEvents.count);
     
     NSBundle *bundle = [SSCalendarUtils calendarBundle];
     if (self = [super initWithNibName:@"SSCalendarAnnualViewController" bundle:bundle]) {
         
         self.dataController = [[SSDataController alloc] init];
-        [_dataController setEvents:events];
+        self.monthlydataController = [[SSDataController alloc] init];
+        [_monthlydataController setEvents:events];
+
+//        [_dataController setEvents:events];
     }
     return self;
 }
+
 - (IBAction)tappedFilter:(id)sender {
     [[NSNotificationCenter defaultCenter] removeObserver:@"tappedFilter"];
     
     [[NSNotificationCenter defaultCenter]
      postNotificationName:@"tappedFilter"
      object:self];
-    
 }
+
 - (IBAction)tappedToday:(id)sender {
     
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
@@ -119,7 +124,7 @@
     int indexx = 0;
     
     NSInteger monthCount = 0;
-    for (SSYearNode *year in _dataController.calendarYears)
+    for (SSYearNode *year in _monthlydataController.calendarYears)
     {
         if (year.value == components.year)
         {
@@ -132,8 +137,28 @@
             monthCount = monthCount + year.months.count;
         }
     }
-    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:0 inSection:indexx];
-    [self scrollToIndexPath:indexPath updateTitle:YES];
+       NSString *savedValue = [[NSUserDefaults standardUserDefaults]
+                              stringForKey:@"pickeradded"];
+
+    if([savedValue  isEqual: @"1"]){
+        NSIndexPath *indexPath = [NSIndexPath indexPathForItem:0 inSection:0];
+        [self scrollToIndexPath:indexPath updateTitle:YES];
+    }
+    else{
+        NSInteger section = indexx;
+        
+        NSInteger numberOfSections = [_yearView numberOfSections];
+        if (section < numberOfSections) {
+            NSIndexPath *indexPath = [NSIndexPath indexPathForItem:0 inSection:indexx];
+            [self scrollToIndexPath:indexPath updateTitle:YES];
+        } else {
+            NSIndexPath *indexPath = [NSIndexPath indexPathForItem:0 inSection:0];
+            [self scrollToIndexPath:indexPath updateTitle:YES];
+            NSLog(@"Section index %ld is out of bounds.", (long)section);
+        }
+    }
+    [[NSUserDefaults standardUserDefaults] setObject:false forKey:@"pickeradded"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 //isFromMonthView
 
@@ -143,7 +168,7 @@
     
     int indexx = 0;
     
-    for (SSYearNode *year in _dataController.calendarYears)
+    for (SSYearNode *year in _monthlydataController.calendarYears)
     {
         if (year.value == components.year)
         {
@@ -166,8 +191,7 @@
             [NSUserDefaults.standardUserDefaults setObject:archeive forKey:@"userSelectedModel"];
             [NSUserDefaults.standardUserDefaults synchronize];
             
-            
-            SSCalendarMonthlyViewController *viewController = [[SSCalendarMonthlyViewController alloc] initWithDataController:_dataController];
+            SSCalendarMonthlyViewController *viewController = [[SSCalendarMonthlyViewController alloc] initWithDataController:_monthlydataController];
             viewController.listAppointments = _listAppointments;
             viewController.selectedYear = self.title;
             //            viewController.isFromMonthView = YES;
@@ -195,7 +219,7 @@
     
     int indexx = 0;
     
-    for (SSYearNode *year in _dataController.calendarYears)
+    for (SSYearNode *year in _monthlydataController.calendarYears)
     {
         if (year.value == components.year)
         {
@@ -215,7 +239,7 @@
             SSYearNode *year = _dataSource.years[indexPath.section];
             
             
-            SSCalendarMonthlyViewController *viewController = [[SSCalendarMonthlyViewController alloc] initWithDataController:_dataController];
+            SSCalendarMonthlyViewController *viewController = [[SSCalendarMonthlyViewController alloc] initWithDataController:_monthlydataController];
             viewController.selectedYear = self.title;
             
             NSInteger section = indexPath.section * year.months.count + indexPath.row;
@@ -358,13 +382,15 @@
 //-scrollviewd
 -(void)viewWillAppear:(BOOL)animate  {
     [_searchBar setHidden:YES];
+    
     //    var getCalendarActivityList:[GetCalendarListActivity] = []
     
     //    self.title = @"Calendar";
     self.dataSource = [[SSCalendarAnnualDataSource alloc] initWithView:_yearView];
     _yearView.dataSource = _dataSource;
     _yearView.delegate = self;
-    
+    [_dataSource updateLayoutForBounds:_yearView.bounds];
+
     self.navigationController.navigationBar.titleTextAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[UIColor colorWithHexString:COLOR_SECONDARY], NSForegroundColorAttributeName, [UIFont systemFontOfSize:17.0], NSFontAttributeName, nil];
     
     self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
@@ -375,9 +401,9 @@
     [_yearView reloadData];
     [_yearView setHidden:YES];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        [_yearView setHidden:NO];
+    [_yearView setHidden:NO];
         
-        [self scrollToCureentYear];
+    [self scrollToCureentYear];
         
         NSDateComponents *components1 = [[NSCalendar currentCalendar] components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear fromDate:[NSDate date]];
         [[NSNotificationCenter defaultCenter]
@@ -535,9 +561,11 @@
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
+//      [_dataController setEvents:addEvents];
+
     SSYearNode *year = _dataSource.years[indexPath.section];
     
-    SSCalendarMonthlyViewController *viewController = [[SSCalendarMonthlyViewController alloc] initWithDataController:_dataController];
+    SSCalendarMonthlyViewController *viewController = [[SSCalendarMonthlyViewController alloc] initWithDataController:_monthlydataController];
     viewController.selectedYear = self.title;
     
     viewController.addEvents = addEvents;

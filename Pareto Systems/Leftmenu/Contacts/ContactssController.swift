@@ -675,13 +675,15 @@ class ContactssController: UITableViewController {
                 }
                 do{
                     self.noteobj = try? JSONDecoder().decode(NoteModel.self, from: data)
-                    self.notedata =  self.noteobj.notedata!
+                    self.notedata =  self.noteobj.notedata ?? []
                     for(_,_) in self.notedata.enumerated()
                     {
                         self.allcommentExpandArray.append(0)
                     }
-                    self.PullDownAllNoteRegardingsFromServer()
-                    self.PullDownAllCommentsFromServer()
+                    DispatchQueue.main.async {
+                        self.PullDownAllNoteRegardingsFromServer()
+                        self.PullDownAllCommentsFromServer()
+                    }
                 }
             }
             task.resume()
@@ -1684,6 +1686,7 @@ class ContactssController: UITableViewController {
                 let sdate = (self.notedata[indexPath.row - 1].note?.createdOn)!
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                dateFormatter.locale = Locale(identifier: "en_US_POSIX") // added by ashwini
                 let st_date : Date = dateFormatter.date(from: sdate)!
                 dateFormatter.dateFormat = "MM/dd/yyyy"
                 let firdate = dateFormatter.string(from: st_date)
@@ -3771,7 +3774,11 @@ extension ContactssController {
         
         APIManager.sharedInstance.postRequestCall(postURL: globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/get.json", parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
-                let contactModel = ContactListResult.init(fromDictiary: jsonResponse["DataObject"] as! NSDictionary)
+                guard let responseObj = jsonResponse["DataObject"] else
+                {
+                    return
+                }
+                let contactModel = ContactListResult.init(fromDictiary: responseObj as! NSDictionary)
                 if self.contactInfoDetail != nil {
                     if self.contactInfoDetail.executorID.count > 0 {
                         if let indexPath = IndexPath(row: 0, section: 0) as? IndexPath {

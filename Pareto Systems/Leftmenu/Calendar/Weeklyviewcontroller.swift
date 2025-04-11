@@ -139,6 +139,7 @@ import JZCalendarWeekView
         {
             let dateFormatter1 = DateFormatter()
             dateFormatter1.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            dateFormatter1.locale = Locale(identifier: "en_US_POSIX")
             let st_date : Date = dateFormatter1.date(from: (self.getWeekCalendarActivityList[windex].activity.startTime)!)!
             let en_date : Date = dateFormatter1.date(from: (self.getWeekCalendarActivityList[windex].activity.endTime)!)!
             print(self.getWeekCalendarActivityList[windex].activity.subject)

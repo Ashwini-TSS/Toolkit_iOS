@@ -2664,7 +2664,6 @@ class UpdatenewtaskVC: UIViewController,UITableViewDelegate,UITableViewDataSourc
     
     //MARK: InitailGetAccounts,Teammbers and cnontacts list
     func getLinkerAccounts(){
-        
         let parameters = [
             "ObjectName": "linker_tasks_companies",
             "LinkParentId": Id,
@@ -2953,9 +2952,6 @@ class UpdatenewtaskVC: UIViewController,UITableViewDelegate,UITableViewDataSourc
             {
                 
             }
-        
-        
-        
     }
     func getListlinkedAccounts(){
         
@@ -3129,6 +3125,7 @@ class UpdatenewtaskVC: UIViewController,UITableViewDelegate,UITableViewDataSourc
             let sdate = (self.notedata[indexPath.row - 1].note?.createdOn)!
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX") // added by ashwini
             let st_date : Date = dateFormatter.date(from: sdate)!
             dateFormatter.dateFormat = "MM/dd/yyyy"
             let firdate = dateFormatter.string(from: st_date)

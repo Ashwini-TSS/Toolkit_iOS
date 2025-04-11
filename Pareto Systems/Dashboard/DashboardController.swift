@@ -7,7 +7,7 @@
 //
 
 import UIKit
-
+import FirebaseCrashlytics
 
 class DashboardController: UIViewController {
     
@@ -37,6 +37,10 @@ class DashboardController: UIViewController {
         UserDefaults.standard.removeObject(forKey: "FilterTask")
         UserDefaults.standard.removeObject(forKey: "UserFilter")        
         // Do any additional setup after loading the view.
+        let name = UserDefaults.standard.value(forKey: "loggedUserName")
+        let idd = UserDefaults.standard.value(forKey: "userOrganizationID")
+        Crashlytics.crashlytics().setCustomValue(name ?? "", forKey: "user_name")
+        Crashlytics.crashlytics().setCustomValue(idd ?? 0, forKey: "user_id")
     }
     
     @IBAction func tappedClose(_ sender: Any) {
@@ -47,10 +51,10 @@ class DashboardController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         learnmoreBG.isHidden = true
         let tabView = NavigationHelper().setupBarSqureImage()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            let setupImage:UIImage = tabView.takeScreenshot()
-            self.btnDropDown.image = setupImage
-        }
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+//            let setupImage:UIImage = tabView.takeScreenshot()
+//            self.btnDropDown.image = setupImage
+//        }
         
         if let data = UserDefaults.standard.object(forKey: "userOrganizationID") {
             currentOrgID = data as! String

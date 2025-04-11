@@ -19,8 +19,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var window: UIWindow?
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        print(UIScreen.main.bounds.width)
-        print(UIScreen.main.bounds.height) // 812
         IQKeyboardManager.shared.enable = true
          FirebaseApp.configure()
 //        Crashlytics.sharedInstance().delegate = self
@@ -31,6 +29,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let Extensionnumber = getCountryPhonceCode(countryCode)
             UserDefaults.standard.set(Extensionnumber, forKey: "Extension")
         }
+        UserDefaults.standard.removeObject(forKey: "selectedYear")
+        UserDefaults.standard.removeObject(forKey: "pickeradded")
         
         //Setup HUD
         //        SVProgressHUD.setDefaultStyle(.dark)

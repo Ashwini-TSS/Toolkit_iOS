@@ -19,11 +19,12 @@ class SignupController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
     }
+    
     @IBAction func tappedSignup(_ sender: Any) {
         validate() ? signUpAPICall() : Void()
     }
+    
     func validate() -> Bool {
         if (firstnameField.text?.isEmpty)! || (lastnameField.text?.isEmpty)! || (emailField.text?.isEmpty)! || (confirmEmailField.text?.isEmpty)! || (passwordField.text?.isEmpty)! || (confirmPasswordField.text?.isEmpty)! {
             NavigationHelper.showSimpleAlert(message: "Please enter the required fields")
@@ -40,6 +41,7 @@ class SignupController: UITableViewController {
         }
         return true
     }
+    
     func signUpAPICall(){
         let users:NSMutableDictionary = [:]
         users.setValue(emailField.text!, forKey: "EmailAddress")
