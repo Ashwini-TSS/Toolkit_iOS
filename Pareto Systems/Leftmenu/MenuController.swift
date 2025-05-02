@@ -38,7 +38,7 @@ class MenuController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return 9
+        return 10
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -101,6 +101,13 @@ class MenuController: UITableViewController {
             setupNavigation()
             
             let vc = self.storyboard?.instantiateViewController(withIdentifier: "TeammembersystemVC") as! TeammembersystemVC
+            let nvc: UINavigationController = UINavigationController(rootViewController: vc)
+            self.slideMenuController()?.changeMainViewController(nvc, close: true)
+        }
+        else if indexPath.row == 9 {
+            setupNavigation()
+            
+            let vc = self.storyboard?.instantiateViewController(withIdentifier: "CalendarSyncViewController") as! CalendarSyncViewController
             let nvc: UINavigationController = UINavigationController(rootViewController: vc)
             self.slideMenuController()?.changeMainViewController(nvc, close: true)
         }

@@ -17,5 +17,6 @@ target 'Blue Square' do
   pod 'FirebaseCore'
   pod 'FirebaseCrashlytics'
   pod 'FirebaseAnalytics'
+  pod 'Socket.IO-Client-Swift', '~> 15.2.0'
   # Pods for Pareto Systems
 end

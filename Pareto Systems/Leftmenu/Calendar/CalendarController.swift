@@ -8,6 +8,9 @@
 
 import UIKit
 import SSCalendar
+import SocketIO
+import CoreData
+
 var StrCondition : String!
 class CalendarController: UIViewController {
     
@@ -40,7 +43,9 @@ class CalendarController: UIViewController {
     var didLoadCalled : Bool = false
     lazy var searchBar = UISearchBar(frame: CGRect.zero)
     
-  
+    var manager: SocketManager!
+     var socket: SocketIOClient!
+
     @IBOutlet weak var btnDropDown: UIBarButtonItem!
     
     override func viewDidLoad() {
@@ -58,7 +63,11 @@ class CalendarController: UIViewController {
         UserDefaults.standard.set("no", forKey: "DAYALL")
         
         SSStyles.applyNavigationBarStyles()
-        
+        let  paskey = self.retriveRecordsFromCoreData()
+        if(paskey != "")
+        {
+            self.connectToSocket(passkey: paskey)
+        }
         self.navigationController?.navigationBar.backgroundColor = .red
 
         self.navigationController?.navigationBar.barTintColor = .black
@@ -83,6 +92,250 @@ class CalendarController: UIViewController {
         controller.appointmentIDList = appointmentIDList
         controller.appointmentColorList = appointmentColorList
         self.navigationController?.pushViewController(controller, animated: true)
+    }
+    
+    func getConnectionParam() -> [String: Any] {
+        UserDefaults.standard.set("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzQ0NzEyNDQwfQ.FDsnMamWyOcbYJ77slzg0EKgWMzq07O0YGnVZpmX1YU", forKey: "token")
+        UserDefaults.standard.set("1", forKey: "user_id")
+
+        let currtimezone = self.getCurrentTimeZone()
+        let tok = UserDefaults.standard.string(forKey: "token")!
+        let userIDD =  UserDefaults.standard.string(forKey: "user_id")!
+               return ["auth": "\(tok)", "user_id": "\(userIDD)", "timeZone": "\(currtimezone)"]
+       }
+    
+    func getCurrentTimeZone() -> String{
+             return TimeZone.current.identifier
+      }
+    
+    func retriveRecordsToolkitIdCoredata(gcalID : String) -> String
+    {
+            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else
+            {
+                return ""
+            }
+            let managedobj = appDelegate.persistentContainer.viewContext
+            let fetchrequest = NSFetchRequest<NSFetchRequestResult>(entityName: "GcalConfig")
+            fetchrequest.predicate = NSPredicate(format: "gcalEventID=%@", gcalID)
+            do{
+                let result = try managedobj.fetch(fetchrequest)
+                for data in (result as? [NSManagedObject])!
+                {
+                    print(data.value(forKey: "toolkitEventID") as! String)
+                   let gcalID = data.value(forKey: "toolkitEventID") as? String
+                    if(gcalID != "" && gcalID != nil){
+                        return gcalID ?? ""
+                    }
+                }
+            }catch{
+                print("Error while fetching data")
+            }
+            return ""
+        
+    }
+        
+    func retriveRecordsFromCoreData() -> String
+    {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else
+        {
+            return ""
+        }
+        let managedobj = appDelegate.persistentContainer.viewContext
+        let fetchrequest = NSFetchRequest<NSFetchRequestResult>(entityName: "GcalPasskey")
+        do{
+            let result = try managedobj.fetch(fetchrequest)
+            for data in (result as? [NSManagedObject])!
+            {
+            print(data.value(forKey: "passkey") as! String)
+                let passkey = data.value(forKey: "passkey") as? String ?? ""
+                return passkey
+            }
+            
+        }catch{
+            print("Error while fetching data")
+        }
+        return ""
+    }
+    
+    func connectToSocket(passkey : String)
+    {
+        let socketURL = URL(string: "https://toolkit-gcal.tecnovaters.com")!
+        let currtimezone = self.getCurrentTimeZone()
+
+                manager = SocketManager(socketURL: socketURL, config: [.log(true),.extraHeaders(["auth": "Bearer \(passkey)", "user_id": "4", "timeZone": "\(currtimezone)"]),.compress])
+                self.socket = manager.defaultSocket
+
+                addHandlers()
+
+                socket.connect()
+    }
+    
+    func addHandlers() {
+            socket.on(clientEvent: .connect) {data, ack in
+                print("Socket connected ✅, \(ack)")
+            }
+
+            socket.on("4") { dataArray, ack in
+                print("Received event data: \(dataArray)")
+                let dataobj = dataArray[0] as? [String : Any]
+                let type = dataobj?["type"] as? String
+                let eventypeobj = dataobj?["event"] as? [String : Any]
+                let status = eventypeobj?["status"] as? String
+
+                if(type == "google_calendar_event_updated")
+                {
+                    if(status == "cancelled")
+                    {
+                        let idd = eventypeobj?["id"] as? String
+                        let toolkitid = self.retriveRecordsToolkitIdCoredata(gcalID: idd ?? "")
+                        self.DeleteAppointment(toolkitEventID: toolkitid)
+
+                    }else{
+                        let idd = eventypeobj?["id"] as? String
+                        let location = eventypeobj?["location"] as? String
+                        let description = eventypeobj?["description"] as? String
+                        let summary = eventypeobj?["summary"] as? String
+                        let startobj = eventypeobj?["start"] as? [String : Any]
+                        let starttime = startobj?["dateTime"] as? String
+                        let endobj = eventypeobj?["end"] as? [String : Any]
+                        let endtime = endobj?["dateTime"] as? String
+                        
+                        let toolkitid = self.retriveRecordsToolkitIdCoredata(gcalID: idd ?? "")
+                         
+                        self.updateEditedEventsInToolkitCalendar(toolkitID: toolkitid, location: location ?? "", Description: description ?? "", endTime: endtime ?? "", StartTime: starttime ?? "", subject: summary ?? "")
+                    }
+                }
+                else if (type == "google_calendar_event_deleted"){
+                    let idd = eventypeobj?["eventId"] as? String
+                    let toolkitid = self.retriveRecordsToolkitIdCoredata(gcalID: idd ?? "")
+                    self.DeleteAppointment(toolkitEventID: toolkitid)
+                }
+                
+            }
+
+            socket.on(clientEvent: .disconnect) {data, ack in
+                print("Socket disconnected ❌")
+            }
+
+            socket.on(clientEvent: .error) {data, ack in
+                print("Socket error: \(data)")
+            }
+        }
+    
+    func DeleteAppointment(toolkitEventID : String){
+        
+        let parameters = [
+            "ObjectId": toolkitEventID,
+            "ObjectName": "appointment",
+            "OrganizationId": currentOrgID,
+            "PassKey": passKey
+            ] as [String : Any]
+        
+        var mainURL:String!
+        let headers = [
+            "Content-Type": "application/json",
+            ]
+        
+        mainURL = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/delete.json"
+        
+        let request = NSMutableURLRequest(url: NSURL(string: mainURL)! as URL,
+                                          cachePolicy: .useProtocolCachePolicy,
+                                          timeoutInterval: 7.0)
+        request.httpMethod = "POST"
+        request.allHTTPHeaderFields = headers
+
+      
+        if let jsonData = try? JSONSerialization.data(withJSONObject: parameters, options: []) {
+            request.httpBody = jsonData
+        }
+        
+        let configuration = URLSessionConfiguration.default
+        let session = URLSession(configuration: configuration, delegate: self, delegateQueue:OperationQueue.main)
+        let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { data, response, error in
+            guard let data = data, error == nil else {
+                print(error?.localizedDescription as Any)
+                return
+            }
+            do {
+                let jsonObj = try JSONSerialization.jsonObject(with: data, options: [])
+                print(jsonObj)
+                guard let _:Dictionary = jsonObj as? [String:AnyObject] else{
+                    return
+                }
+                let result = try JSON(data: data)
+                print(result)
+                print(result["ResponseMessage"])
+                print("success")
+                if(result["ResponseMessage"] == "success"){
+                    self.getActivitiesList()
+                }else{
+                    let alert = UIAlertController(title:result["ResponseMessage"].stringValue, message: nil, preferredStyle: UIAlertControllerStyle.alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (alert) in
+                    }))
+                    self.present(alert, animated: true, completion: nil)
+                }
+                
+            }
+                catch {
+                    print(error.localizedDescription)
+                }
+            })
+           dataTask.resume()
+    }
+    
+    func updateEditedEventsInToolkitCalendar(toolkitID : String, location : String, Description: String, endTime : String, StartTime: String, subject : String)
+    {
+           
+        let parameters  = [
+                "DataObject": [
+                    "Location" : location,
+                    "Description":Description,
+                    "EndTime": endTime,
+                    "Id": toolkitID,
+                    "StartTime": StartTime,
+                    "Subject": subject
+                ],
+                "OrganizationId": currentOrgID,
+                "ObjectName": "appointment",
+                "PassKey": passKey
+                ] as [String : Any]
+                        
+                var mainURL:String!
+                let headers = [
+                    "Content-Type": "application/json",
+                    ]
+                mainURL = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/modify.json"
+                
+                let request = NSMutableURLRequest(url: NSURL(string: mainURL)! as URL,
+                                                  cachePolicy: .useProtocolCachePolicy,
+                                                  timeoutInterval: 7.0)
+                
+                request.httpMethod = "POST"
+                request.allHTTPHeaderFields = headers
+                if let jsonData = try? JSONSerialization.data(withJSONObject: parameters, options: []) {
+                    request.httpBody = jsonData
+                }
+                let configuration = URLSessionConfiguration.default
+                let session = URLSession(configuration: configuration, delegate: self, delegateQueue:OperationQueue.main)
+                let dataTask11 = session.dataTask(with: request as URLRequest, completionHandler: { data, response, error in
+                    guard let data = data, error == nil else {
+                        print(error?.localizedDescription as Any)
+                        return
+                    }
+                    do {
+                        let jsonObj = try JSONSerialization.jsonObject(with: data, options: [])
+                        print(jsonObj)
+                        guard let _:Dictionary = jsonObj as? [String:AnyObject] else{
+                            return
+                        }
+                        let result = try JSON(data: data)
+                        print(result)
+                        self.getActivitiesList()
+                    }catch {
+                        print(error.localizedDescription)
+                    }
+                })
+                dataTask11.resume()
     }
     
     @objc func pushToActivity(notfication: NSNotification) {
@@ -260,6 +513,11 @@ class CalendarController: UIViewController {
     }
     
     override func viewWillDisappear(_ animated: Bool) {
+        let  paskey = self.retriveRecordsFromCoreData()
+        if(paskey != "")
+        {
+            socket.disconnect()
+        }
         NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "tappedFilter"), object: nil)
         NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "yearPicked"), object: nil)
         UserDefaults.standard.set(false, forKey: "pickeradded") //setObject

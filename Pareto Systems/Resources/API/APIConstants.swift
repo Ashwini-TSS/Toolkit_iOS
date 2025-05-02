@@ -116,3 +116,4 @@ var getOrganizationStatusInfo:String = APIBaseURL + "getOrganizationStatus.json"
 var purchasePackageURL:String = APIBaseURL + "linkVerticalPackageToOrganization.json"
 
 
+var syncLoginurl : String = "https://toolkit-gcal.tecnovaters.com/api/v1/users/login"

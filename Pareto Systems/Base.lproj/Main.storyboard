@@ -1263,7 +1263,7 @@
                                 </connections>
                             </tableView>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="jCF-bM-Z4A">
-                                <rect key="frame" x="0.0" y="64" width="375" height="603"/>
+                                <rect key="frame" x="0.0" y="64" width="375" height="636"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 <prototypes>
@@ -10248,7 +10248,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <view key="tableFooterView" contentMode="scaleToFill" id="wnC-pm-ZRt">
-                            <rect key="frame" x="0.0" y="975" width="375" height="85"/>
+                            <rect key="frame" x="0.0" y="897" width="375" height="85"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HOK-hG-Xtr">
@@ -15683,7 +15683,7 @@
                                                     </constraints>
                                                 </imageView>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="System" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QJ2-sc-XIC">
-                                                    <rect key="frame" x="80" y="20.5" width="57.5" height="20"/>
+                                                    <rect key="frame" x="80" y="20.5" width="60.5" height="20"/>
                                                     <fontDescription key="fontDescription" name="Raleway-Bold" family="Raleway" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
@@ -15703,6 +15703,44 @@
                                                 <constraint firstAttribute="trailing" secondItem="piY-li-xWH" secondAttribute="trailing" constant="6" id="fFb-P6-i3e"/>
                                                 <constraint firstItem="piY-li-xWH" firstAttribute="centerY" secondItem="Aej-MD-caB" secondAttribute="centerY" id="slM-JZ-YRg"/>
                                                 <constraint firstItem="QJ2-sc-XIC" firstAttribute="centerY" secondItem="Aej-MD-caB" secondAttribute="centerY" id="tYc-Ss-IT1"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" rowHeight="61" id="bxa-D7-Jgm">
+                                        <rect key="frame" x="0.0" y="758" width="375" height="61"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="bxa-D7-Jgm" id="3Qo-cs-HDX">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="61"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" image="integration" translatesAutoresizingMaskIntoConstraints="NO" id="rwE-y4-bL5">
+                                                    <rect key="frame" x="16" y="11" width="49" height="39"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" constant="49" id="JF9-WM-1XS"/>
+                                                        <constraint firstAttribute="height" constant="39" id="lTk-uA-Vde"/>
+                                                    </constraints>
+                                                </imageView>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Integration" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vcZ-IB-TiG">
+                                                    <rect key="frame" x="80" y="20.5" width="90" height="20"/>
+                                                    <fontDescription key="fontDescription" name="Raleway-Bold" family="Raleway" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" image="ic_right_black_arrow" translatesAutoresizingMaskIntoConstraints="NO" id="977-i0-Pin">
+                                                    <rect key="frame" x="349" y="20.5" width="20" height="20"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="20" id="dJe-6L-tai"/>
+                                                        <constraint firstAttribute="width" constant="20" id="jNg-jo-sFx"/>
+                                                    </constraints>
+                                                </imageView>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="vcZ-IB-TiG" firstAttribute="centerY" secondItem="3Qo-cs-HDX" secondAttribute="centerY" id="BAC-0b-cFg"/>
+                                                <constraint firstItem="vcZ-IB-TiG" firstAttribute="leading" secondItem="rwE-y4-bL5" secondAttribute="trailing" constant="15" id="CWl-zz-I1A"/>
+                                                <constraint firstAttribute="trailing" secondItem="977-i0-Pin" secondAttribute="trailing" constant="6" id="LEk-TQ-ZiQ"/>
+                                                <constraint firstItem="rwE-y4-bL5" firstAttribute="centerY" secondItem="3Qo-cs-HDX" secondAttribute="centerY" id="TaL-WV-HNg"/>
+                                                <constraint firstItem="977-i0-Pin" firstAttribute="centerY" secondItem="3Qo-cs-HDX" secondAttribute="centerY" id="ec1-PG-chN"/>
+                                                <constraint firstItem="rwE-y4-bL5" firstAttribute="leading" secondItem="3Qo-cs-HDX" secondAttribute="leading" constant="16" id="sbj-4f-MIs"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
@@ -23983,7 +24021,7 @@
                             </connections>
                         </tableView>
                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gk4-jD-kLT">
-                            <rect key="frame" x="318" y="7" width="46" height="32"/>
+                            <rect key="frame" x="320" y="7" width="44" height="32"/>
                             <constraints>
                                 <constraint firstAttribute="height" constant="32" id="RNf-Yn-5oB"/>
                             </constraints>
@@ -26667,6 +26705,80 @@ Kelowna, BC V1Y 5Y7 Canada                          </string>
             </objects>
             <point key="canvasLocation" x="-2340" y="2419.7901049475263"/>
         </scene>
+        <!--Calendar Sync View Controller-->
+        <scene sceneID="Ntz-UP-NXe">
+            <objects>
+                <viewController storyboardIdentifier="CalendarSyncViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="2b6-3b-73z" customClass="CalendarSyncViewController" customModule="Blue_square" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="XNz-bu-8yr">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="googlecalendar" translatesAutoresizingMaskIntoConstraints="NO" id="D8E-S5-h7i">
+                                <rect key="frame" x="8" y="44" width="44" height="44"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="44" id="NlK-it-4ws"/>
+                                    <constraint firstAttribute="height" constant="44" id="cgf-7K-xlf"/>
+                                </constraints>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Google Calendar" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aSo-BR-z1f">
+                                <rect key="frame" x="60" y="44" width="139" height="24"/>
+                                <fontDescription key="fontDescription" name="NotoSansOriya-Bold" family="Noto Sans Oriya" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Enjoy a 2-way sync between your scheduled Toolkit appointment and your google calendar" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="H7M-AW-pbz">
+                                <rect key="frame" x="60" y="70" width="307" height="39.5"/>
+                                <fontDescription key="fontDescription" name="NotoSansOriya" family="Noto Sans Oriya" pointSize="14"/>
+                                <color key="textColor" systemColor="systemGray2Color"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="e5B-2p-ejg">
+                                <rect key="frame" x="60" y="153.5" width="307" height="38"/>
+                                <color key="backgroundColor" red="0.0" green="0.32156862749999998" blue="0.60784313729999995" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="38" id="XeT-59-S0T"/>
+                                </constraints>
+                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Connect Calendar"/>
+                                <connections>
+                                    <action selector="googleCalendarSyncAction:" destination="2b6-3b-73z" eventType="touchUpInside" id="KMh-OC-IiO"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nEw-UM-F2B">
+                                <rect key="frame" x="192.5" y="117.5" width="42" height="24"/>
+                                <fontDescription key="fontDescription" name="NotoSansOriya" family="Noto Sans Oriya" pointSize="17"/>
+                                <color key="textColor" red="0.0" green="0.32156862749999998" blue="0.60784313729999995" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="RwK-kH-8OU"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="e5B-2p-ejg" firstAttribute="top" secondItem="H7M-AW-pbz" secondAttribute="bottom" constant="44" id="1bB-XS-mp6"/>
+                            <constraint firstItem="e5B-2p-ejg" firstAttribute="trailing" secondItem="H7M-AW-pbz" secondAttribute="trailing" id="2oi-38-vmp"/>
+                            <constraint firstItem="nEw-UM-F2B" firstAttribute="top" secondItem="H7M-AW-pbz" secondAttribute="bottom" constant="8" id="3Z3-pn-Mah"/>
+                            <constraint firstItem="RwK-kH-8OU" firstAttribute="trailing" secondItem="H7M-AW-pbz" secondAttribute="trailing" constant="8" id="7MW-1f-1JL"/>
+                            <constraint firstItem="nEw-UM-F2B" firstAttribute="centerX" secondItem="e5B-2p-ejg" secondAttribute="centerX" id="9kn-rv-gh6"/>
+                            <constraint firstItem="D8E-S5-h7i" firstAttribute="top" secondItem="RwK-kH-8OU" secondAttribute="top" constant="24" id="BeO-hd-SNa"/>
+                            <constraint firstItem="e5B-2p-ejg" firstAttribute="leading" secondItem="H7M-AW-pbz" secondAttribute="leading" id="DLi-Tc-Lhb"/>
+                            <constraint firstItem="aSo-BR-z1f" firstAttribute="leading" secondItem="D8E-S5-h7i" secondAttribute="trailing" constant="8" id="Q1o-d4-upm"/>
+                            <constraint firstItem="H7M-AW-pbz" firstAttribute="leading" secondItem="aSo-BR-z1f" secondAttribute="leading" id="e71-mJ-0al"/>
+                            <constraint firstItem="aSo-BR-z1f" firstAttribute="top" secondItem="D8E-S5-h7i" secondAttribute="top" id="h0P-ja-crE"/>
+                            <constraint firstItem="H7M-AW-pbz" firstAttribute="top" secondItem="aSo-BR-z1f" secondAttribute="bottom" constant="2" id="isF-uk-88Y"/>
+                            <constraint firstItem="D8E-S5-h7i" firstAttribute="leading" secondItem="RwK-kH-8OU" secondAttribute="leading" constant="8" id="m9T-ec-7S7"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="btnBottomSpace" destination="1bB-XS-mp6" id="GKS-cM-bIP"/>
+                        <outlet property="googleCalendarSyncBtn" destination="e5B-2p-ejg" id="GC9-jv-hgf"/>
+                        <outlet property="syncedEmail" destination="nEw-UM-F2B" id="c4O-eJ-XPs"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Rw0-DB-bAN" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1482.4000000000001" y="2338.3808095952027"/>
+        </scene>
     </scenes>
     <resources>
         <image name="ContMail" width="30" height="30"/>
@@ -26676,6 +26788,7 @@ Kelowna, BC V1Y 5Y7 Canada                          </string>
         <image name="add" width="18" height="18"/>
         <image name="blue_square_logo" width="1024" height="1024"/>
         <image name="close_black" width="36" height="36"/>
+        <image name="googlecalendar" width="920" height="920"/>
         <image name="ic_Settings_balck" width="32" height="32"/>
         <image name="ic_account_black" width="32" height="32"/>
         <image name="ic_accounts" width="30" height="30"/>
@@ -26701,6 +26814,7 @@ Kelowna, BC V1Y 5Y7 Canada                          </string>
         <image name="ic_sync_img" width="26" height="26"/>
         <image name="ic_task_black" width="128" height="128"/>
         <image name="ic_uncheck" width="26" height="26"/>
+        <image name="integration" width="24" height="24"/>
         <image name="system" width="24" height="24"/>
         <systemColor name="darkTextColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -26710,6 +26824,9 @@ Kelowna, BC V1Y 5Y7 Canada                          </string>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemGray2Color">
+            <color red="0.68235294120000001" green="0.68235294120000001" blue="0.69803921570000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

@@ -366,7 +366,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func applicationDidBecomeActive(_ application: UIApplication) {
-        
+        NotificationCenter.default.post(name: NSNotification.Name("choosetab"), object: nil, userInfo: nil)
         //        UIApplication.shared.ba
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
     }

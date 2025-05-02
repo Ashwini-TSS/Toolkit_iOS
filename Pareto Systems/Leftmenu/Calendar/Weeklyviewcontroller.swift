@@ -8,6 +8,7 @@
 
 import UIKit
 import JZCalendarWeekView
+import CoreData
 
 @objc class Weeklyviewcontroller: UIViewController {
     
@@ -315,6 +316,9 @@ extension Weeklyviewcontroller: JZLongPressViewDelegate, JZLongPressViewDataSour
                                 self.viewModel.events.append(newEvent)
                                 self.viewModel.eventsByDate = JZWeekViewHelper.getIntraEventsByDate(originalEvents: self.viewModel.events)
                                 weekView.forceReload(reloadEvents: self.viewModel.eventsByDate)
+                                let starttime =  getDataObject["StartTime"] as? String
+                                let endtime =  getDataObject["EndTime"] as? String
+                                self.createGoogleCalendarEvent(toolkitEventID: getID, startTimes: starttime ?? "", endTimes: endtime ?? "")
   //  NotificationCenter.default.post(name: NSNotification.Name("dragappointment"), object: nil)
                              //   self.UpdatedNewAppointment1()
                             }
@@ -335,6 +339,97 @@ extension Weeklyviewcontroller: JZLongPressViewDelegate, JZLongPressViewDataSour
     }
    
     
+    func getCurrentTimeZone() -> String{
+             return TimeZone.current.identifier
+      }
+    
+    func retriveRecordsFromCoreData() -> String
+    {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else
+        {
+            return ""
+        }
+        let managedobj = appDelegate.persistentContainer.viewContext
+        let fetchrequest = NSFetchRequest<NSFetchRequestResult>(entityName: "GcalPasskey")
+        do{
+            let result = try managedobj.fetch(fetchrequest)
+            for data in (result as? [NSManagedObject])!
+            {
+            print(data.value(forKey: "passkey") as! String)
+                let passkey = data.value(forKey: "passkey") as? String ?? ""
+                return passkey
+            }
+            
+        }catch{
+            print("Error while fetching data")
+        }
+        return ""
+    }
+    
+    func createGoogleCalendarEvent(toolkitEventID : String, startTimes : String, endTimes : String)
+    {
+        let passkey = self.retriveRecordsFromCoreData()
+        let timezone = self.getCurrentTimeZone()
+        let parameterDictionary: [String: Any] = ["summary": "New Event",
+                                                  "location": "",
+                                                  "description":"",
+                                                  "start": startTimes,
+                                                  "end":endTimes,
+                                   "time_zone":timezone,
+                                   "event_type":"Party",
+        ]
+        let Url = String(format: "https://toolkit-gcal.tecnovaters.com/api/v1/google-calendar/events")
+           guard let serviceUrl = URL(string: Url) else { return }
+           var request = URLRequest(url: serviceUrl)
+           request.httpMethod = "POST"
+           request.setValue("Application/json", forHTTPHeaderField: "Content-Type")
+           request.setValue("Bearer \(passkey)", forHTTPHeaderField: "Authorization")
+           guard let httpBody = try? JSONSerialization.data(withJSONObject: parameterDictionary, options: []) else {
+               return
+           }
+           request.httpBody = httpBody
+           
+           let session = URLSession.shared
+           session.dataTask(with: request) { (data, response, error) in
+               if let response = response {
+                   print(response)
+               }
+               if let data = data {
+                   do {
+                       let json = try JSONSerialization.jsonObject(with: data, options: [])
+                       print(json)
+                       let model = try JSONDecoder().decode(SyncLoginModal.self, from: data)
+                       DispatchQueue.main.async {
+                           if(model.data?.id != nil){
+                               self.toStoreValuesCoreData(toolkitEventID: toolkitEventID, googleEventID: model.data?.id ?? "")
+                           }
+                       }
+                       
+                   } catch {
+                       print(error)
+                   }
+               }
+           }.resume()
+    }
+    
+    func toStoreValuesCoreData(toolkitEventID : String, googleEventID : String)
+    {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else
+        {
+            return
+        }
+        let managedobj = appDelegate.persistentContainer.viewContext
+            let userEntity = NSEntityDescription.entity(forEntityName: "GcalConfig", in: managedobj)
+            let user = NSManagedObject(entity: userEntity!, insertInto: managedobj)
+        user.setValue(googleEventID, forKey: "gcalEventID")
+        user.setValue(toolkitEventID, forKey: "toolkitEventID")
+            do
+            {
+                try managedobj.save()
+            }catch let error as NSError{
+                print(error.localizedDescription)
+            }
+    }
     func weekView(_ weekView: JZLongPressWeekView, editingEvent: JZBaseEvent, didEndMoveLongPressAt startDate: Date) {
         guard let event = editingEvent as? AllDayEvent else { return }
         let duration = Calendar.current.dateComponents([.minute], from: event.startDate, to: event.endDate).minute!

@@ -54,6 +54,8 @@
 		86CD352D2424E45F00FCC96A /* TeammembersystemVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86CD352C2424E45F00FCC96A /* TeammembersystemVC.swift */; };
 		86CD352F2424EFA800FCC96A /* TeammemberslistVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86CD352E2424EFA800FCC96A /* TeammemberslistVC.swift */; };
 		86CD35312424F7B100FCC96A /* TeammemberCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86CD35302424F7B100FCC96A /* TeammemberCell.swift */; };
+		960BEDB32DB0291A0073491C /* CalendarSyncViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960BEDB22DB0291A0073491C /* CalendarSyncViewController.swift */; };
+		960BEDB52DB031EF0073491C /* SyncLoginModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960BEDB42DB031EF0073491C /* SyncLoginModal.swift */; };
 		A807915020B83D3C009F8C24 /* APIManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A807914F20B83D3C009F8C24 /* APIManager.swift */; };
 		A807915220B83D70009F8C24 /* SwiftyJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = A807915120B83D70009F8C24 /* SwiftyJSON.swift */; };
 		A807915620B8497C009F8C24 /* APIConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A807915520B8497C009F8C24 /* APIConstants.swift */; };
@@ -395,6 +397,8 @@
 		86CD352E2424EFA800FCC96A /* TeammemberslistVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeammemberslistVC.swift; sourceTree = "<group>"; };
 		86CD35302424F7B100FCC96A /* TeammemberCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeammemberCell.swift; sourceTree = "<group>"; };
 		8D78EE1F4FEF1A771D55916B /* Pods_Blue_Square.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Blue_Square.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		960BEDB22DB0291A0073491C /* CalendarSyncViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSyncViewController.swift; sourceTree = "<group>"; };
+		960BEDB42DB031EF0073491C /* SyncLoginModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncLoginModal.swift; sourceTree = "<group>"; };
 		96375FC944876681EA819C62 /* Pods-Blue Square.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Blue Square.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Blue Square/Pods-Blue Square.debug.xcconfig"; sourceTree = "<group>"; };
 		A807914F20B83D3C009F8C24 /* APIManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = APIManager.swift; sourceTree = "<group>"; };
 		A807915120B83D70009F8C24 /* SwiftyJSON.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftyJSON.swift; sourceTree = "<group>"; };
@@ -1051,6 +1055,7 @@
 				A89444B1210B1CF0002BA023 /* GetCalendarListAttendee.swift */,
 				A89444B0210B1CF0002BA023 /* GetCalendarListRootClass.swift */,
 				A8944492210B1A7B002BA023 /* OBJC */,
+				960BEDB42DB031EF0073491C /* SyncLoginModal.swift */,
 			);
 			path = Calendar;
 			sourceTree = "<group>";
@@ -1265,6 +1270,7 @@
 				A8A388DA20BFCA6C00AF83DC /* Payment */,
 				A8A388DB20BFCA8200AF83DC /* Sync */,
 				049AECC526F22DF5005189DA /* PopActivityController.swift */,
+				960BEDB22DB0291A0073491C /* CalendarSyncViewController.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -1959,11 +1965,13 @@
 				A8BEA44C20BEC1F100D58CDE /* OrganizationMapping.swift in Sources */,
 				A83126CE214F88EC008758DE /* ProcessListCell.swift in Sources */,
 				A89DF12820B6D057008A706D /* DashboardController.swift in Sources */,
+				960BEDB32DB0291A0073491C /* CalendarSyncViewController.swift in Sources */,
 				A81A5A4E21085E7700C226CF /* DropdownItem.swift in Sources */,
 				A8BE0F0E20D245040039382C /* ContactListResult.swift in Sources */,
 				A8BE0F1B20D272630039382C /* AccountsListModel.swift in Sources */,
 				A8C8218820ECF610000A7B63 /* AppliedProcessVC.swift in Sources */,
 				A89DF13320B6DA14008A706D /* StaticHelper.swift in Sources */,
+				960BEDB52DB031EF0073491C /* SyncLoginModal.swift in Sources */,
 				A86D5D802101ED0300FD1837 /* ColorPickerView.swift in Sources */,
 				A89DF12420B6CCDF008A706D /* LoginController.swift in Sources */,
 				A836F8CA2122E4D80053377B /* AddCardsController.swift in Sources */,

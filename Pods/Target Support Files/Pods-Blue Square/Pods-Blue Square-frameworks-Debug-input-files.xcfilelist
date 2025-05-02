@@ -10,6 +10,8 @@ ${BUILT_PRODUCTS_DIR}/IQKeyboardManagerSwift/IQKeyboardManagerSwift.framework
 ${BUILT_PRODUCTS_DIR}/JZCalendarWeekView/JZCalendarWeekView.framework
 ${BUILT_PRODUCTS_DIR}/PromisesObjC/FBLPromises.framework
 ${BUILT_PRODUCTS_DIR}/SSCalendar/SSCalendar.framework
+${BUILT_PRODUCTS_DIR}/Socket.IO-Client-Swift/SocketIO.framework
+${BUILT_PRODUCTS_DIR}/Starscream/Starscream.framework
 ${BUILT_PRODUCTS_DIR}/ThinCreditCard/ThinCreditCard.framework
 ${BUILT_PRODUCTS_DIR}/iOSDropDown/iOSDropDown.framework
 ${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework
