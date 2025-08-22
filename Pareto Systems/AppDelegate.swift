@@ -11,7 +11,6 @@ import IQKeyboardManagerSwift
 var childNames:String = ""
 //import FirebaseAnalytics
 //import Firebase
-
 import FirebaseCrashlytics
 import FirebaseCore
 @UIApplicationMain
@@ -19,10 +18,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var window: UIWindow?
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        IQKeyboardManager.shared.enable = true
+        IQKeyboardManager.shared.isEnabled = true
+
          FirebaseApp.configure()
-//        Crashlytics.sharedInstance().delegate = self
-//        Fabric.with([Crashlytics.self])
+
         IQKeyboardManager.shared.disabledDistanceHandlingClasses.append(ContactViewEditController.self)
         if let countryCode = (Locale.current as NSLocale).object(forKey: .countryCode) as? String {
             print(countryCode)

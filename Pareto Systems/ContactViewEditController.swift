@@ -13,7 +13,7 @@ class ContactViewEditController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        IQKeyboardManager.shared.enable = false
+        IQKeyboardManager.shared.isEnabled = true
         IQKeyboardManager.shared.enableAutoToolbar = false
     }
 

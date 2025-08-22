@@ -10,7 +10,7 @@ import UIKit
 import AnyFormatKit
 
 
-class CreateAccountsCell: UITableViewCell,TextInputFieldDelegate {
+class CreateAccountsCell: UITableViewCell {
     
     @IBOutlet weak var fieldPrimaryContct: ACFloatingTextfield!
     @IBOutlet weak var fieldFTPSite: ACFloatingTextfield!

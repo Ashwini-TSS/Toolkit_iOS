@@ -149,12 +149,11 @@ class ContactssController: UITableViewController {
         tblHistory.tableFooterView = UIView()
         tblHistory.estimatedRowHeight = 44
         tblHistory.rowHeight = UITableViewAutomaticDimension
-        IQKeyboardManager.shared.enable = true
-        
+        IQKeyboardManager.shared.isEnabled = true
+
         
         tableView.register(UINib(nibName: "NoteHeaderCell", bundle: nil), forCellReuseIdentifier: "NoteHeaderCell")
         tableView.register(UINib(nibName: "NotesListCell", bundle: nil), forCellReuseIdentifier: "NotesListCell")
-        
         
 
         //        if UIScreen.main.bounds.height < 812 {
@@ -353,7 +352,7 @@ class ContactssController: UITableViewController {
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = UITableViewAutomaticDimension
         cellCalled = false
-        IQKeyboardManager.shared.enable = true
+        IQKeyboardManager.shared.isEnabled = true
         IQKeyboardManager.shared.enableAutoToolbar = false
         
         selectedIndexPath = 1992001
@@ -475,7 +474,7 @@ class ContactssController: UITableViewController {
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        IQKeyboardManager.shared.enable = true
+        IQKeyboardManager.shared.isEnabled = true
         IQKeyboardManager.shared.enableAutoToolbar = true
         selectedIndexPath = 1992001
         isExpand = false

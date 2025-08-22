@@ -9,7 +9,7 @@
 import UIKit
 import AnyFormatKit
 
-class NewAccountController: UITableViewController,TextInputFieldDelegate {
+class NewAccountController: UITableViewController {
     @IBOutlet weak var websiteField: ACFloatingTextfield!
     @IBOutlet weak var ftpField: ACFloatingTextfield!
     @IBOutlet weak var email3Field: ACFloatingTextfield!
