@@ -310,6 +310,7 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                 btnAlldayevent.setImage(UIImage.init(named:"ic_check"), for: .normal)
             }
             if openedActivties.activity.allDay {
+                isAlldayEvent = true
                 btnAlldayevent.isUserInteractionEnabled = true
                 btnAlldayevent.setImage(UIImage.init(named:"ic_check"), for: .normal)
             }
@@ -2406,10 +2407,37 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
     
     
     func UpdateEditRequest(){
-        
+
         cancelBtn.isUserInteractionEnabled = false
         donelBtn.isUserInteractionEnabled = false
-        
+
+        // Rebuild startTime/endTime from the occurrence DATE (already in self.startTime)
+        // + the picked time-of-day from the time fields, so we never save a stray current
+        // timestamp/seconds, End stays after Start, and the picked times are preserved.
+        let editIsoFmt = DateFormatter()
+        editIsoFmt.locale = Locale(identifier: "en_US_POSIX")
+        editIsoFmt.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        let editTimeFmt = DateFormatter()
+        editTimeFmt.locale = Locale(identifier: "en_US_POSIX")
+        editTimeFmt.dateFormat = "hh:mm a"
+        let editCal = Calendar.current
+        if let editBase = editIsoFmt.date(from: self.startTime),
+           let pickedStart = editTimeFmt.date(from: self.Starttimeappointment.text ?? ""),
+           let pickedEnd = editTimeFmt.date(from: self.EndtimeAppointment.text ?? "") {
+            let sTOD = editCal.dateComponents([.hour, .minute], from: pickedStart)
+            let eTOD = editCal.dateComponents([.hour, .minute], from: pickedEnd)
+            var sComps = editCal.dateComponents([.year, .month, .day], from: editBase)
+            sComps.hour = sTOD.hour; sComps.minute = sTOD.minute; sComps.second = 0
+            var eComps = editCal.dateComponents([.year, .month, .day], from: editBase)
+            eComps.hour = eTOD.hour; eComps.minute = eTOD.minute; eComps.second = 0
+            if let sDate = editCal.date(from: sComps), var eDate = editCal.date(from: eComps) {
+                if eDate <= sDate { eDate = editCal.date(byAdding: .day, value: 1, to: eDate) ?? eDate }
+                self.startTime = editIsoFmt.string(from: sDate)
+                self.endTime = editIsoFmt.string(from: eDate)
+            }
+        }
+        print("⏱️[REC-EDIT] sending startTime=\(self.startTime) endTime=\(self.endTime) | timeUI start=\(Starttimeappointment.text ?? "nil") end=\(EndtimeAppointment.text ?? "nil") | isAllDay=\(isAlldayEvent)")
+
         let parameters = [
             "ForUsers":[],
             "From": startTime,
@@ -2474,13 +2502,15 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                                 "ModifiedBy": self.ModifiedByinput!,
                                 "ModifiedOn": self.ModifiedOninput!,
                                 "RecurrenceIndex": self.RecurrenceIndex!,
+                                "RecurringActivityId": self.RecurrenceID ?? "",
                                 "RollOver": self.isRollOver,
                                 "StartTime": self.startTime,
                                 "Subject": self.fieldSubject.text!
                             ],
                             "OrganizationId": currentOrgID,
                             "ObjectName": "appointment",
-                            "PassKey": passKey
+                            "PassKey": passKey,
+                            "IncludeExtendedProperties": true
                             ] as [String : Any]
                 }
                 else{
@@ -2514,6 +2544,8 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                         ] as [String : Any]
                     
                 }
+                
+                print("request:- \(parameters)")
                         
                         var mainURL:String!
                         let headers = [
@@ -2545,8 +2577,15 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                                 }
                                 let result = try JSON(data: data)
                                 print(result)
-                                let gcalid = self.retriveGcalEventIDFromToolkitID(toolkitid: self.Id)
-                                if(gcalid == "" || gcalid == nil){
+                                // Only claim success when the API actually succeeded. The
+                                // modify can return Valid:false (e.g. a rejected recurring
+                                // edit) with HTTP 200/500; previously the app showed
+                                // "Saved Successfully" regardless, so failed edits looked
+                                // saved but never persisted.
+                                let editSaveValid = result["Valid"].boolValue
+                                let editSaveMsg = result["ResponseMessage"].stringValue
+                                print("⏱️[REC-EDIT] modify response Valid=\(editSaveValid) ResponseMessage=\(editSaveMsg)")
+                                if editSaveValid {
                                     let alert = UIAlertController(title:"Appointment Saved Successfully", message: nil, preferredStyle: UIAlertControllerStyle.alert)
                                     alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (alert) in
                                         if(self.EditCondition == "calendar"){
@@ -2557,9 +2596,13 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                                         }
                                     }))
                                     self.present(alert, animated: true, completion: nil)
-                                }
-                                else{
-                                    self.editGoogleCalendarEvents(toolkitEventID: self.Id)
+                                } else {
+                                    self.cancelBtn.isUserInteractionEnabled = true
+                                    self.donelBtn.isUserInteractionEnabled = true
+                                    let failMsg = editSaveMsg.isEmpty ? "The appointment could not be updated. Please try again." : editSaveMsg
+                                    let alert = UIAlertController(title:"Save Failed", message: failMsg, preferredStyle: UIAlertControllerStyle.alert)
+                                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                                    self.present(alert, animated: true, completion: nil)
                                 }
                             }catch {
                                 print(error.localizedDescription)
@@ -2666,8 +2709,15 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                         if let getDataObject:NSDictionary = jsonResponse["DataObject"] as? NSDictionary {
                             if let getID:String = getDataObject["Id"] as? String {
                                 print(getID)
+                                if(self.fieldContacts.text != ""){
+                                self.linkAppointmentContacts(rightID: getID)
+                                }
+                                if(self.fieldChooseTeamMember.text != ""){
+                                 self.linkAppointmentUseres(rightID: getID)
+                                }
+                                self.UpdatedNewAppointment1()
 
-                                self.createGoogleCalendarEvent(toolkitEventID: getID)
+//                                self.createGoogleCalendarEvent(toolkitEventID: getID)
                             }
                         }
                     }else{

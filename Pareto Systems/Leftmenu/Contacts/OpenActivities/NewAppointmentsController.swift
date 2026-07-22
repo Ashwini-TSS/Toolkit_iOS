@@ -1828,7 +1828,36 @@ class NewAppointmentsController: UITableViewController {
     }
     
     
+    /// Normalizes start/end times right before saving so the payload never carries a
+    /// stray current timestamp (Date()) instead of the user's picked values:
+    /// - All-day events: use day boundaries (00:00:00 -> 23:59:59) of the chosen date(s).
+    /// - Timed events: drop seconds/milliseconds so the saved time matches the picked minute
+    ///   (e.g. a 5:00 pick is stored as 05:00:00.000, not 05:49:16.587).
+    func normalizeTimesForSave() {
+        let isoFmt = DateFormatter()
+        isoFmt.locale = Locale(identifier: "en_US_POSIX")
+        isoFmt.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        guard let startDate = isoFmt.date(from: self.startTime),
+              let endDate = isoFmt.date(from: self.endTime) else { return }
+        let calendar = Calendar.current
+        if isAlldayEvent {
+            let dayStart = calendar.startOfDay(for: startDate)
+            let endDayStart = calendar.startOfDay(for: endDate)
+            let dayEnd = calendar.date(byAdding: DateComponents(hour: 23, minute: 59, second: 59), to: endDayStart) ?? endDayStart
+            self.startTime = isoFmt.string(from: dayStart)
+            self.endTime = isoFmt.string(from: dayEnd)
+        } else {
+            var sComps = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: startDate)
+            sComps.second = 0
+            var eComps = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: endDate)
+            eComps.second = 0
+            if let s = calendar.date(from: sComps) { self.startTime = isoFmt.string(from: s) }
+            if let e = calendar.date(from: eComps) { self.endTime = isoFmt.string(from: e) }
+        }
+    }
+
     func updateRequest(){
+        self.normalizeTimesForSave()
         var mainURL:String = createContact
         
         let insertData:NSMutableDictionary = [:]

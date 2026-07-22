@@ -167,6 +167,10 @@ class TeammembesDetailsVC: UIViewController,URLSessionDelegate,UIGestureRecogniz
                         self.mainPhone = result["Results"][index]["MainPhone"].stringValue
                         self.sedondaryPhone = result["Results"][index]["SecondaryPhone"].stringValue
                         self.timeZone =  result["Results"][index]["TimeZone"].stringValue
+                        // TEMP LOG: capture the exact company/account TimeZone string the server returns
+                        // so we know its format (IANA "America/Los_Angeles" vs Windows "Pacific Standard Time" vs offset).
+                        let rawTZ = result["Results"][index]["TimeZone"].stringValue
+                        print("🕒[ORG-TZ] name=\(result["Results"][index]["FullName"].stringValue) TimeZone=<\(rawTZ)> len=\(rawTZ.count) matchesIANA=\(TimeZone(identifier: rawTZ) != nil) | device.tz=\(TimeZone.current.identifier)")
                         self.connID = result["Results"][index]["Id"].stringValue
                         
                       }

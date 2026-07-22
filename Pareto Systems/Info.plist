@@ -39,6 +39,8 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSCalendarsUsageDescription</key>
+	<string>We need access to your calendar to add events</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Our application needs permission to write photos...</string>
 	<key>UILaunchStoryboardName</key>
@@ -60,8 +62,6 @@
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
-	<key>NSCalendarsUsageDescription</key>
-	<string>We need access to your calendar to add events</string>
 	<key>UIUserInterfaceStyle</key>
 	<string>Light</string>
 </dict>
