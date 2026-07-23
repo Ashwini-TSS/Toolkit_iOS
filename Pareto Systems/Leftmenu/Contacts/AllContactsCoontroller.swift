@@ -12,12 +12,14 @@ class AllContactsCoontroller: UIViewController {
     
     var carsDictionary = [String: [String]]()
     var carSectionTitles = [String]()
-    
     var contactList:[ContactListResult] = []
     var accountList:[GetAccountsListResult] = []
     var filteredcontactList:[ContactListResult] = []
     var filteredaccountList:[GetAccountsListResult] = []
+    var wholeContactsList:[ContactListResult] = []
 
+    @IBOutlet weak var allContactsRadio: UIButton!
+    @IBOutlet weak var myContactsRadio: UIButton!
     @IBOutlet weak var searchBBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
     var userOrgID:String = ""
@@ -30,6 +32,10 @@ class AllContactsCoontroller: UIViewController {
     var selectedRow: Int = 0
     var selectedIndexPath: IndexPath = IndexPath(row: 0, section: 0)
     
+    @IBOutlet weak var myContactsView: UIView!
+    @IBOutlet weak var allContactsView: UIView!
+    @IBOutlet weak var stackViewHeight: NSLayoutConstraint!
+    @IBOutlet weak var accounntStackView: UIStackView!
     @IBOutlet weak var btnDropDown: UIBarButtonItem!
     var searchActive:Bool = false
     
@@ -47,6 +53,7 @@ class AllContactsCoontroller: UIViewController {
         
         let appVersion = Bundle.main.infoDictionary!["CFBundleShortVersionString"] as? String
         print(appVersion as Any)
+        
         
         tableView.tableFooterView = UIView()
         tableView.estimatedRowHeight = 102
@@ -74,16 +81,33 @@ class AllContactsCoontroller: UIViewController {
         print(btnTwoX)
         print(btnThirdX)
         
+        DispatchQueue.main.async {
+            self.searchActive = false;
+            self.view.endEditing(true)
+            self.searchBBar.text = ""
+        }
+        
         if fromAccounts {
             self.title = "Accounts"
             objectName = "company"
+            self.stackViewHeight.constant = 0
+            self.allContactsView.isHidden = true
+            self.myContactsView.isHidden = true
+            self.accounntStackView.isHidden = true
         }
-        
+        else{
+            self.stackViewHeight.constant = 44
+            self.allContactsView.isHidden = false
+            self.myContactsView.isHidden = false
+            self.accounntStackView.isHidden = false
+        }
         selectedContactInfo = nil
         
         self.userOrgID = currentOrgID
         self.getTask()
         self.getAppointments()
+        self.myContactsRadio.setImage(UIImage(named: "ic_radio_uncheck"), for: .normal)
+        self.allContactsRadio.setImage(UIImage(named: "ic_radio_check"), for: .normal)
         self.getContactListAPI(orgID: self.userOrgID)
        
 //        NavigationHelper().setupScreen(vc: self)
@@ -262,6 +286,7 @@ class AllContactsCoontroller: UIViewController {
             else {
                 self.contactList = contactModel.results
                 self.filteredcontactList = self.contactList
+                self.wholeContactsList = self.contactList
             }
                 }} },  onFailure: { error in
                     print(error.localizedDescription)
@@ -271,8 +296,9 @@ class AllContactsCoontroller: UIViewController {
             
         }
     func getContactListAPI(orgID:String){
+        
         let parameters = [
-            "OrderBy": "",
+            "OrderBy": "LastName",
             "ParentId": "",
             "ResultsPerPage": 5000,
             "OrganizationId": orgID,
@@ -333,8 +359,9 @@ class AllContactsCoontroller: UIViewController {
                     }
                     else {
                     self.contactList = contactModel.results
-                    
+                     
                     self.filteredcontactList = self.contactList
+                    self.wholeContactsList = self.contactList
 
                     let nameList:NSMutableArray = []
                     for index in 0..<contactModel.results.count {
@@ -425,15 +452,99 @@ class AllContactsCoontroller: UIViewController {
         }
     }
     
-    /*
-     // MARK: - Navigation
-     
-     // In a storyboard-based application, you will often want to do a little preparation before navigation
-     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-     // Get the new view controller using segue.destinationViewController.
-     // Pass the selected object to the new view controller.
-     }
-     */
+    //MARK: - Radio button Tapped
+    
+    @IBAction func allContactsTapped(_ sender: UIButton) {
+        self.myContactsRadio.setImage(UIImage(named: "ic_radio_uncheck"), for: .normal)
+        self.allContactsRadio.setImage(UIImage(named: "ic_radio_check"), for: .normal)
+  
+        searchActive = false;
+        self.view.endEditing(true)
+        self.searchBBar.text = ""
+        self.filteredcontactList = self.wholeContactsList
+            
+
+        let nameList:NSMutableArray = []
+        for index in 0..<self.filteredcontactList.count {
+            let result = self.filteredcontactList[index]
+//                        let getUserName:String = result.firstName!.capitalized + " " + result.lastName!.capitalized
+            let getUserName:String = result.firstName! + " " + result.lastName!
+
+//                        ("\(result.name!)!@##@!\(result.id!)")
+            nameList.add("\(getUserName)!@##@!\(result.id!)")
+
+//                        nameList.add("\(result.firstName!) \(result.lastName!)")
+        }
+        self.carSectionTitles = []
+        self.carsDictionary = [String: [String]]()
+        
+        for car in nameList {
+            let name:String = car as! String
+
+            var carKey = String(name.prefix(1))
+            carKey = carKey.uppercased()
+            if var carValues = self.carsDictionary[carKey] {
+                carValues.append(name)
+                self.carsDictionary[carKey] = carValues
+            } else {
+                self.carsDictionary[carKey] = [name]
+            }
+        }
+        self.carSectionTitles = [String](self.carsDictionary.keys)
+        print(self.carSectionTitles)
+        
+        self.carSectionTitles = self.carSectionTitles.sorted(by: { $0 < $1 })
+
+        self.tableView.reloadData()
+    }
+    
+    
+    @IBAction func myContactsTapped(_ sender: UIButton) {
+        self.myContactsRadio.setImage(UIImage(named: "ic_radio_check"), for: .normal)
+        self.allContactsRadio.setImage(UIImage(named: "ic_radio_uncheck"), for: .normal)
+        
+        searchActive = false;
+        self.view.endEditing(true)
+        self.searchBBar.text = ""
+
+        //Added code below new for mycontacts
+        let filteredResults = self.wholeContactsList.filter { result in
+        return result.owningOrganizationUserId == currentMasterID
+        }
+    self.filteredcontactList = filteredResults
+        
+    let nameList:NSMutableArray = []
+        for index in 0..<self.filteredcontactList.count {
+            let result = self.filteredcontactList[index]
+//                        let getUserName:String = result.firstName!.capitalized + " " + result.lastName!.capitalized
+        let getUserName:String = result.firstName! + " " + result.lastName!
+
+//                        ("\(result.name!)!@##@!\(result.id!)")
+        nameList.add("\(getUserName)!@##@!\(result.id!)")
+
+//                        nameList.add("\(result.firstName!) \(result.lastName!)")
+    }
+    self.carSectionTitles = []
+    self.carsDictionary = [String: [String]]()
+    
+    for car in nameList {
+        let name:String = car as! String
+
+        var carKey = String(name.prefix(1))
+        carKey = carKey.uppercased()
+        if var carValues = self.carsDictionary[carKey] {
+            carValues.append(name)
+            self.carsDictionary[carKey] = carValues
+        } else {
+            self.carsDictionary[carKey] = [name]
+        }
+    }
+    self.carSectionTitles = [String](self.carsDictionary.keys)
+    print(self.carSectionTitles)
+    
+    self.carSectionTitles = self.carSectionTitles.sorted(by: { $0 < $1 })
+    self.tableView.reloadData()
+    }
     
 }
 extension AllContactsCoontroller: UITableViewDelegate, UITableViewDataSource {
@@ -699,8 +810,6 @@ extension AllContactsCoontroller: DropdownMenuDelegate {
         print(indexTitle)
         NavigationHelper().setupRootViewController(senderVC: self, title: indexTitle)
         
-        
-        
     }
 }
 extension AllContactsCoontroller:URLSessionDelegate {
@@ -731,7 +840,7 @@ extension AllContactsCoontroller: UISearchBarDelegate {
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        searchBar.text = ""
+//        searchBar.text = ""
         if self.fromAccounts {
             accountList = filteredaccountList
         }else{

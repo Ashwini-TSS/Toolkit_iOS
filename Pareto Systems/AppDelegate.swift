@@ -11,7 +11,6 @@ import IQKeyboardManagerSwift
 var childNames:String = ""
 //import FirebaseAnalytics
 //import Firebase
-
 import FirebaseCrashlytics
 import FirebaseCore
 @UIApplicationMain
@@ -19,18 +18,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var window: UIWindow?
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        print(UIScreen.main.bounds.width)
-        print(UIScreen.main.bounds.height) // 812
-        IQKeyboardManager.shared.enable = true
+        IQKeyboardManager.shared.isEnabled = true
+
          FirebaseApp.configure()
-//        Crashlytics.sharedInstance().delegate = self
-//        Fabric.with([Crashlytics.self])
+
         IQKeyboardManager.shared.disabledDistanceHandlingClasses.append(ContactViewEditController.self)
         if let countryCode = (Locale.current as NSLocale).object(forKey: .countryCode) as? String {
             print(countryCode)
             let Extensionnumber = getCountryPhonceCode(countryCode)
             UserDefaults.standard.set(Extensionnumber, forKey: "Extension")
         }
+        UserDefaults.standard.removeObject(forKey: "selectedYear")
+        UserDefaults.standard.removeObject(forKey: "pickeradded")
         
         //Setup HUD
         //        SVProgressHUD.setDefaultStyle(.dark)
@@ -366,7 +365,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func applicationDidBecomeActive(_ application: UIApplication) {
-        
+        NotificationCenter.default.post(name: NSNotification.Name("choosetab"), object: nil, userInfo: nil)
         //        UIApplication.shared.ba
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
     }

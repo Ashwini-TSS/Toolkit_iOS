@@ -217,7 +217,7 @@ class CreateRecurrencePattern: UITableViewController {
 
                 let formatter = DateFormatter()
                 formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-                formatter.dateFormat = "yyyy-MM-dd'T'HH:00:ss.SSSZ"
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
                 self.lblRecurrenceStartTime = formatter.string(from: dart)
             }else{
             
@@ -227,7 +227,7 @@ class CreateRecurrencePattern: UITableViewController {
             fieldStartTime.text = getStarttTime
             //
             formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-            formatter.dateFormat = "yyyy-MM-dd'T'HH:00:ss.SSSZ"
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
             self.lblStartTime = formatter.string(from: Date())
             //
             //
@@ -239,15 +239,15 @@ class CreateRecurrencePattern: UITableViewController {
             fieldEndTime.text = getEndTime
             //
             formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-            formatter.dateFormat = "yyyy-MM-dd'T'HH:00:ss.SSSZ"
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
             self.lblEndTime = formatter.string(from: date!)
             //
-            formatter.dateFormat = "YYYY-MM-dd"
+            formatter.dateFormat = "yyyy-MM-dd"
             let getStartTime:String = formatter.string(from: Date())
             filedRecurrenceStart.text = getStartTime
             
             formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-            formatter.dateFormat = "yyyy-MM-dd'T'HH:00:ss.SSSZ"
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
             self.lblRecurrenceStartTime = formatter.string(from: Date())
             
             UserDefaults.standard.removeObject(forKey: "showingDayView")
@@ -264,7 +264,7 @@ class CreateRecurrencePattern: UITableViewController {
                 fieldStartTime.text = getStarttTime
                 
                 formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-                formatter.dateFormat = "yyyy-MM-dd'T'HH:00:ss.SSSZ"
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
                 self.lblStartTime = formatter.string(from: Date())
                 
                 let calendar = Calendar.current
@@ -274,7 +274,7 @@ class CreateRecurrencePattern: UITableViewController {
 
                 fieldEndTime.text = getEndTime
                 formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-                formatter.dateFormat = "yyyy-MM-dd'T'HH:00:ss.SSSZ"
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
                 self.lblEndTime = formatter.string(from: date!)
                 
                 let dater = Date()
@@ -288,7 +288,7 @@ class CreateRecurrencePattern: UITableViewController {
                 
                 let dart = self.convertStringToDate(dateString: datefor)
                 formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-                formatter.dateFormat = "yyyy-MM-dd'T'HH:00:ss.SSSZ"
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
                 self.lblRecurrenceStartTime = formatter.string(from: dart)
                 
             }else{
@@ -298,7 +298,7 @@ class CreateRecurrencePattern: UITableViewController {
             fieldStartTime.text = getStarttTime
 //
             formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-            formatter.dateFormat = "yyyy-MM-dd'T'HH:00:ss.SSSZ"
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
             self.lblStartTime = formatter.string(from: Date())
 //
 //
@@ -310,15 +310,15 @@ class CreateRecurrencePattern: UITableViewController {
             fieldEndTime.text = getEndTime
 //
             formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-            formatter.dateFormat = "yyyy-MM-dd'T'HH:00:ss.SSSZ"
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
             self.lblEndTime = formatter.string(from: date!)
 //
-            formatter.dateFormat = "YYYY-MM-dd"
+            formatter.dateFormat = "yyyy-MM-dd"
             let getStartTime:String = formatter.string(from: Date())
             filedRecurrenceStart.text = getStartTime
             
             formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-            formatter.dateFormat = "yyyy-MM-dd'T'HH:00:ss.SSSZ"
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
             self.lblRecurrenceStartTime = formatter.string(from: Date())
             }
         }
@@ -1015,8 +1015,46 @@ class CreateRecurrencePattern: UITableViewController {
             dataObject.setValue(lblEndTime, forKey: "EndTime")
             dataObject.setValue(isAllDay, forKey: "AllDay")
             dataObject.setValue(isRollOver, forKey: "RollOver")
-            dataObject.setValue(lblRecurrenceStartTime, forKey: "RecurrenceStart")
-            dataObject.setValue(lblRecurrenceEndTime, forKey: "RecurrenceEnd")
+            // ===== RECURRENCE RANGE: mirror the WEB platform (same as the create flow) =====
+            // UTC (literal 'Z'), both bounds carry the START time-of-day:
+            //     RecurrenceStart = start date + start time,  RecurrenceEnd = end date + start time.
+            // Matches the exact occurrence instants (no first/last drop) and avoids the server's
+            // offset-format parser bug (noon-shift / day->01 corruption). See create flow for detail.
+            let editUtcFmt = DateFormatter()
+            editUtcFmt.locale = Locale(identifier: "en_US_POSIX")
+            editUtcFmt.timeZone = TimeZone(identifier: "UTC")
+            editUtcFmt.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+            let editDateFmt = DateFormatter()
+            editDateFmt.locale = Locale(identifier: "en_US_POSIX")
+            editDateFmt.dateFormat = "yyyy-MM-dd"
+            let editTimeFmt = DateFormatter()
+            editTimeFmt.locale = Locale(identifier: "en_US_POSIX")
+            editTimeFmt.dateFormat = "hh:mm a"
+            let editCal = Calendar.current
+            var editRecStart = lblStartTime          // fallback = StartTime
+            var editRecEnd = lblRecurrenceEndTime    // fallback = existing value
+            let editStartDateStr = (filedRecurrenceStart.text?.isEmpty == false)
+                ? filedRecurrenceStart.text!
+                : (lblRecurrenceStartTime.components(separatedBy: "T").first ?? lblRecurrenceStartTime)
+            let editEndDateStr = (filedRecurrenceEnd.text?.isEmpty == false)
+                ? filedRecurrenceEnd.text!
+                : (lblRecurrenceEndTime.components(separatedBy: "T").first ?? lblRecurrenceEndTime)
+            if let pickedStart = editTimeFmt.date(from: fieldStartTime.text ?? "") {
+                let sTOD = editCal.dateComponents([.hour, .minute], from: pickedStart)
+                if let startDay = editDateFmt.date(from: editStartDateStr) {
+                    var c = editCal.dateComponents([.year, .month, .day], from: startDay)
+                    c.hour = sTOD.hour; c.minute = sTOD.minute; c.second = 0
+                    if let d = editCal.date(from: c) { editRecStart = editUtcFmt.string(from: d) }
+                }
+                if let endDay = editDateFmt.date(from: editEndDateStr) {
+                    var c = editCal.dateComponents([.year, .month, .day], from: endDay)
+                    c.hour = sTOD.hour; c.minute = sTOD.minute; c.second = 0
+                    if let d = editCal.date(from: c) { editRecEnd = editUtcFmt.string(from: d) }
+                }
+            }
+            print("🟣[REC-UPDATE] range (Web-style UTC) -> RecurrenceStart=\(editRecStart) RecurrenceEnd=\(editRecEnd) (startDate=\(editStartDateStr) endDate=\(editEndDateStr))")
+            dataObject.setValue(editRecStart, forKey: "RecurrenceStart")
+            dataObject.setValue(editRecEnd, forKey: "RecurrenceEnd")
             
             if fieldRemovaRule.text?.count == 0 {
                 if fieldRemovaRule.text == "Delete All Incomplete" {
@@ -1072,6 +1110,7 @@ class CreateRecurrencePattern: UITableViewController {
     }
     func createServiceWithRecurrenceID(recID:String){
         let dataObject:NSMutableDictionary = [:]
+        print("🔵[REC-CREATE] createServiceWithRecurrenceID ENTRY: lblRecurrenceStartTime=\(lblRecurrenceStartTime) lblRecurrenceEndTime=\(lblRecurrenceEndTime) filedRecurrenceStart.text=\(filedRecurrenceStart.text ?? "nil") filedRecurrenceEnd.text=\(filedRecurrenceEnd.text ?? "nil") | device.locale=\(Locale.current.identifier) tz=\(TimeZone.current.identifier)")
         let vals = UserDefaults.standard.bool(forKey: "Goday")
 if(vals)
 {
@@ -1082,6 +1121,7 @@ if(vals)
     formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
     formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
     let fdates = formatter.string(from: dstre)
+    print("🔵[REC-CREATE] Goday branch: reparsed lblRecurrenceEndTime -> dstre=\(dstre) -> fdates=\(fdates)")
     lblRecurrenceEndTime = fdates
 }
   
@@ -1091,10 +1131,77 @@ if(vals)
         dataObject.setValue(fieldSubject.text!, forKey: "Subject")
         dataObject.setValue(fieldDescription.text!, forKey: "Description")
         dataObject.setValue(fieldLocation.text!, forKey: "Location")
+        // Rebuild StartTime/EndTime from the recurrence start DATE + the user's picked
+        // time-of-day so: (a) both share one consistent date, (b) End is after Start,
+        // (c) no stray current-time/seconds, and (d) the picked times are preserved
+        // (the End picker uses a year-2000 reference date that must be discarded).
+        let recIsoFmt = DateFormatter()
+        recIsoFmt.locale = Locale(identifier: "en_US_POSIX")
+        recIsoFmt.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        let recTimeFmt = DateFormatter()
+        recTimeFmt.locale = Locale(identifier: "en_US_POSIX")
+        recTimeFmt.dateFormat = "hh:mm a"
+        let recDateFmt = DateFormatter()
+        recDateFmt.locale = Locale(identifier: "en_US_POSIX")
+        recDateFmt.dateFormat = "yyyy-MM-dd"
+        let recCal = Calendar.current
+        let recBaseDateStr = lblRecurrenceStartTime.components(separatedBy: "T").first ?? lblRecurrenceStartTime
+        if let recBaseDate = recDateFmt.date(from: recBaseDateStr),
+           let pickedStart = recTimeFmt.date(from: fieldStartTime.text ?? ""),
+           let pickedEnd = recTimeFmt.date(from: fieldEndTime.text ?? "") {
+            let sTOD = recCal.dateComponents([.hour, .minute], from: pickedStart)
+            let eTOD = recCal.dateComponents([.hour, .minute], from: pickedEnd)
+            var sComps = recCal.dateComponents([.year, .month, .day], from: recBaseDate)
+            sComps.hour = sTOD.hour; sComps.minute = sTOD.minute; sComps.second = 0
+            var eComps = recCal.dateComponents([.year, .month, .day], from: recBaseDate)
+            eComps.hour = eTOD.hour; eComps.minute = eTOD.minute; eComps.second = 0
+            if let sDate = recCal.date(from: sComps), var eDate = recCal.date(from: eComps) {
+                if eDate <= sDate { eDate = recCal.date(byAdding: .day, value: 1, to: eDate) ?? eDate }
+                lblStartTime = recIsoFmt.string(from: sDate)
+                lblEndTime = recIsoFmt.string(from: eDate)
+            }
+        }
         dataObject.setValue(lblStartTime, forKey: "StartTime")
         dataObject.setValue(lblEndTime, forKey: "EndTime")
+        print("⏱️[REC-CREATE] sending StartTime=\(lblStartTime) EndTime=\(lblEndTime) | UI fieldStartTime=\(fieldStartTime.text ?? "nil") fieldEndTime=\(fieldEndTime.text ?? "nil") | isAllDay=\(isAllDay) recStart=\(lblRecurrenceStartTime) recEnd=\(lblRecurrenceEndTime)")
         dataObject.setValue(isAllDay, forKey: "AllDay")
         dataObject.setValue(isRollOver, forKey: "RollOver")
+
+        // ===== RECURRENCE RANGE: mirror the WEB platform (confirmed working) =====
+        // The web client sends RecurrenceStart/RecurrenceEnd in UTC (literal 'Z'), and BOTH bounds
+        // carry the START time-of-day:
+        //     RecurrenceStart = start date + start time   (e.g. 2026-08-25T12:00:00.000Z)
+        //     RecurrenceEnd   = end date   + start time   (e.g. 2026-08-31T12:00:00.000Z)
+        // This makes each bound equal the exact daily occurrence instant, so the server includes
+        // every day (no first/last drop), and the UTC 'Z' format avoids the server's offset-format
+        // parser bug that noon-shifted RecurrenceStart and reset RecurrenceEnd's day to 01
+        // (Aug 31 -> Aug 01, Nov 30 -> Nov 01 -> empty range -> NOTHING created).
+        // StartTime/EndTime are left untouched — they use a different, working server parser.
+        let recUtcFmt = DateFormatter()
+        recUtcFmt.locale = Locale(identifier: "en_US_POSIX")
+        recUtcFmt.timeZone = TimeZone(identifier: "UTC")
+        recUtcFmt.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+        let recStartDateStr = (filedRecurrenceStart.text?.isEmpty == false)
+            ? filedRecurrenceStart.text!
+            : (lblRecurrenceStartTime.components(separatedBy: "T").first ?? lblRecurrenceStartTime)
+        let recEndDateStr = (filedRecurrenceEnd.text?.isEmpty == false)
+            ? filedRecurrenceEnd.text!
+            : (lblRecurrenceEndTime.components(separatedBy: "T").first ?? lblRecurrenceEndTime)
+        if let pickedStart = recTimeFmt.date(from: fieldStartTime.text ?? "") {
+            let sTOD = recCal.dateComponents([.hour, .minute], from: pickedStart)
+            if let startDay = recDateFmt.date(from: recStartDateStr) {
+                var c = recCal.dateComponents([.year, .month, .day], from: startDay)
+                c.hour = sTOD.hour; c.minute = sTOD.minute; c.second = 0
+                if let d = recCal.date(from: c) { lblRecurrenceStartTime = recUtcFmt.string(from: d) }
+            }
+            if let endDay = recDateFmt.date(from: recEndDateStr) {
+                var c = recCal.dateComponents([.year, .month, .day], from: endDay)
+                c.hour = sTOD.hour; c.minute = sTOD.minute; c.second = 0
+                if let d = recCal.date(from: c) { lblRecurrenceEndTime = recUtcFmt.string(from: d) }
+            }
+        }
+        print("🟣[REC-CREATE] range (Web-style UTC) -> RecurrenceStart=\(lblRecurrenceStartTime) RecurrenceEnd=\(lblRecurrenceEndTime) (from startDate=\(recStartDateStr) endDate=\(recEndDateStr))")
+
          dataObject.setValue(lblRecurrenceStartTime, forKey: "RecurrenceStart")
         dataObject.setValue(lblRecurrenceEndTime, forKey: "RecurrenceEnd")
         if fieldRemovaRule.text?.count == 0 {
@@ -1107,16 +1214,33 @@ if(vals)
             }
         }
         
+        // ---- REQUEST snapshot (what WE send) ----
+        let reqRecStart = "\(dataObject.value(forKey: "RecurrenceStart") ?? "nil")"
+        let reqRecEnd   = "\(dataObject.value(forKey: "RecurrenceEnd") ?? "nil")"
+        print("🔴[REC-CREATE] ════════ REQUEST (US format check) ════════")
+        print("🔴[REC-CREATE] device.locale=\(Locale.current.identifier) tz=\(TimeZone.current.identifier) offsetSecs=\(TimeZone.current.secondsFromGMT())")
+        print("🔴[REC-CREATE] REQ  RecurrenceStart=\(reqRecStart)")
+        print("🔴[REC-CREATE] REQ  RecurrenceEnd  =\(reqRecEnd)")
+        print("🔴[REC-CREATE] REQ  StartTime=\(dataObject.value(forKey: "StartTime") ?? "nil") EndTime=\(dataObject.value(forKey: "EndTime") ?? "nil") AllDay=\(dataObject.value(forKey: "AllDay") ?? "nil")")
         let json:[String:Any] = ["DataObject":dataObject,
                                  "ObjectName":createMethod,
                                  "PassKey":passKey,
                                  "OrganizationId":currentOrgID]
         print(json)
-        
+
         APIManager.sharedInstance.postRequestCall(postURL: createContact, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
             DispatchQueue.main.async {
                 print(json)
-                
+                // ---- RESPONSE snapshot (what the SERVER stored) — compare against REQ above ----
+                let respObj = jsonResponse["DataObject"] as? NSDictionary
+                let respRecStart = "\(respObj?.value(forKey: "RecurrenceStart") ?? "nil")"
+                let respRecEnd   = "\(respObj?.value(forKey: "RecurrenceEnd") ?? "nil")"
+                print("🔴[REC-CREATE] ════════ RESPONSE (server stored) ════════")
+                print("🔴[REC-CREATE] REQ  RecurrenceStart=\(reqRecStart)  ->  RESP=\(respRecStart)")
+                print("🔴[REC-CREATE] REQ  RecurrenceEnd  =\(reqRecEnd)  ->  RESP=\(respRecEnd)")
+                print("🔴[REC-CREATE] RESP StartTime=\(respObj?.value(forKey: "StartTime") ?? "nil") EndTime=\(respObj?.value(forKey: "EndTime") ?? "nil") PendingExpansion=\(respObj?.value(forKey: "PendingExpansion") ?? "nil")")
+                print("🔴[REC-CREATE] FULL RESPONSE: \(jsonResponse)")
+
                 let getModel = ServiceDeliverableModel.init(fromDictionary: jsonResponse)
                 if getModel.valid {
                     OperationQueue.main.addOperation {
@@ -2512,7 +2636,7 @@ extension CreateRecurrencePattern {
                 OperationQueue.main.addOperation {
                     
                     let formatter = DateFormatter()
-                    formatter.dateFormat = "YYYY-MM-dd"
+                    formatter.dateFormat = "yyyy-MM-dd"
 //                    self.fieldDate.text = formatter.string(from: date!)
                     
                     formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
@@ -2653,14 +2777,17 @@ extension CreateRecurrencePattern {
         }
         
         DPPickerManager.shared.showPicker(title: pickTitle, picker: { (picker) in
-            picker.date = Date()
+            if textField == self.fieldEndTime, let endText = self.fieldEndTime.text, !endText.isEmpty {
+                let fmt = DateFormatter()
+                fmt.dateFormat = "hh:mm a"
+                picker.date = fmt.date(from: endText) ?? Date()
+            } else {
+                picker.date = Date()
+            }
             self.custompicker = picker
             picker.datePickerMode = .time
             picker.minuteInterval = 15
             picker.timeZone = TimeZone.current
-            if textField == self.fieldEndTime {
-               // picker.minimumDate = minimumDate
-            }
         }) { (date, cancel) in
             self.setupBottomView()
             if !cancel {
@@ -2670,12 +2797,13 @@ extension CreateRecurrencePattern {
                     let formatter = DateFormatter()
                     formatter.dateFormat = "hh:mm a"
                     textField.text = formatter.string(from: (self.custompicker?.date)!)
+                    print("⏱️[REC-PICKER] field=\(textField == self.fieldEndTime ? "END" : "START") callbackDate=\(String(describing: date)) pickerWheelDate=\(String(describing: self.custompicker?.date)) display=\(textField.text ?? "nil")")
                     formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
                     formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
                     if textField == self.fieldEndTime {
                         formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
                         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-                        self.lblEndTime = formatter.string(from: date!)
+                        self.lblEndTime = formatter.string(from: (self.custompicker?.date)!)
                     }
                     else{
                         let vals = UserDefaults.standard.bool(forKey: "Goday")
@@ -2713,22 +2841,39 @@ extension CreateRecurrencePattern {
             }
         }
     }
+    
+    func daysBetweenTwoDate(fromdate : Date, toDate: Date) -> Int {
+        let components = Calendar.current.dateComponents([.day], from: fromdate, to: toDate)
+        return components.day ?? 0
+    }
+    
     func showStartEndDatePicker(textField:UITextField){
         var minimumDate = Date()
         var pickTitle:String = "Recurrence Start"
-        
+
+        // ===== RECURRENCE DATE DEBUG =====
+        let dbgField = (textField == filedRecurrenceEnd) ? "RecurrenceEnd" : "RecurrenceStart"
+        print("🟡[REC-DATE] ---- showStartEndDatePicker(\(dbgField)) ----")
+        print("🟡[REC-DATE] device.locale=\(Locale.current.identifier) timeZone=\(TimeZone.current.identifier) offsetSecs=\(TimeZone.current.secondsFromGMT()) is24h=\(DateFormatter.dateFormat(fromTemplate: "j", options: 0, locale: Locale.current)?.contains("a") == false)")
+        print("🟡[REC-DATE] IN filedRecurrenceStart.text=\(filedRecurrenceStart.text ?? "nil") filedRecurrenceEnd.text=\(filedRecurrenceEnd.text ?? "nil")")
+        print("🟡[REC-DATE] IN lblRecurrenceStartTime=\(lblRecurrenceStartTime) lblRecurrenceEndTime=\(lblRecurrenceEndTime)")
+
         if textField == filedRecurrenceEnd {
             pickTitle = "Recurrence End"
-            
+
             if filedRecurrenceStart.text?.count == 0 {
                 NavigationHelper.showSimpleAlert(message:"Please Choose Recurrence Start")
                 return
             }
-            
+
             let formatter = DateFormatter()
-            formatter.dateFormat = "YYYY-MM-dd"
+            formatter.locale = Locale(identifier: "en_US_POSIX") // fixed locale so yyyy parse is deterministic
+            formatter.dateFormat = "yyyy-MM-dd"
             let getDate = formatter.date(from: filedRecurrenceStart.text!)
-            
+            // FIXED: now lowercase "yyyy" (calendar year) + en_US_POSIX locale, so late-Dec
+            // dates no longer roll into the next week-year (e.g. Dec 29 2027 -> 2028 bug).
+            print("🟡[REC-DATE] END minDate parse: text=\(filedRecurrenceStart.text ?? "nil") -> getDate=\(String(describing: getDate)) (fmt=yyyy-MM-dd, locale=\(formatter.locale?.identifier ?? "nil"))")
+
             let calendar = Calendar.current
             minimumDate = calendar.date(byAdding: .day, value: 1, to: getDate!)!
         }
@@ -2736,54 +2881,88 @@ extension CreateRecurrencePattern {
         DPPickerManager.shared.showPicker(title: pickTitle, picker: { (picker) in
 //            picker.date = Date()
             let formatter = DateFormatter()
-            formatter.dateFormat = "YYYY-MM-dd"
+            formatter.locale = Locale(identifier: "en_US_POSIX") // fixed locale so yyyy parse is deterministic
+            formatter.dateFormat = "yyyy-MM-dd"
             if textField != self.filedRecurrenceEnd {
+            let parsed = formatter.date(from: self.filedRecurrenceStart.text!)
+            print("🟡[REC-DATE] picker.setup START: parse text=\(self.filedRecurrenceStart.text ?? "nil") -> \(String(describing: parsed)) (fmt=YYYY-MM-dd, locale=default)")
             picker.date = formatter.date(from: self.filedRecurrenceStart.text!)!
             }
             else
             {
                 let getDate = formatter.date(from: self.filedRecurrenceStart.text!)
-                
+
                 let calendar = Calendar.current
                 let ennddate = calendar.date(byAdding: .day, value: 1, to: getDate!)!
+                print("🟡[REC-DATE] picker.setup END: parse text=\(self.filedRecurrenceStart.text ?? "nil") -> \(String(describing: getDate)) +1day -> \(ennddate)")
                 picker.date = ennddate
 
             }
-            
+
             picker.datePickerMode = .date
             if textField == self.filedRecurrenceEnd {
               //  picker.minimumDate = minimumDate
             }
         }) { (date, cancel) in
             self.setupBottomView()
-            
+
             if !cancel {
                 // TODO: you code here
                 debugPrint(date as Any)
                 OperationQueue.main.addOperation {
-                    
+
+                    // ===== RECURRENCE DATE DEBUG (picker returned) =====
+                    let dbgIso = DateFormatter()
+                    dbgIso.locale = Locale(identifier: "en_US_POSIX")
+                    dbgIso.timeZone = TimeZone.current
+                    dbgIso.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                    let dbgUtc = DateFormatter()
+                    dbgUtc.locale = Locale(identifier: "en_US_POSIX")
+                    dbgUtc.timeZone = TimeZone(identifier: "UTC")
+                    dbgUtc.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                    print("🟢[REC-DATE] picker RETURNED for \(dbgField): rawDate=\(String(describing: date))")
+                    print("🟢[REC-DATE]   as LOCAL(\(TimeZone.current.identifier))=\(date != nil ? dbgIso.string(from: date!) : "nil")")
+                    print("🟢[REC-DATE]   as UTC=\(date != nil ? dbgUtc.string(from: date!) : "nil")")
+
                     let formatter = DateFormatter()
-                    formatter.dateFormat = "YYYY-MM-dd"
+                    formatter.locale = Locale(identifier: "en_US_POSIX") // fixed locale + lowercase yyyy so late-Dec dates don't roll to next year (week-year bug)
+                    formatter.dateFormat = "yyyy-MM-dd"
                     textField.text = formatter.string(from: date!)
-                    
+                    print("🟢[REC-DATE]   textField.text set to=\(textField.text ?? "nil") (fmt=yyyy-MM-dd, locale=\(formatter.locale?.identifier ?? "nil"))")
+
                     formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
                     formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
                     if textField == self.filedRecurrenceEnd {
                         self.lblRecurrenceEndTime = formatter.string(from: date!)
-                        
+                        let startdate = self.convertStringToDate(dateString: self.lblRecurrenceStartTime)
+                        print(startdate)
+                        let diffdate = self.daysBetweenTwoDate(fromdate: startdate, toDate: date!)
+                        print("diffdate\(diffdate)")
+                        print("🟢[REC-DATE]   END branch: lblRecurrenceEndTime=\(self.lblRecurrenceEndTime) startdate=\(startdate) diffdate=\(diffdate)")
+                        if(diffdate <= 0)
+                        {
+                            let calendar = Calendar.current
+                            let date = calendar.date(byAdding: .day, value: -1, to: date!)
+                            formatter.dateFormat = "yyyy-MM-dd"
+                            self.lblRecurrenceStartTime = formatter.string(from: date!)
+                            self.filedRecurrenceStart.text = formatter.string(from: date!)
+                            print("🟢[REC-DATE]   END branch diffdate<=0: adjusted start -1day -> lblRecurrenceStartTime=\(self.lblRecurrenceStartTime) filedRecurrenceStart.text=\(self.filedRecurrenceStart.text ?? "nil")")
+                        }
+
                     }else{
-                        
+
                         self.lblRecurrenceStartTime = formatter.string(from: date!)
                         let calendar = Calendar.current
                         let date = calendar.date(byAdding: .day, value: 1, to: date!)
-                        formatter.dateFormat = "YYYY-MM-dd"
+                        formatter.dateFormat = "yyyy-MM-dd"
                         self.filedRecurrenceEnd.text = formatter.string(from: date!)
-                        
+
                         formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
                         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
                         self.lblRecurrenceEndTime = formatter.string(from: date!)
-                        
+                        print("🟢[REC-DATE]   START branch: lblRecurrenceStartTime=\(self.lblRecurrenceStartTime) filedRecurrenceEnd.text=\(self.filedRecurrenceEnd.text ?? "nil") lblRecurrenceEndTime=\(self.lblRecurrenceEndTime)")
                     }
+                    print("🟢[REC-DATE] FINAL after \(dbgField) pick: startText=\(self.filedRecurrenceStart.text ?? "nil") endText=\(self.filedRecurrenceEnd.text ?? "nil") lblStart=\(self.lblRecurrenceStartTime) lblEnd=\(self.lblRecurrenceEndTime)")
                 }
             }
         }

@@ -14,7 +14,8 @@ class PopActivityController: UIViewController {
     var selectedTag : Int = 0
     override func viewDidLoad() {
         super.viewDidLoad()
-        droptxtfld.isInside = true
+        droptxtfld.arrowColor = .black
+        droptxtfld.arrowSize = CGFloat(15)
         droptxtfld.optionArray = ["Delete this single activity","Delete all incomplete activities in this series","Delete all incomplete activities that have not been modified/changed since creation","Delete all incomplete future activities, from today onwards"]
         droptxtfld.text = "Delete this single activity"
         droptxtfld.didSelect{(selectedText , index ,id) in

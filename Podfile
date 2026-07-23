@@ -1,5 +1,5 @@
 # Uncomment the next line to define a global platform for your project
-# platform :ios, '9.0'
+# platform :ios, '13.0'
 
 target 'Blue Square' do
   # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
@@ -9,13 +9,10 @@ target 'Blue Square' do
   pod 'SSCalendar', '0.0.2'
   pod 'AnyFormatKit'
   pod 'JZCalendarWeekView'
-#  pod 'FirebaseAnalytics', '~> 6.5'
-#  pod 'Firebase', '~> 6.24'
-#  pod 'FirebaseCrashlytics', '~> 4.1'
-#  pod 'Crashlytics', '~> 3.14'
   pod 'iOSDropDown', '~> 0.3'
   pod 'FirebaseCore'
-  pod 'FirebaseCrashlytics'
   pod 'FirebaseAnalytics'
+  pod 'Socket.IO-Client-Swift', '~> 16.1'
+  pod 'FirebaseCrashlytics', '~> 12.0'
   # Pods for Pareto Systems
 end

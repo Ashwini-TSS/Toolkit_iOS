@@ -8,6 +8,9 @@
 
 import UIKit
 import SSCalendar
+import SocketIO
+import CoreData
+
 var StrCondition : String!
 class CalendarController: UIViewController {
     
@@ -37,21 +40,34 @@ class CalendarController: UIViewController {
     var selectedRow: Int = 0
     var selectedIndexPath: IndexPath = IndexPath(row: 0, section: 0)
     var isList:Bool = false
+    var didLoadCalled : Bool = false
     lazy var searchBar = UISearchBar(frame: CGRect.zero)
     
+    var manager: SocketManager!
+     var socket: SocketIOClient!
+
     @IBOutlet weak var btnDropDown: UIBarButtonItem!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setNavigationBarItem()
+        self.didLoadCalled = true
         self.title = ""
+        
+        // TODO: you code here
+        self.setupCalendarStartAndEndDate()
+        getAppointmentTypesList()
         
         UserDefaults.standard.removeObject(forKey: "filterarray")
         
         UserDefaults.standard.set("no", forKey: "DAYALL")
         
         SSStyles.applyNavigationBarStyles()
-        
+        let  paskey = self.retriveRecordsFromCoreData()
+        if(paskey != "")
+        {
+            self.connectToSocket(passkey: paskey)
+        }
         self.navigationController?.navigationBar.backgroundColor = .red
 
         self.navigationController?.navigationBar.barTintColor = .black
@@ -63,8 +79,6 @@ class CalendarController: UIViewController {
         self.navigationController?.navigationBar.tintColor = UIColor.white
         
        // self.demoactivity()
-        
-        // TODO: you code here
     }
     
     
@@ -78,6 +92,250 @@ class CalendarController: UIViewController {
         controller.appointmentIDList = appointmentIDList
         controller.appointmentColorList = appointmentColorList
         self.navigationController?.pushViewController(controller, animated: true)
+    }
+    
+    func getConnectionParam() -> [String: Any] {
+        UserDefaults.standard.set("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzQ0NzEyNDQwfQ.FDsnMamWyOcbYJ77slzg0EKgWMzq07O0YGnVZpmX1YU", forKey: "token")
+        UserDefaults.standard.set("1", forKey: "user_id")
+
+        let currtimezone = self.getCurrentTimeZone()
+        let tok = UserDefaults.standard.string(forKey: "token")!
+        let userIDD =  UserDefaults.standard.string(forKey: "user_id")!
+               return ["auth": "\(tok)", "user_id": "\(userIDD)", "timeZone": "\(currtimezone)"]
+       }
+    
+    func getCurrentTimeZone() -> String{
+             return TimeZone.current.identifier
+      }
+    
+    func retriveRecordsToolkitIdCoredata(gcalID : String) -> String
+    {
+            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else
+            {
+                return ""
+            }
+            let managedobj = appDelegate.persistentContainer.viewContext
+            let fetchrequest = NSFetchRequest<NSFetchRequestResult>(entityName: "GcalConfig")
+            fetchrequest.predicate = NSPredicate(format: "gcalEventID=%@", gcalID)
+            do{
+                let result = try managedobj.fetch(fetchrequest)
+                for data in (result as? [NSManagedObject])!
+                {
+                    print(data.value(forKey: "toolkitEventID") as! String)
+                   let gcalID = data.value(forKey: "toolkitEventID") as? String
+                    if(gcalID != "" && gcalID != nil){
+                        return gcalID ?? ""
+                    }
+                }
+            }catch{
+                print("Error while fetching data")
+            }
+            return ""
+        
+    }
+        
+    func retriveRecordsFromCoreData() -> String
+    {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else
+        {
+            return ""
+        }
+        let managedobj = appDelegate.persistentContainer.viewContext
+        let fetchrequest = NSFetchRequest<NSFetchRequestResult>(entityName: "GcalPasskey")
+        do{
+            let result = try managedobj.fetch(fetchrequest)
+            for data in (result as? [NSManagedObject])!
+            {
+            print(data.value(forKey: "passkey") as! String)
+                let passkey = data.value(forKey: "passkey") as? String ?? ""
+                return passkey
+            }
+            
+        }catch{
+            print("Error while fetching data")
+        }
+        return ""
+    }
+    
+    func connectToSocket(passkey : String)
+    {
+        let socketURL = URL(string: "https://toolkit-gcal.tecnovaters.com")!
+        let currtimezone = self.getCurrentTimeZone()
+
+                manager = SocketManager(socketURL: socketURL, config: [.log(true),.extraHeaders(["auth": "Bearer \(passkey)", "user_id": "4", "timeZone": "\(currtimezone)"]),.compress])
+                self.socket = manager.defaultSocket
+
+                addHandlers()
+
+                socket.connect()
+    }
+    
+    func addHandlers() {
+            socket.on(clientEvent: .connect) {data, ack in
+                print("Socket connected ✅, \(ack)")
+            }
+
+            socket.on("4") { dataArray, ack in
+                print("Received event data: \(dataArray)")
+                let dataobj = dataArray[0] as? [String : Any]
+                let type = dataobj?["type"] as? String
+                let eventypeobj = dataobj?["event"] as? [String : Any]
+                let status = eventypeobj?["status"] as? String
+
+                if(type == "google_calendar_event_updated")
+                {
+                    if(status == "cancelled")
+                    {
+                        let idd = eventypeobj?["id"] as? String
+                        let toolkitid = self.retriveRecordsToolkitIdCoredata(gcalID: idd ?? "")
+                        self.DeleteAppointment(toolkitEventID: toolkitid)
+
+                    }else{
+                        let idd = eventypeobj?["id"] as? String
+                        let location = eventypeobj?["location"] as? String
+                        let description = eventypeobj?["description"] as? String
+                        let summary = eventypeobj?["summary"] as? String
+                        let startobj = eventypeobj?["start"] as? [String : Any]
+                        let starttime = startobj?["dateTime"] as? String
+                        let endobj = eventypeobj?["end"] as? [String : Any]
+                        let endtime = endobj?["dateTime"] as? String
+                        
+                        let toolkitid = self.retriveRecordsToolkitIdCoredata(gcalID: idd ?? "")
+                         
+                        self.updateEditedEventsInToolkitCalendar(toolkitID: toolkitid, location: location ?? "", Description: description ?? "", endTime: endtime ?? "", StartTime: starttime ?? "", subject: summary ?? "")
+                    }
+                }
+                else if (type == "google_calendar_event_deleted"){
+                    let idd = eventypeobj?["eventId"] as? String
+                    let toolkitid = self.retriveRecordsToolkitIdCoredata(gcalID: idd ?? "")
+                    self.DeleteAppointment(toolkitEventID: toolkitid)
+                }
+                
+            }
+
+            socket.on(clientEvent: .disconnect) {data, ack in
+                print("Socket disconnected ❌")
+            }
+
+            socket.on(clientEvent: .error) {data, ack in
+                print("Socket error: \(data)")
+            }
+        }
+    
+    func DeleteAppointment(toolkitEventID : String){
+        
+        let parameters = [
+            "ObjectId": toolkitEventID,
+            "ObjectName": "appointment",
+            "OrganizationId": currentOrgID,
+            "PassKey": passKey
+            ] as [String : Any]
+        
+        var mainURL:String!
+        let headers = [
+            "Content-Type": "application/json",
+            ]
+        
+        mainURL = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/delete.json"
+        
+        let request = NSMutableURLRequest(url: NSURL(string: mainURL)! as URL,
+                                          cachePolicy: .useProtocolCachePolicy,
+                                          timeoutInterval: 7.0)
+        request.httpMethod = "POST"
+        request.allHTTPHeaderFields = headers
+
+      
+        if let jsonData = try? JSONSerialization.data(withJSONObject: parameters, options: []) {
+            request.httpBody = jsonData
+        }
+        
+        let configuration = URLSessionConfiguration.default
+        let session = URLSession(configuration: configuration, delegate: self, delegateQueue:OperationQueue.main)
+        let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { data, response, error in
+            guard let data = data, error == nil else {
+                print(error?.localizedDescription as Any)
+                return
+            }
+            do {
+                let jsonObj = try JSONSerialization.jsonObject(with: data, options: [])
+                print(jsonObj)
+                guard let _:Dictionary = jsonObj as? [String:AnyObject] else{
+                    return
+                }
+                let result = try JSON(data: data)
+                print(result)
+                print(result["ResponseMessage"])
+                print("success")
+                if(result["ResponseMessage"] == "success"){
+                    self.getActivitiesList()
+                }else{
+                    let alert = UIAlertController(title:result["ResponseMessage"].stringValue, message: nil, preferredStyle: UIAlertControllerStyle.alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (alert) in
+                    }))
+                    self.present(alert, animated: true, completion: nil)
+                }
+                
+            }
+                catch {
+                    print(error.localizedDescription)
+                }
+            })
+           dataTask.resume()
+    }
+    
+    func updateEditedEventsInToolkitCalendar(toolkitID : String, location : String, Description: String, endTime : String, StartTime: String, subject : String)
+    {
+           
+        let parameters  = [
+                "DataObject": [
+                    "Location" : location,
+                    "Description":Description,
+                    "EndTime": endTime,
+                    "Id": toolkitID,
+                    "StartTime": StartTime,
+                    "Subject": subject
+                ],
+                "OrganizationId": currentOrgID,
+                "ObjectName": "appointment",
+                "PassKey": passKey
+                ] as [String : Any]
+                        
+                var mainURL:String!
+                let headers = [
+                    "Content-Type": "application/json",
+                    ]
+                mainURL = globalURL+"/endpoints/ajax/com.platform.vc.endpoints.orgdata.VCOrgDataEndpoint/modify.json"
+                
+                let request = NSMutableURLRequest(url: NSURL(string: mainURL)! as URL,
+                                                  cachePolicy: .useProtocolCachePolicy,
+                                                  timeoutInterval: 7.0)
+                
+                request.httpMethod = "POST"
+                request.allHTTPHeaderFields = headers
+                if let jsonData = try? JSONSerialization.data(withJSONObject: parameters, options: []) {
+                    request.httpBody = jsonData
+                }
+                let configuration = URLSessionConfiguration.default
+                let session = URLSession(configuration: configuration, delegate: self, delegateQueue:OperationQueue.main)
+                let dataTask11 = session.dataTask(with: request as URLRequest, completionHandler: { data, response, error in
+                    guard let data = data, error == nil else {
+                        print(error?.localizedDescription as Any)
+                        return
+                    }
+                    do {
+                        let jsonObj = try JSONSerialization.jsonObject(with: data, options: [])
+                        print(jsonObj)
+                        guard let _:Dictionary = jsonObj as? [String:AnyObject] else{
+                            return
+                        }
+                        let result = try JSON(data: data)
+                        print(result)
+                        self.getActivitiesList()
+                    }catch {
+                        print(error.localizedDescription)
+                    }
+                })
+                dataTask11.resume()
     }
     
     @objc func pushToActivity(notfication: NSNotification) {
@@ -168,6 +426,11 @@ class CalendarController: UIViewController {
             NotificationCenter.default.post(name: NSNotification.Name(rawValue: "hideList"), object: nil, userInfo: nil)
         }
     }
+    
+    @IBAction func calendarPickerAction(_ sender: UIBarButtonItem) {
+        self.calendarButtonTapped(sender: sender)
+    }
+    
     @objc func calendarButtonTapped(sender: UIBarButtonItem) {
         
         let pastYear = Calendar.current.date(byAdding: .year, value: -100, to: Date())
@@ -192,49 +455,73 @@ class CalendarController: UIViewController {
         if let values = UserDefaults.standard.object(forKey: "selectedYear") {
             pickerValue = values as! String
         }
-        
+        UserDefaults.standard.set(true, forKey: "pickeradded") //setObject
         // Strings Picker
         DPPickerManager.shared.showPicker(title: "Pick Year", selected: pickerValue, strings: listYears as! [String]) { (value, index, cancel) in
             if !cancel {
                 
+                
                 startTime = "\(value!)-01-01"
                 endTime = "\(value!)-12-31"
                 selectedYear = value!
+                UserDefaults.standard.set(selectedYear, forKey: "selectedYear")
                 // TODO: you code here
-                self.getAppointmentTypesList()
                 
+                
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy"
+                dateFormatter.locale = Locale(identifier: "en_US_POSIX") // Ensure consistency
+
+                if let date = dateFormatter.date(from: value ?? "") {
+                    var dateComponents = DateComponents()
+                    dateComponents.year = 1 // Adding 2 years
+
+                    // Add years to the date
+                    if let futureDate = Calendar.current.date(byAdding: dateComponents, to: date) {
+                        let formattedFutureDate = dateFormatter.string(from: futureDate) // Convert back to string if needed
+                        endTime = "\(formattedFutureDate)-12-31"
+
+                    }
+                } else {
+                    print("Invalid year format")
+                }
+                
+                if let date = dateFormatter.date(from: value ?? "") {
+                    var dateComponents = DateComponents()
+                    dateComponents.year = -1 // Minus 2 years
+
+                    // Add years to the date
+                    if let futureDate = Calendar.current.date(byAdding: dateComponents, to: date) {
+                        let formattedPreviousDate = dateFormatter.string(from: futureDate) // Convert back to string if needed
+                        startTime = "\(formattedPreviousDate)-01-01"
+
+                    }
+                } else {
+                    print("Invalid year format")
+                }
+                
+                self.getAppointmentTypesList()
+
             }
         }
     }
     
     
     @IBAction func tappedTab(_ sender: Any) {
-        
         if addPreviousControllers.count > 0 {
-            //            var menuView: DropdownMenu?
-            //            let addItems:NSMutableArray = []
-            //
-            //            for index in 0..<addPreviousControllers.count {
-            //                let item1 = DropdownItem(title: addPreviousControllers[index] as! String)
-            //                addItems.add(item1)
-            //            }
-            //            items = [addItems] as! [[DropdownItem]]
-            //            menuView = DropdownMenu(navigationController: navigationController!, items: addItems as! [DropdownItem], selectedRow: 10)
-            //
-            //            menuView?.topOffsetY = CGFloat(0.0)
-            //            //menuView?.separatorStyle = .none
-            //            menuView?.zeroInsetSeperatorIndexPaths = [IndexPath(row: 1, section: 0)]
-            //            menuView?.delegate = self
-            //            menuView?.rowHeight = 50
-            //            menuView?.showMenu()
         }
-        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
+        let  paskey = self.retriveRecordsFromCoreData()
+        if(paskey != "")
+        {
+            socket.disconnect()
+        }
         NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "tappedFilter"), object: nil)
         NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "yearPicked"), object: nil)
-        
+        UserDefaults.standard.set(false, forKey: "pickeradded") //setObject
+
     }
     @objc func methodOfReceivedNotification(notification: Notification){
         if pushed {
@@ -268,9 +555,9 @@ class CalendarController: UIViewController {
         super.viewWillAppear(true)
         //        btnListView.image = UIImage()
         //        NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "tappedFilter"), object: nil)
-        
-        getAppointmentTypesList()
-        
+        if(!self.didLoadCalled){
+            setupCalendarView()
+        }
         NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "yearPicked"), object: nil)
         
         //        NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "pushToActivity1"), object: nil)
@@ -319,76 +606,143 @@ class CalendarController: UIViewController {
                                         name: Notification.Name(
                                             rawValue: "Allday"),
                                         object: nil)
-        
-        let dateformatter = DateFormatter()
-        dateformatter.dateFormat = "YYYY"
-        let monthsToAdd = 0
-                let daysToAdd = 0
-                let yearsToAdd = -1
-        var dateComponent = DateComponents()
-               
-               dateComponent.month = monthsToAdd
-               dateComponent.day = daysToAdd
-               dateComponent.year = yearsToAdd
-               
-        let futureDate = Calendar.current.date(byAdding: dateComponent, to: Date())!
-        let currentYear = dateformatter.string(from: futureDate)
-
-//        let currentYear = "2021"
-        startTime = "\(currentYear)-01-01"
-        endTime = "\(2100)-12-31"
-        selectedYear = currentYear
-        UserDefaults.standard.set(currentYear, forKey: "selectedYear")
-        
     }
-    ////// mvcdxwq
+    
+    func setupCalendarStartAndEndDate()
+    {
+        if let selectedcurrentyear = UserDefaults.standard.string(forKey: "selectedYear") {
+            
+            startTime = "\(selectedcurrentyear)-01-01"
+            endTime = "\(selectedcurrentyear)-12-31"
+            
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy"
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX") // Ensure consistency
+
+            if let date = dateFormatter.date(from: selectedcurrentyear) {
+                var dateComponents = DateComponents()
+                dateComponents.year = 1 // Adding 2 years
+
+                // Add years to the date
+                if let futureDate = Calendar.current.date(byAdding: dateComponents, to: date) {
+                    let formattedFutureDate = dateFormatter.string(from: futureDate) // Convert back to string if needed
+                    endTime = "\(formattedFutureDate)-12-31"
+
+                }
+            } else {
+                print("Invalid year format")
+            }
+            
+            if let date = dateFormatter.date(from: selectedcurrentyear) {
+                var dateComponents = DateComponents()
+                dateComponents.year = -1 // Minus 2 years
+
+                // Add years to the date
+                if let futureDate = Calendar.current.date(byAdding: dateComponents, to: date) {
+                    let formattedPreviousDate = dateFormatter.string(from: futureDate) // Convert back to string if needed
+                    startTime = "\(formattedPreviousDate)-01-01"
+
+                }
+            } else {
+                print("Invalid year format")
+            }
+                       
+            selectedYear = "\(selectedcurrentyear)"
+            UserDefaults.standard.set(selectedcurrentyear, forKey: "selectedYear")
+        }
+        else{
+            let dateformatter = DateFormatter()
+            dateformatter.dateFormat = "YYYY"
+            
+            let monthsToAdd1 = 0
+            let daysToAdd1 = 0
+            let yearsToAdd1 = 0
+            var dateComponents = DateComponents()
+            
+            dateComponents.month = monthsToAdd1
+            dateComponents.day = daysToAdd1
+            dateComponents.year = yearsToAdd1
+            
+            let futureDate1 = Calendar.current.date(byAdding: dateComponents, to: Date())!
+            let endyear = dateformatter.string(from: futureDate1)
+            
+            let yearsToAddplus = 1
+            dateComponents.year = yearsToAddplus
+            
+            let futureDateadd = Calendar.current.date(byAdding: dateComponents, to: Date())!
+            let plus2 = dateformatter.string(from: futureDateadd)
+
+            let yearsToAddminus = -1
+            dateComponents.year = yearsToAddminus
+            
+            let futureDatemiuns = Calendar.current.date(byAdding: dateComponents, to: Date())!
+            let minus2 = dateformatter.string(from: futureDatemiuns)
+            
+            startTime = "\(minus2)-01-01"
+            endTime = "\(plus2)-12-31"
+            selectedYear = "\(endyear)"
+            UserDefaults.standard.set(endyear, forKey: "selectedYear")
+        }
+    }
+    
     @objc func getDragMenthods()
     {
         self.isdrag = true
         self.getAppointmentTypesList()
     }
     func getAppointmentTypesList(){
-        let json: [String: Any] = ["PageOffset": 1,
-                                   "ResultsPerPage": 5000,
-                                   "ObjectName":"appointment_type",
-                                   "AscendingOrder":true,
-                                   "OrderBy":"Name",
-                                   "PassKey":passKey,
-                                   "OrganizationId":currentOrgID]
-        print(json)
-        OperationQueue.main.addOperation {
-            //  SVProgressHUD.show()
-            //            MBProgressHUD.showAdded(to: self.view, animated: true)
-        }
-        APIManager.sharedInstance.postRequestCall(postURL: orgListURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
-            DispatchQueue.main.async {
-                //                print(json)
-                var model = GetAppointmentTypesModel.init(fromDictionary: jsonResponse)
-                self.appointmentIDList = []
-                self.appointmentColorList = []
-                if(!model.valid){
-                    self.loginUser()
-                }
-                else {
-                    var getModelResult:[GetAppointmentTypesResult] = model.results
-                    getModelResult = getModelResult.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == ComparisonResult.orderedAscending }
-                    
-                    if model.valid {
-                        for index in 0..<model.results.count {
-                            self.appointmentIDList.add(getModelResult[index].id)
-                            self.appointmentColorList.add(getModelResult[index].calendarColor)
+        if(self.appointmentColorList.count == 0)
+        {
+            let json: [String: Any] = ["PageOffset": 1,
+                                       "ResultsPerPage": 5000,
+                                       "ObjectName":"appointment_type",
+                                       "AscendingOrder":true,
+                                       "OrderBy":"Name",
+                                       "PassKey":passKey,
+                                       "OrganizationId":currentOrgID]
+            print(json)
+            OperationQueue.main.addOperation {
+//                  SVProgressHUD.show()
+//                MBProgressHUD.showAdded(to: self.view, animated: true)
+            }
+            APIManager.sharedInstance.postRequestCall(postURL: orgListURL, parameters: json, senderVC: self, onSuccess: { (jsonResponse, json) in
+                DispatchQueue.main.async {
+                    //                print(json)
+                    var model = GetAppointmentTypesModel.init(fromDictionary: jsonResponse)
+                    self.appointmentIDList = []
+                    self.appointmentColorList = []
+                    if(!model.valid){
+                        self.loginUser()
+                    }
+                    else {
+                        self.getActivitiesList()
+                        var getModelResult:[GetAppointmentTypesResult] = model.results
+                        getModelResult = getModelResult.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == ComparisonResult.orderedAscending }
+                        
+                        if model.valid {
+                            for index in 0..<model.results.count {
+                                self.appointmentIDList.add(getModelResult[index].id)
+                                self.appointmentColorList.add(getModelResult[index].calendarColor)
+                            }
                         }
                     }
-                    self.getActivitiesList()
                 }
-            }
-        },  onFailure: { error in
-            print(error.localizedDescription)
+            },  onFailure: { error in
+                print(error.localizedDescription)
+                OperationQueue.main.addOperation {
+                    // SVProgressHUD.dismiss()
+                    //                MBProgressHUD.hide(for: self.view, animated: true)
+                }
+            })
+        }
+        else
+        {
             OperationQueue.main.addOperation {
-                // SVProgressHUD.dismiss()
-                //                MBProgressHUD.hide(for: self.view, animated: true)
+//                  SVProgressHUD.show()
+//                            MBProgressHUD.showAdded(to: self.view, animated: true)
             }
-        })
+            self.getActivitiesList()
+        }
     }
     
     
@@ -420,11 +774,6 @@ class CalendarController: UIViewController {
             NavigationHelper.showSimpleAlert(message:error.localizedDescription)
         })
     }
-    
-   
-    
-  
-    
     
     func getActivitiesList(){
         
@@ -562,6 +911,7 @@ class CalendarController: UIViewController {
                             var en_date : Date!
                             let dateFormatter = DateFormatter()
                             dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+                            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
                             var st_date : Date = dateFormatter.date(from: start)!
                             if let enn_date : Date = dateFormatter.date(from: end){
                                 en_date = enn_date
@@ -636,7 +986,7 @@ class CalendarController: UIViewController {
         for v in calendarView.subviews{
             v.removeFromSuperview()
         }
-        UserDefaults.standard.set(selectedYear, forKey: "selectedYear") //setObject
+//        UserDefaults.standard.set(selectedYear, forKey: "selectedYear") //setObject
         
         let annualViewController:SSCalendarAnnualViewController = (SSCalendarAnnualViewController(events: generateEvents()))!
         //annualViewController.listAppointments = (appointmentDict as! [AnyHashable : Any])
@@ -648,7 +998,6 @@ class CalendarController: UIViewController {
         view1?.frame.size.width = self.calendarView.frame.size.width
         self.addChildViewController(navigationController)
         self.calendarView.addSubview(navigationController.view!)
-        
         OperationQueue.main.addOperation {
             // SVProgressHUD.dismiss()
         }
@@ -659,94 +1008,83 @@ class CalendarController: UIViewController {
     
     fileprivate func generateEvents() -> [SSEvent] {
         var events: [SSEvent] = []
+        var allYears: Set<String> = []
         
-        let allYears:NSMutableArray = []
-        
-        for index in 0..<getCalendarActivityList.count {
+        for activityWrapper in getCalendarActivityList {
+            let result = activityWrapper.activity
             
-            let result:GetCalendarListActivity = getCalendarActivityList[index].activity
-            if result.startTime != nil {
-                let startTime:String = result.startTime
-                let startYear:String = converYearToString(dateString: startTime)
+            guard let startTime = result?.startTime else { continue }
+            
+            let startYear = converYearToString(dateString: startTime)
+            guard !startYear.isEmpty,
+                  let getYear = Int(startYear),
+                  let getMonth = Int(converMonthToString(dateString: startTime)),
+                  let getDate = Int(convertDateToString(dateString: startTime)) else { continue }
+            
+            var startTimeStr = convertTimeToString(dateString: startTime)
+            
+            if let endTime = result?.endTime {
+                let endTimeStr = convertTimeToString(dateString: endTime)
+                startTimeStr += "!@#\(endTimeStr)"
+                allYears.insert(converYearToString(dateString: endTime))
+            } else if let dueTime = result?.DueTime {
+                let endTimeStr = convertTimeToString(dateString: dueTime)
+                startTimeStr += "!@#\(endTimeStr)"
+            }
+            
+            var color = "a5c2f2"
+            var appointmentID = ""
+            
+            if let appTypeId = result?.appointmentTypeId as? String {
+                let swiftArray = appointmentIDList as? [String] ?? []
                 
-                if startYear.count > 0 {
-                    
-                    
-                    let getYear = Int(converYearToString(dateString: startTime))
-                    let getMonth = Int(converMonthToString(dateString: startTime))
-                    let getDate = Int(convertDateToString(dateString: startTime))
-                    
-                    var getTime = convertTimeToString(dateString: startTime)
-                    
-                    
-                    if result.endTime != nil {
-                        let endTime:String = result.endTime
-                        let getEndTime = convertTimeToString(dateString: endTime)
-                        getTime = getTime + "!@#\(getEndTime)"
-                    }else if result.DueTime != nil {
-                        let endTime:String = result.DueTime
-                        let getEndTime = convertTimeToString(dateString: endTime)
-                        getTime = getTime + "!@#\(getEndTime)"
-                    }
-                    
-                    var getColor:String = ""
-                    var getID:String = ""
-                    
-                    if result.appointmentTypeId != nil {
-                        
-                        if self.appointmentIDList.contains(result.appointmentTypeId) {
-                            let getIndex = self.appointmentIDList.index(of: result.appointmentTypeId)
-                            getColor = self.appointmentColorList[getIndex] as! String
-                            getID = self.appointmentIDList[getIndex] as! String
-                            getTime = getTime + "!@#\(getColor)"
-                            appointmentColor.add(getColor)
-                            appointmentIDD.add(getID)
-                        }else{
-                            appointmentIDD.add("")
-                            appointmentColor.add("a5c2f2")
-                        }
-                        
-                        let encodedData = NSKeyedArchiver.archivedData(withRootObject: appointmentColorList)
-                        UserDefaults.standard.set(encodedData, forKey: "ColorAppID")
-                        
-                        let encodedData1 = NSKeyedArchiver.archivedData(withRootObject: appointmentIDList)
-                        UserDefaults.standard.set(encodedData1, forKey: "AppointAppID")
-                    }
-                    var subjectName:String = ""
-                    var subjectDescription:String = ""
-                    
-                    if let getSubject:String = result.subject {
-                        subjectName = getSubject
-                    }
-                    if let getSubject:String = result.descriptionField {
-                        subjectDescription = getSubject
-                    }
-                    if let value = result.appointmentTypeId as? String {
-                        print(value)
-                        if result.appointmentTypeId != nil {
-                            events.append(generateEvent(getYear!, month: getMonth!, Date: getDate!, info: subjectName, desc: subjectDescription, time: getTime, aID: result.id!, appointmentTypeID: result.appointmentTypeId! as! String,isDay: result.allDay))
-                        }
-                    }
-                    else{
-                        events.append(generateEvent(getYear!, month: getMonth!, Date: getDate!, info: subjectName, desc: subjectDescription, time: getTime, aID: result.id!, appointmentTypeID: "",isDay: result.allDay))
-                    }
-                }
-                
-                if !allYears.contains(startYear) {
-                    allYears.add(startYear)
+                if let index = swiftArray.firstIndex(where: { $0 == appTypeId }) {
+                    color = (appointmentColorList[index] as? String) ?? color
+                    appointmentID = appTypeId
+                    appointmentColor.add(color)
+                    appointmentIDD.add(appTypeId)
+                } else {
+                    appointmentColor.add(color)
+                    appointmentIDD.add("")
                 }
             }
             
-            if result.endTime != nil {
-                let endTime:String = result.endTime
-                let endYear:String = converYearToString(dateString: endTime)
-                if !allYears.contains(endYear) {
-                    allYears.add(endYear)
-                }
+            startTimeStr += "!@#\(color)"
+            
+            // Persist data
+            let encodedColor = NSKeyedArchiver.archivedData(withRootObject: appointmentColorList)
+            UserDefaults.standard.set(encodedColor, forKey: "ColorAppID")
+            
+            let encodedID = NSKeyedArchiver.archivedData(withRootObject: appointmentIDList)
+            UserDefaults.standard.set(encodedID, forKey: "AppointAppID")
+            
+            let subjectName = result?.subject ?? ""
+            let subjectDescription = result?.descriptionField ?? ""
+            
+            let appointmentTypeID = (result?.appointmentTypeId as? String) ?? ""
+            
+            let ids = result?.id
+            if let idd = ids {
+                let event = generateEvent(
+                    getYear,
+                    month: getMonth,
+                    Date: getDate,
+                    info: subjectName,
+                    desc: subjectDescription,
+                    time: startTimeStr,
+                    aID: idd,
+                    appointmentTypeID: appointmentTypeID,
+                    isDay: ((result?.allDay) != nil)
+                )
+                events.append(event)
             }
+            
+            allYears.insert(startYear)
         }
+
         return events
     }
+
     
     fileprivate func generateEvent(_ year: Int,month:Int,Date:Int,info:String,desc:String,time:String,aID:String,appointmentTypeID:String,isDay:Bool) -> SSEvent {
         let event = SSEvent()

@@ -8,6 +8,7 @@
 
 import UIKit
 import MobileCoreServices
+import CoreData
 
 class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDataSource,UIActionSheetDelegate {
     
@@ -270,6 +271,7 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
             else{
                 fieldComments.text = ""
             }
+            
             fieldAppointmentType.text = ""
             print(openedActivties.activity.id!)
             
@@ -289,8 +291,8 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
             }
             else{
                 
-                fieldStartTime.text = convertDateMonthString(dateString: openedActivties.activity.startTime)
-                fieldEndtime.text = convertDateMonthString(dateString: openedActivties.activity.endTime)
+            fieldStartTime.text = convertDateMonthString(dateString: openedActivties.activity.startTime)
+            fieldEndtime.text = convertDateMonthString(dateString: openedActivties.activity.endTime)
                 
             Starttimeappointment.text = convertTimeString(dateString: openedActivties.activity.startTime)
             EndtimeAppointment.text = convertTimeString(dateString: openedActivties.activity.endTime)
@@ -308,6 +310,7 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                 btnAlldayevent.setImage(UIImage.init(named:"ic_check"), for: .normal)
             }
             if openedActivties.activity.allDay {
+                isAlldayEvent = true
                 btnAlldayevent.isUserInteractionEnabled = true
                 btnAlldayevent.setImage(UIImage.init(named:"ic_check"), for: .normal)
             }
@@ -326,7 +329,6 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                     formatter1.dateFormat = "hh:00 a"
                     let gtStartTime:String = formatter1.string(from: Date())
                     Starttimeappointment.text = gtStartTime
-                    
                     
                     let vals = UserDefaults.standard.bool(forKey: "Goday")
                     if(vals)
@@ -356,13 +358,10 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                         formatter.dateFormat = "yyyy-MM-dd"
                         let getStartTime:String = formatter.string(from:Date())
                         fieldStartTime.text = getStartTime
-                        
-                    
-                        
+                                                
                         formatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
                         formatter.dateFormat =  "yyyy-MM-dd'T'HH:00:ss.SSSZ"
                         self.startTime = formatter.string(from: Date())
-                        
                         
                         let calendar = Calendar.current
                         let date = calendar.date(byAdding: .hour, value: 1, to: Date())
@@ -444,8 +443,6 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                     self.endTime = formatter.string(from: date!)
                 }
 }
-           
-            
         }
         // Do any additional setup after loading the view.
     }
@@ -2009,11 +2006,106 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
         }else{
              
         }
-        
-        
-        
-      
     }
+    
+    func retriveGcalEventIDFromToolkitID(toolkitid : String) -> String
+    {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else
+        {
+            return ""
+        }
+        let managedobj = appDelegate.persistentContainer.viewContext
+        let fetchrequest = NSFetchRequest<NSFetchRequestResult>(entityName: "GcalConfig")
+        fetchrequest.predicate = NSPredicate(format: "toolkitEventID=%@", toolkitid)
+        do{
+            let result = try managedobj.fetch(fetchrequest)
+            for data in (result as? [NSManagedObject])!
+            {
+                print(data.value(forKey: "gcalEventID") as! String)
+               let gcalID = data.value(forKey: "gcalEventID") as? String
+                if(gcalID != "" && gcalID != nil){
+                    return gcalID ?? ""
+                }
+            }
+        }catch{
+            print("Error while fetching data")
+        }
+        return ""
+    }
+    
+    //MARK: - Delete appointments in Gcal
+    func deleteGcalCalendarEventMatchID(toolkitID : String)
+    {
+        let gcaliD = self.retriveGcalEventIDFromToolkitID(toolkitid: toolkitID)
+        let passkeys = self.retriveRecordsFromCoreData()
+            let url = URL(string: "https://toolkit-gcal.tecnovaters.com/api/v1/google-calendar/events/\(gcaliD)")
+                
+            var request = URLRequest(url: url!)
+
+            request.setValue(
+                "Bearer \(passkeys)",
+                forHTTPHeaderField: "Authorization"
+            )
+
+            // For POST requests with a JSON body, set the Content-Type header
+            request.setValue(
+                "application/json",
+                forHTTPHeaderField: "Content-Type"
+            )
+            request.httpMethod = "DELETE"
+                // create URLSession with default configuration
+                let session = URLSession.shared
+                
+                // create dataTask using the session object to send data to the server
+            let task = session.dataTask(with: request) { data, response, error in
+                    
+                    if let error = error {
+                        print("GET Request Error: \(error.localizedDescription)")
+                        return
+                    }
+                    
+                    // ensure there is valid response code returned from this HTTP response
+                    guard let httpResponse = response as? HTTPURLResponse,
+                          (200...299).contains(httpResponse.statusCode) else {
+                              print("Invalid Response received from the server")
+                              return
+                          }
+                    
+                    // ensure there is data returned
+                    guard let responseData = data else {
+                        print("nil Data received from the server")
+                        return
+                    }
+                    
+                    do {
+                        // serialise the data object into Dictionary [String : Any]
+                        if let jsonResponse = try JSONSerialization.jsonObject(with: responseData, options: .mutableContainers) as? [String: Any] {
+                            print(jsonResponse)
+                            DispatchQueue.main.async {
+                                let alert = UIAlertController(title:"Appointment Deleted Successfully", message: nil, preferredStyle: UIAlertControllerStyle.alert)
+                                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (alert) in
+                                    if(self.EditCondition == "calendar"){
+                                        NavigationHelper().createMenuView()
+                                    }
+                                    else{
+                                        self.navigationController?.popViewController(animated:true)
+                                    }
+                                }))
+                                self.present(alert, animated: true, completion: nil)
+                            }
+                        } else {
+                            print("data maybe corrupted or in wrong format")
+                            throw URLError(.badServerResponse)
+                        }
+                    } catch let error {
+                        print("JSON Parsing Error: \(error.localizedDescription)")
+                    }
+                }
+                // resume the task
+                task.resume()
+        }
+    
+    
     func DeleteAppointment(){
         
         let parameters = [
@@ -2059,16 +2151,22 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                 print(result["ResponseMessage"])
                 print("success")
                 if(result["ResponseMessage"] == "success"){
-                let alert = UIAlertController(title:"Appointment Deleted Successfully", message: nil, preferredStyle: UIAlertControllerStyle.alert)
-                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (alert) in
-                    if(self.EditCondition == "calendar"){
-                    NavigationHelper().createMenuView()
+                    let gcalid = self.retriveGcalEventIDFromToolkitID(toolkitid: self.Id)
+                    if(gcalid == "" || gcalid == nil){
+                        let alert = UIAlertController(title:"Appointment Deleted Successfully", message: nil, preferredStyle: UIAlertControllerStyle.alert)
+                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (alert) in
+                            if(self.EditCondition == "calendar"){
+                                NavigationHelper().createMenuView()
+                            }
+                            else{
+                                self.navigationController?.popViewController(animated:true)
+                            }
+                        }))
+                        self.present(alert, animated: true, completion: nil)
                     }
                     else{
-                        self.navigationController?.popViewController(animated:true)
+                        self.deleteGcalCalendarEventMatchID(toolkitID: self.Id)
                     }
-                }))
-                    self.present(alert, animated: true, completion: nil)
                 }else{
                     let alert = UIAlertController(title:result["ResponseMessage"].stringValue, message: nil, preferredStyle: UIAlertControllerStyle.alert)
                     alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (alert) in
@@ -2309,10 +2407,37 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
     
     
     func UpdateEditRequest(){
-        
+
         cancelBtn.isUserInteractionEnabled = false
         donelBtn.isUserInteractionEnabled = false
-        
+
+        // Rebuild startTime/endTime from the occurrence DATE (already in self.startTime)
+        // + the picked time-of-day from the time fields, so we never save a stray current
+        // timestamp/seconds, End stays after Start, and the picked times are preserved.
+        let editIsoFmt = DateFormatter()
+        editIsoFmt.locale = Locale(identifier: "en_US_POSIX")
+        editIsoFmt.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        let editTimeFmt = DateFormatter()
+        editTimeFmt.locale = Locale(identifier: "en_US_POSIX")
+        editTimeFmt.dateFormat = "hh:mm a"
+        let editCal = Calendar.current
+        if let editBase = editIsoFmt.date(from: self.startTime),
+           let pickedStart = editTimeFmt.date(from: self.Starttimeappointment.text ?? ""),
+           let pickedEnd = editTimeFmt.date(from: self.EndtimeAppointment.text ?? "") {
+            let sTOD = editCal.dateComponents([.hour, .minute], from: pickedStart)
+            let eTOD = editCal.dateComponents([.hour, .minute], from: pickedEnd)
+            var sComps = editCal.dateComponents([.year, .month, .day], from: editBase)
+            sComps.hour = sTOD.hour; sComps.minute = sTOD.minute; sComps.second = 0
+            var eComps = editCal.dateComponents([.year, .month, .day], from: editBase)
+            eComps.hour = eTOD.hour; eComps.minute = eTOD.minute; eComps.second = 0
+            if let sDate = editCal.date(from: sComps), var eDate = editCal.date(from: eComps) {
+                if eDate <= sDate { eDate = editCal.date(byAdding: .day, value: 1, to: eDate) ?? eDate }
+                self.startTime = editIsoFmt.string(from: sDate)
+                self.endTime = editIsoFmt.string(from: eDate)
+            }
+        }
+        print("⏱️[REC-EDIT] sending startTime=\(self.startTime) endTime=\(self.endTime) | timeUI start=\(Starttimeappointment.text ?? "nil") end=\(EndtimeAppointment.text ?? "nil") | isAllDay=\(isAlldayEvent)")
+
         let parameters = [
             "ForUsers":[],
             "From": startTime,
@@ -2377,14 +2502,15 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                                 "ModifiedBy": self.ModifiedByinput!,
                                 "ModifiedOn": self.ModifiedOninput!,
                                 "RecurrenceIndex": self.RecurrenceIndex!,
-                                "RecurringActivityId":self.RecurrenceID!,
+                                "RecurringActivityId": self.RecurrenceID ?? "",
                                 "RollOver": self.isRollOver,
                                 "StartTime": self.startTime,
                                 "Subject": self.fieldSubject.text!
                             ],
                             "OrganizationId": currentOrgID,
                             "ObjectName": "appointment",
-                            "PassKey": passKey
+                            "PassKey": passKey,
+                            "IncludeExtendedProperties": true
                             ] as [String : Any]
                 }
                 else{
@@ -2405,7 +2531,7 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                             "Description":self.fieldComments.text!,
                             "EndTime": self.endTime,
                             "Id": self.Id,
-                            "ModifiedBy": self.ModifiedByinput!,
+                            "ModifiedBy":  self.ModifiedByinput!,
                             "ModifiedOn": self.ModifiedOninput!,
                             "RecurrenceIndex": self.RecurrenceIndex!,
                             "RollOver": self.isRollOver,
@@ -2418,6 +2544,8 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                         ] as [String : Any]
                     
                 }
+                
+                print("request:- \(parameters)")
                         
                         var mainURL:String!
                         let headers = [
@@ -2449,16 +2577,33 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                                 }
                                 let result = try JSON(data: data)
                                 print(result)
-                                let alert = UIAlertController(title:"Appointment Saved Successfully", message: nil, preferredStyle: UIAlertControllerStyle.alert)
-                                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (alert) in
-                                    if(self.EditCondition == "calendar"){
-                                        NavigationHelper().createMenuView()
-                                    }
-                                    else{
-                                        self.navigationController?.popViewController(animated:true)
-                                    }
-                                }))
-                                 self.present(alert, animated: true, completion: nil)
+                                // Only claim success when the API actually succeeded. The
+                                // modify can return Valid:false (e.g. a rejected recurring
+                                // edit) with HTTP 200/500; previously the app showed
+                                // "Saved Successfully" regardless, so failed edits looked
+                                // saved but never persisted.
+                                let editSaveValid = result["Valid"].boolValue
+                                let editSaveMsg = result["ResponseMessage"].stringValue
+                                print("⏱️[REC-EDIT] modify response Valid=\(editSaveValid) ResponseMessage=\(editSaveMsg)")
+                                if editSaveValid {
+                                    let alert = UIAlertController(title:"Appointment Saved Successfully", message: nil, preferredStyle: UIAlertControllerStyle.alert)
+                                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (alert) in
+                                        if(self.EditCondition == "calendar"){
+                                            NavigationHelper().createMenuView()
+                                        }
+                                        else{
+                                            self.navigationController?.popViewController(animated:true)
+                                        }
+                                    }))
+                                    self.present(alert, animated: true, completion: nil)
+                                } else {
+                                    self.cancelBtn.isUserInteractionEnabled = true
+                                    self.donelBtn.isUserInteractionEnabled = true
+                                    let failMsg = editSaveMsg.isEmpty ? "The appointment could not be updated. Please try again." : editSaveMsg
+                                    let alert = UIAlertController(title:"Save Failed", message: failMsg, preferredStyle: UIAlertControllerStyle.alert)
+                                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                                    self.present(alert, animated: true, completion: nil)
+                                }
                             }catch {
                                 print(error.localizedDescription)
                             }
@@ -2571,6 +2716,8 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
                                  self.linkAppointmentUseres(rightID: getID)
                                 }
                                 self.UpdatedNewAppointment1()
+
+//                                self.createGoogleCalendarEvent(toolkitEventID: getID)
                             }
                         }
                     }else{
@@ -2598,6 +2745,159 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
             NavigationHelper.showSimpleAlert(message:error.localizedDescription)
         })
     }
+    
+    func getCurrentTimeZone() -> String{
+             return TimeZone.current.identifier
+      }
+    
+    func retriveRecordsFromCoreData() -> String
+    {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else
+        {
+            return ""
+        }
+        let managedobj = appDelegate.persistentContainer.viewContext
+        let fetchrequest = NSFetchRequest<NSFetchRequestResult>(entityName: "GcalPasskey")
+        do{
+            let result = try managedobj.fetch(fetchrequest)
+            for data in (result as? [NSManagedObject])!
+            {
+            print(data.value(forKey: "passkey") as! String)
+                let passkey = data.value(forKey: "passkey") as? String ?? ""
+                return passkey
+            }
+            
+        }catch{
+            print("Error while fetching data")
+        }
+        return ""
+    }
+    
+    func editGoogleCalendarEvents(toolkitEventID : String)
+    {
+        let gcaliD = self.retriveGcalEventIDFromToolkitID(toolkitid: toolkitEventID)
+        let passkey = self.retriveRecordsFromCoreData()
+        let timezone = self.getCurrentTimeZone()
+        let parameterDictionary: [String: Any] = ["summary": self.fieldSubject.text ?? "",
+                                   "location": self.fieldLocation.text ?? "",
+                                   "description":self.fieldComments.text ?? "",
+                                   "start": self.startTime,
+                                   "end":self.endTime,
+                                   "time_zone":timezone,
+                                   "event_type":"Party",
+        ]
+        let Url = String(format: "https://toolkit-gcal.tecnovaters.com/api/v1/google-calendar/events/\(gcaliD)")
+           guard let serviceUrl = URL(string: Url) else { return }
+           var request = URLRequest(url: serviceUrl)
+           request.httpMethod = "PUT"
+           request.setValue("Application/json", forHTTPHeaderField: "Content-Type")
+           request.setValue("Bearer \(passkey)", forHTTPHeaderField: "Authorization")
+           guard let httpBody = try? JSONSerialization.data(withJSONObject: parameterDictionary, options: []) else {
+               return
+           }
+           request.httpBody = httpBody
+           
+           let session = URLSession.shared
+           session.dataTask(with: request) { (data, response, error) in
+               if let response = response {
+                   print(response)
+               }
+               if let data = data {
+                   do {
+                       let json = try JSONSerialization.jsonObject(with: data, options: [])
+                       print(json)
+                       DispatchQueue.main.async {
+                           self.showSuccessAlert()
+                       }
+                   } catch {
+                       print(error)
+                   }
+               }
+           }.resume()
+    }
+    
+    func showSuccessAlert()
+    {
+        let alert = UIAlertController(title:"Appointment Saved Successfully", message: nil, preferredStyle: UIAlertControllerStyle.alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (alert) in
+            if(self.EditCondition == "calendar"){
+                NavigationHelper().createMenuView()
+            }
+            else{
+                self.navigationController?.popViewController(animated:true)
+            }
+        }))
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    func createGoogleCalendarEvent(toolkitEventID : String)
+    {
+        let passkey = self.retriveRecordsFromCoreData()
+        let timezone = self.getCurrentTimeZone()
+        let parameterDictionary: [String: Any] = ["summary": self.fieldSubject.text ?? "",
+                                   "location": self.fieldLocation.text ?? "",
+                                   "description":self.fieldComments.text ?? "",
+                                   "start": self.startTime,
+                                   "end":self.endTime,
+                                   "time_zone":timezone,
+                                   "event_type":"Party",
+        ]
+        let Url = String(format: "https://toolkit-gcal.tecnovaters.com/api/v1/google-calendar/events")
+           guard let serviceUrl = URL(string: Url) else { return }
+           var request = URLRequest(url: serviceUrl)
+           request.httpMethod = "POST"
+           request.setValue("Application/json", forHTTPHeaderField: "Content-Type")
+           request.setValue("Bearer \(passkey)", forHTTPHeaderField: "Authorization")
+           guard let httpBody = try? JSONSerialization.data(withJSONObject: parameterDictionary, options: []) else {
+               return
+           }
+           request.httpBody = httpBody
+           
+           let session = URLSession.shared
+           session.dataTask(with: request) { (data, response, error) in
+               if let response = response {
+                   print(response)
+               }
+               if let data = data {
+                   do {
+                       let json = try JSONSerialization.jsonObject(with: data, options: [])
+                       print(json)
+                       let model = try JSONDecoder().decode(SyncLoginModal.self, from: data)
+                       self.toStoreValuesCoreData(toolkitEventID: toolkitEventID, googleEventID: model.data?.id ?? "")
+                       if(self.fieldContacts.text != ""){
+                       self.linkAppointmentContacts(rightID: toolkitEventID)
+                       }
+                       if(self.fieldChooseTeamMember.text != ""){
+                        self.linkAppointmentUseres(rightID: toolkitEventID)
+                       }
+                       self.UpdatedNewAppointment1()
+
+                   } catch {
+                       print(error)
+                   }
+               }
+           }.resume()
+    }
+    
+    func toStoreValuesCoreData(toolkitEventID : String, googleEventID : String)
+    {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else
+        {
+            return
+        }
+        let managedobj = appDelegate.persistentContainer.viewContext
+            let userEntity = NSEntityDescription.entity(forEntityName: "GcalConfig", in: managedobj)
+            let user = NSManagedObject(entity: userEntity!, insertInto: managedobj)
+        user.setValue(googleEventID, forKey: "gcalEventID")
+        user.setValue(toolkitEventID, forKey: "toolkitEventID")
+            do
+            {
+                try managedobj.save()
+            }catch let error as NSError{
+                print(error.localizedDescription)
+            }
+    }
+    
     func linkAppointmentContacts(rightID:String){
         if openedActivties != nil {
             OperationQueue.main.addOperation {
@@ -3551,6 +3851,7 @@ class UpdatenewappointmentVC: UIViewController,UITableViewDelegate,UITableViewDa
             let sdate = (self.notedata[indexPath.row - 1].note?.createdOn)!
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX") //added by ashwini
             let st_date : Date = dateFormatter.date(from: sdate)!
             dateFormatter.dateFormat = "MM/dd/yyyy"
             let firdate = dateFormatter.string(from: st_date)

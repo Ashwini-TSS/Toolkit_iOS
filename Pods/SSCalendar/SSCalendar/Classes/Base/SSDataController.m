@@ -48,15 +48,24 @@
 - (NSArray *)calendarYears
 {
     if (_calendarYears == nil) {
-        NSInteger yyear = [SSCalendarUtils currentYear];
-        NSInteger year = yyear - 1;
-        SSYearNode *yearNode = [[SSYearNode alloc] initWithValue:year];
-        SSYearNode *yearNode1 = [[SSYearNode alloc] initWithValue:year + 1];
-        SSYearNode *yearNode2 = [[SSYearNode alloc] initWithValue:year + 2];
-        SSYearNode *yearNode3 = [[SSYearNode alloc] initWithValue:year + 3];
-        SSYearNode *yearNode4 = [[SSYearNode alloc] initWithValue:year + 4];
+        NSString *savedValue = [[NSUserDefaults standardUserDefaults]
+                                   stringForKey:@"selectedYear"];
+        NSInteger savedYear = [savedValue integerValue];
+
+        NSInteger currentYear = [[NSCalendar currentCalendar] component:NSCalendarUnitYear fromDate:[NSDate date]];
         
-        self.calendarYears = @[yearNode, yearNode1,  yearNode2, yearNode3, yearNode4];
+           NSInteger startYear = savedYear-1; // 100 years back
+//           NSInteger endYear = currentYear ;   // 100 years forward
+           NSInteger endYear = savedYear+1 ;   // 100 years forward
+
+           NSMutableArray<SSYearNode *> *yearsArray = [NSMutableArray array];
+
+           for (NSInteger year = startYear; year <= endYear; year++) {
+               SSYearNode *yearNode = [[SSYearNode alloc] initWithValue:year];
+               [yearsArray addObject:yearNode];
+           }
+
+           self.calendarYears = [yearsArray copy];
     }
     return _calendarYears;
 }

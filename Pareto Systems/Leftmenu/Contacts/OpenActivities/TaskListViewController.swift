@@ -185,7 +185,6 @@ class TaskListViewController: UIViewController{
                     self.ArrayRecurrenceIndex = []
                     self.ArrayStartTime = []
                     
-                    
                     let ActivityArrayres = json["Activities"]
                     print(ActivityArrayres)
                     for act in ActivityArrayres
@@ -210,7 +209,6 @@ class TaskListViewController: UIViewController{
                                 self.ArrayPercentComplete.add("\(value["PercentComplete"].number ?? 0)")
                                 self.ArrayDescription.add(value["Description"].string as Any)
                                 
-                                
                                 self.ArrayStartTime.add(value["StartTime"].string as Any)
                                 self.ArrayId.add(value["Id"].string as Any)
                                 self.ArrayRollOver.add(value["RollOver"].string as Any)
@@ -218,10 +216,8 @@ class TaskListViewController: UIViewController{
                                 
                                 self.ArrayCreatedBy.add(value["CreatedBy"].string as Any)
                                 self.ArrayRecurrenceIndex.add(value["RecurrenceIndex"].string as Any)
-                                
                             }
                         }
-                        
                     }
                     self.TblviewTasklist.reloadData()
                 }
@@ -251,6 +247,7 @@ class TaskListViewController: UIViewController{
     @IBAction func TappedSelection(_ sender: Any) {
         tappedcondition()
     }
+    
     func tappedcondition(){
         if(Condition == "close"){
             PickerView.isHidden = false
@@ -434,9 +431,7 @@ class TaskListViewController: UIViewController{
             print(error.localizedDescription)
         })
         
-    }
-    
-    
+    }    
 }
 
 extension TaskListViewController : UITableViewDelegate,UITableViewDataSource{
@@ -460,10 +455,10 @@ extension TaskListViewController : UITableViewDelegate,UITableViewDataSource{
         cell.selectionStyle = UITableViewCellSelectionStyle.none
         let date1 = ArrayDueToday[indexPath.row]
         let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
         let responsedate = dateFormatter.date(from: date1 as! String)
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-        
         let resudate = dateFormatter.string(from: responsedate!)
         let date = dateFormatter.date(from: resudate)
         

@@ -10,7 +10,7 @@ import UIKit
 import AnyFormatKit
 
 
-class CreateAccountsCell: UITableViewCell,TextInputFieldDelegate {
+class CreateAccountsCell: UITableViewCell {
     
     @IBOutlet weak var fieldPrimaryContct: ACFloatingTextfield!
     @IBOutlet weak var fieldFTPSite: ACFloatingTextfield!
@@ -127,7 +127,6 @@ class CreateAccountsCell: UITableViewCell,TextInputFieldDelegate {
     
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
-        
         // Configure the view for the selected state
     }
     

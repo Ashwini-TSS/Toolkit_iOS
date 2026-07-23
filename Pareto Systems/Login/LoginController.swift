@@ -541,7 +541,27 @@ class LoginController: UIViewController,UITextFieldDelegate,UITableViewDelegate,
         }
         else if(self.isAlreadyLogin)
         {
-            json = ["PassKey" : passkey]
+            json["PassKey"] = passkey
+            json["UserName"] = nil
+            json["Password"] = nil
+            json["TwoFACode"] = nil
+
+            // Convert to JSON Data
+            do {
+                let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
+                do {
+                       if let parameters = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] {
+                           json.removeAll()
+                           json = parameters
+                       }
+                   } catch {
+                       print("Failed to convert JSON string to dictionary: \(error)")
+                }
+                
+            } catch {
+                print("Error serializing JSON: \(error)")
+            }
+            
         }
         else
         {

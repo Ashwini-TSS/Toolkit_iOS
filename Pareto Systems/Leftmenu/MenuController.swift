@@ -104,6 +104,13 @@ class MenuController: UITableViewController {
             let nvc: UINavigationController = UINavigationController(rootViewController: vc)
             self.slideMenuController()?.changeMainViewController(nvc, close: true)
         }
+//        else if indexPath.row == 9 {
+//            setupNavigation()
+//            
+//            let vc = self.storyboard?.instantiateViewController(withIdentifier: "CalendarSyncViewController") as! CalendarSyncViewController
+//            let nvc: UINavigationController = UINavigationController(rootViewController: vc)
+//            self.slideMenuController()?.changeMainViewController(nvc, close: true)
+//        }
     }
     func setupNavigation(){
         UINavigationBar.appearance().barTintColor = UIColor.PSNavigaitonBlack()
